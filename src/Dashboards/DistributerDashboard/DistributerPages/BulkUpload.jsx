@@ -1,0 +1,286 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import {
+    Box,
+    Button,
+    Paper,
+    Typography,
+    Alert,
+    CircularProgress,
+    Skeleton
+} from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DownloadIcon from '@mui/icons-material/Download';
+
+const BulkUploadSkeleton = () => (
+    <Box sx={{ width: '100%', p: 3 }}>
+        <Skeleton variant="text" sx={{ fontSize: '2rem', mb: 3 }} />
+        <Paper sx={{ p: 4 }}>
+            <Box sx={{ textAlign: 'center' }}>
+                <Skeleton variant="circular" width={80} height={80} sx={{ mx: 'auto', mb: 2 }} />
+                <Skeleton variant="text" sx={{ fontSize: '1.5rem', mb: 1 }} />
+                <Skeleton variant="text" width="60%" sx={{ mx: 'auto', mb: 3 }} />
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+                    <Skeleton variant="rectangular" width={150} height={40} />
+                    <Skeleton variant="rectangular" width={150} height={40} />
+                </Box>
+            </Box>
+        </Paper>
+    </Box>
+);
+
+const BulkUpload = () => {
+    const [file, setFile] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '', details: [] });
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file && file.type === 'text/csv') {
+            setFile(file);
+            setMessage({ type: 'info', text: 'File selected: ' + file.name });
+        } else {
+            setMessage({ type: 'error', text: 'Please select a valid CSV file' });
+        }
+    };
+
+    const handleDownloadTemplate = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/bulk/template`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'deals_template.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Error downloading template:', error);
+            setMessage({ type: 'error', text: 'Error downloading template. Please try again later.' });
+        }
+    };
+
+    const handleUpload = async () => {
+        if (!file) {
+            setMessage({ type: 'error', text: 'Please select a file first' });
+            return;
+        }
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_BACKEND_URL}/deals/bulk/upload/${localStorage.getItem('user_id')}`, 
+                formData, 
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+            
+            setMessage({ 
+                type: 'success', 
+                text: `Successfully uploaded ${response.data.count} deals` 
+            });
+            setFile(null);
+            // Reset the file input
+        } catch (error) {
+            const errorData = error.response?.data;
+            console.error('Error uploading deals:', errorData); // Log the error for debugging
+            setMessage({ 
+                type: 'error', 
+                text: errorData?.message || 'Error uploading deals. Please check the file format and try again.',
+                details: errorData?.errors || []
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return <BulkUploadSkeleton />;
+    }
+
+    return (
+        <Box sx={{ p: 3 }}>
+            <Paper sx={{ p: 4, borderRadius: 2, maxWidth: 800, mx: 'auto' }}>
+                <Typography variant="h5" color="primary" gutterBottom sx={{ mb: 4 }}>
+                    Bulk Upload Deals
+                </Typography>
+                
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    gap: 4,
+                }}>
+                    <Box sx={{ 
+                        p: 4, 
+                        border: '2px dashed #ccc',
+                        borderRadius: 2,
+                        textAlign: 'center',
+                        bgcolor: 'rgba(0, 0, 0, 0.02)'
+                    }}>
+                        <Typography variant="h6" color="textSecondary" gutterBottom>
+                            Step 1: Get Started
+                        </Typography>
+                        <Typography variant="body1" color="textSecondary" gutterBottom sx={{ mb: 2 }}>
+                            Download our template CSV file to ensure correct formatting
+                        </Typography>
+                        <Button
+                            variant="outlined"
+                            startIcon={<DownloadIcon />}
+                            onClick={handleDownloadTemplate}
+                            sx={{ 
+                                mt: 1,
+                                borderRadius: 2,
+                                px: 3,
+                                py: 1,
+                                '&:hover': {
+                                    backgroundColor: 'primary.main',
+                                    color: 'white'
+                                }
+                            }}
+                        >
+                            Download Template
+                        </Button>
+                    </Box>
+
+                    <Box sx={{ 
+                        p: 4, 
+                        border: '2px dashed #ccc',
+                        borderRadius: 2,
+                        textAlign: 'center',
+                        bgcolor: 'rgba(0, 0, 0, 0.02)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            borderColor: 'primary.main',
+                            bgcolor: 'rgba(0, 0, 0, 0.03)'
+                        }
+                    }}>
+                        <Typography variant="h6" color="textSecondary" gutterBottom>
+                            Step 2: Upload Your File
+                        </Typography>
+                        <input
+                            accept=".csv"
+                            style={{ display: 'none' }}
+                            id="raised-button-file"
+                            type="file"
+                            onChange={handleFileChange}
+                        />
+                        <label htmlFor="raised-button-file">
+                            <Button
+                                variant="contained"
+                                component="span"
+                                startIcon={<CloudUploadIcon />}
+                                sx={{ 
+                                    mb: 1,
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1
+                                }}
+                            >
+                                Select CSV File
+                            </Button>
+                        </label>
+                        {file && (
+                            <Box sx={{ 
+                                mt: 2, 
+                                p: 1, 
+                                bgcolor: 'background.paper',
+                                borderRadius: 1,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 1
+                            }}>
+                                <Typography variant="body2" color="textSecondary">
+                                    Selected: {file.name}
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+
+                    {message.text && (
+                        <Box sx={{ mt: 2 }}>
+                            <Alert 
+                                severity={message.type}
+                                sx={{ 
+                                    borderRadius: 2,
+                                    '& .MuiAlert-message': {
+                                        width: '100%'
+                                    }
+                                }}
+                                variant="filled"
+                            >
+                                {message.text}
+                            </Alert>
+                            {message.details && message.details.length > 0 && (
+                                <Box sx={{ 
+                                    mt: 2, 
+                                    maxHeight: '200px', 
+                                    overflowY: 'auto',
+                                    p: 3,
+                                    bgcolor: '#f8f9fa',
+                                    borderRadius: 2,
+                                    border: '1px solid #e9ecef'
+                                }}>
+                                    <Typography variant="subtitle2" color="error" gutterBottom>
+                                        Error Details:
+                                    </Typography>
+                                    {message.details.map((error, index) => (
+                                        <Typography 
+                                            key={index} 
+                                            variant="body2" 
+                                            color="error" 
+                                            sx={{ 
+                                                mb: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                '&:before': {
+                                                    content: '"•"',
+                                                    mr: 1
+                                                }
+                                            }}
+                                        >
+                                            {error}
+                                        </Typography>
+                                    ))}
+                                </Box>
+                            )}
+                        </Box>
+                    )}
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleUpload}
+                        disabled={!file || loading}
+                        sx={{ 
+                            py: 1.5,
+                            px: 4,
+                            borderRadius: 2,
+                            alignSelf: 'center',
+                            minWidth: 200,
+                            boxShadow: 2,
+                            '&:hover': {
+                                boxShadow: 4
+                            }
+                        }}
+                    >
+                        {loading ? (
+                            <CircularProgress size={24} color="inherit" />
+                        ) : (
+                            'Upload Deals'
+                        )}
+                    </Button>
+                </Box>
+            </Paper>
+        </Box>
+    );
+};
+
+export default BulkUpload;
