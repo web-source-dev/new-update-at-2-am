@@ -1,5 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Container, Typography, Grid, Box, Paper, Skeleton, CircularProgress } from "@mui/material";
+import { 
+  TextField, 
+  Button, 
+  Container, 
+  Typography, 
+  Grid, 
+  Box, 
+  Paper, 
+  Skeleton, 
+  CircularProgress,
+  Card,
+  CardContent,
+  Divider,
+  InputAdornment,
+  useTheme,
+  Alert
+} from "@mui/material";
+import { Email } from "@mui/icons-material";
 import axios from "axios";
 import Toast from "../Components/Toast/Toast";
 import Links from "../Components/Buttons/Links";
@@ -24,7 +41,9 @@ const ForgetPasswordSkeleton = () => (
 );
 
 const ForgetPassword = () => {
+  const theme = useTheme();
   const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState({});
   const [toast, setToast] = useState({
     open: false,
     message: "",
@@ -34,12 +53,42 @@ const ForgetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSkeleton(false);
+    }, 1500); // Show skeleton for 1.5 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     setEmail(e.target.value);
+    
+    // Clear error when user types
+    if (errors.email) {
+      setErrors({});
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    
     setLoading(true);
     try {
       const response = await axios.post(
@@ -48,7 +97,7 @@ const ForgetPassword = () => {
       );
       setToast({
         open: true,
-        message: "Email sent successfully.",
+        message: "Reset link sent successfully.",
         severity: "success",
       });
       setSuccessMessage(true);
@@ -65,87 +114,138 @@ const ForgetPassword = () => {
     setToast({ ...toast, open: false });
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSkeleton(false);
-    }, 3000); // Show skeleton for 3 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <Container
       maxWidth="sm"
-      style={{
+      sx={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
+        minHeight: "100vh",
+        py: 4
       }}
     >
       <div style={{ width: "100%" }}>
         {showSkeleton ? (
           <ForgetPasswordSkeleton />
         ) : (
-          <>
-            <Typography variant="h4" component="h1" gutterBottom>
-              Forget Password
-            </Typography>
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Email"
-                    name="email"
-                    value={email}
-                    onChange={handleChange}
-                    fullWidth
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disabled={loading}
-                  >
-                    {loading ? <CircularProgress size={24} /> : "Send Reset Link"}
-                  </Button>
-                  <Grid>
-                    <Typography mt={2} sx={{display:'flex',justifyContent:'center',alignItems:'center', gap:'10px', fontSize:'18px' }} variant="body2" color="textSecondary" gutterBottom>
-                      Remember your password?{" "}
-                      <Links link={`/login`} linkText={`Back to login`} />
-                    </Typography>
+          <Card 
+            elevation={4}
+            sx={{
+              borderRadius: 2,
+              overflow: 'hidden',
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+              }
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                gutterBottom
+                sx={{ 
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  mb: 1,
+                  color: theme.palette.primary.main
+                }}
+              >
+                Forgot Password
+              </Typography>
+              
+              <Typography 
+                variant="body1" 
+                align="center" 
+                color="textSecondary" 
+                sx={{ mb: 4 }}
+              >
+                Enter your email address and we'll send you a link to reset your password.
+              </Typography>
+              
+              {successMessage && (
+                <Alert 
+                  severity="success" 
+                  sx={{ mb: 3 }}
+                >
+                  Reset link sent to <strong>{email}</strong>. Please check your email and use the link within <strong>one hour</strong> before it expires.
+                </Alert>
+              )}
+              
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Email"
+                      name="email"
+                      type="email"
+                      value={email}
+                      onChange={handleChange}
+                      fullWidth
+                      required
+                      error={!!errors.email}
+                      helperText={errors.email}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Email />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Grid>
-                  {successMessage && (
-                    <Typography
-                      mt={2}
-                      variant="body2"
-                      align="center"
-                      color="textSecondary"
-                      gutterBottom
-                      sx={{ fontSize: "1.1rem" }}
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      disabled={loading}
+                      sx={{ 
+                        py: 1.5,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        '&:hover': {
+                          boxShadow: '0 6px 16px rgba(0,0,0,0.15)'
+                        }
+                      }}
                     >
-                      Reset link sent to <strong>{email}</strong>. Use it within{" "}
-                      <strong>one hour</strong> before it expires!.
-                    </Typography>
-                  )}
-                  <Typography variant="body2" color="textSecondary" gutterBottom>
-                    <Links link={`/login`} text={`Back to login`} />
-                  </Typography>
+                      {loading ? <CircularProgress size={24} /> : "Send Reset Link"}
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </form>
-            <Toast
-              open={toast.open}
-              message={toast.message}
-              severity={toast.severity}
-              handleClose={handleClose}
-            />
-          </>
+              </form>
+              
+              <Divider sx={{ my: 3 }} />
+              
+              <Typography 
+                align="center" 
+                sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  fontSize: '16px', 
+                  gap: '8px'
+                }}
+              >
+                Remember your password? 
+                <Links 
+                  link="/login" 
+                  linkText="Back to login" 
+                  sx={{ fontWeight: 600 }}
+                />
+              </Typography>
+            </CardContent>
+          </Card>
         )}
+        <Toast
+          open={toast.open}
+          message={toast.message}
+          severity={toast.severity}
+          handleClose={handleClose}
+        />
       </div>
     </Container>
   );

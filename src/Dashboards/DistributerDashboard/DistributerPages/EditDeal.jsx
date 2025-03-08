@@ -54,9 +54,12 @@ const EditDeal = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('user_id');
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleUpdateDeal = async (updatedDeal) => {
+    if (isSubmitting) return;
     try {
+      setIsSubmitting(true);
       setLoading(true);
       const response = await axios.put(`${process.env.REACT_APP_BACKEND_URL}/deals/update/${updatedDeal._id}`, updatedDeal);
       setToast({
@@ -73,6 +76,7 @@ const EditDeal = () => {
       });
       console.error('Error updating deal:', error);
     } finally {
+      setIsSubmitting(false);
       setLoading(false);
     }
   };
@@ -91,6 +95,7 @@ const EditDeal = () => {
         initialData={deal}
         onClose={() => navigate('/manage-deals')}
         onSubmit={handleUpdateDeal}
+        isSubmitting={isSubmitting}
       />
       <Toast
         open={toast.open}

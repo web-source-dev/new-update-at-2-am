@@ -38,6 +38,7 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
+import TopMembers from '../../../Pages/TopMembers';
 
 // Soft color palette
 const SOFT_COLORS = [
@@ -205,8 +206,11 @@ const DefualtPage = () => {
           />
         </Grid>
       </Grid>
+        <Grid item xs={12} md={12} sx={{ mb: 4 ,mt: 4}}>
+          <TopMembers />
+      </Grid>
 
-      <Grid container spacing={3} mb={4}>
+      <Grid container spacing={3} mb={10}>
         <Grid item xs={12} md={8}>
           <StyledCard>
             <CardContent>
@@ -287,7 +291,7 @@ const DefualtPage = () => {
           </StyledCard>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} md={12} sx={{mt: 6}}>
           <StyledCard>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#2C3E50' }}>
@@ -321,7 +325,7 @@ const DefualtPage = () => {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} mb={10}>
         <Grid item xs={12} md={6}>
           <StyledCard>
             <CardContent>

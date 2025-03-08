@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Typography, Box, Grid, Button, Card, CardContent, CardMedia, Divider, Chip, Skeleton } from '@mui/material';
+import { Container, Typography, Box, Grid, Button, Card, CardContent, CardMedia, Divider, Chip, Skeleton, CircularProgress } from '@mui/material';
 import { ArrowBack, ShoppingCart, FavoriteBorder, Info } from '@mui/icons-material';
 import Carousel from 'react-material-ui-carousel';
 import Toast from '../../../Components/Toast/Toast';
@@ -36,6 +36,8 @@ const ViewDeal = () => {
   const [deal, setDeal] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(true);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const handleToastClose = () => {
     setToast({ ...toast, open: false });
@@ -56,7 +58,9 @@ const ViewDeal = () => {
   }, [dealId]);
 
   const toggleDealStatus = async () => {
+    if (isStatusUpdating) return;
     try {
+      setIsStatusUpdating(true);
       const newStatus = deal.status === 'active' ? 'inactive' : 'active';
       const response = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/deals/update-status/${dealId}/status`, { status: newStatus });
       setDeal(response.data);
@@ -64,11 +68,22 @@ const ViewDeal = () => {
     } catch (error) {
       console.error('Error updating deal status:', error);
       setToast({ open: true, message: 'Failed to update deal status', severity: 'error' });
+    } finally {
+      setIsStatusUpdating(false);
     }
   };
 
-  const handleViewCommitments = () => {
-    navigate(`/distributor/view/deals/${dealId}/commitments`);
+  const handleViewCommitments = async () => {
+    if (isNavigating) return;
+    try {
+      setIsNavigating(true);
+      navigate(`/distributor/view/deals/${dealId}/commitments`);
+    } catch (error) {
+      console.error('Error navigating to commitments:', error);
+      setToast({ open: true, message: 'Failed to navigate to commitments', severity: 'error' });
+    } finally {
+      setIsNavigating(false);
+    }
   };
 
   if (loading) {
@@ -136,20 +151,22 @@ const ViewDeal = () => {
                 <Button 
                   variant="contained" 
                   color="primary" 
-                  startIcon={<ShoppingCart />} 
+                  startIcon={isNavigating ? <CircularProgress size={20} color="inherit" /> : <ShoppingCart />}
                   fullWidth
                   onClick={handleViewCommitments}
+                  disabled={isNavigating}
                 >
-                  View Commitments
+                  {isNavigating ? 'Loading...' : 'View Commitments'}
                 </Button>
                 <Button
                   variant="outlined"
                   color={deal.status === 'active' ? 'secondary' : 'primary'}
-                  startIcon={<FavoriteBorder />}
+                  startIcon={isStatusUpdating ? <CircularProgress size={20} color="inherit" /> : <FavoriteBorder />}
                   fullWidth
                   onClick={toggleDealStatus}
+                  disabled={isStatusUpdating}
                 >
-                  {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                  {isStatusUpdating ? 'Updating...' : (deal.status === 'active' ? 'Deactivate' : 'Activate')}
                 </Button>
               </Box>
             </CardContent>

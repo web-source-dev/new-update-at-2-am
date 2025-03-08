@@ -41,6 +41,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import Toast from '../Components/Toast/Toast';
+import { io } from 'socket.io-client';
 
 
 const ViewSingleDeal = () => {
@@ -58,11 +59,67 @@ const ViewSingleDeal = () => {
     message: '',
     severity: 'success'
   });
+  const [isCommitting, setIsCommitting] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [socket, setSocket] = useState(null);
 
   const user_id = localStorage.getItem("user_id");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    // Create socket connection
+    const newSocket = io(process.env.REACT_APP_BACKEND_URL);
+    setSocket(newSocket);
+
+    // Handle connection events
+    newSocket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    // Clean up socket connection on component unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  // Listen for real-time deal updates
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for general deal updates
+    socket.on('deal-update', (data) => {
+      if (data.deal._id === dealId) {
+        // Update the deal if it's the one we're viewing and not deleted
+        if (data.type === 'updated') {
+          setDeal(data.deal);
+        } else if (data.type === 'deleted') {
+          // Handle deleted deal - maybe show a message and redirect
+          setToast({
+            open: true,
+            message: "This deal has been deleted by the distributor",
+            severity: "warning"
+          });
+          // You could redirect after a timeout:
+          setTimeout(() => window.location.href = '/buy', 3000);
+        }
+      }
+    });
+
+    // Listen for specific updates to this deal
+    socket.on('single-deal-update', (data) => {
+      if (data.dealId === dealId) {
+        console.log('Received specific deal update:', data);
+        setDeal(data.dealData);
+      }
+    });
+
+    return () => {
+      socket.off('deal-update');
+      socket.off('single-deal-update');
+    };
+  }, [socket, dealId]);
 
   useEffect(() => {
     const fetchDeal = async () => {
@@ -82,9 +139,9 @@ const ViewSingleDeal = () => {
         setLoading(false);
       }
     };
-
     fetchDeal();
-  }, [dealId, user_id]);
+    // No need for interval-based polling anymore
+  }, [dealId]);
 
   const handleNextImage = () => {
     setCurrentImageIndex((prev) => 
@@ -105,7 +162,9 @@ const ViewSingleDeal = () => {
   };
 
   const toggleFavorite = async () => {
+    if (isFavoriteLoading) return;
     try {
+      setIsFavoriteLoading(true);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/favorite/toggle`,
         { dealId, user_id }
@@ -122,25 +181,18 @@ const ViewSingleDeal = () => {
         message: error.response?.data?.message || 'Error updating favorites',
         severity: 'error'
       });
+    } finally {
+      setIsFavoriteLoading(false);
     }
   };
 
   const handleCommitDeal = async () => {
-    if (!deal) return;
-
-    // Validate minimum quantity
-    if (quantity < deal.minQtyForDiscount) {
-      setToast({
-        open: true,
-        message: `Minimum quantity required for discount is ${deal.minQtyForDiscount}`,
-        severity: 'error'
-      });
-      return;
-    }
-
+    if (!deal || isCommitting) return;
+    
     const totalPrice = quantity * deal.discountPrice;
 
     try {
+      setIsCommitting(true);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${dealId}`,
         {
@@ -167,6 +219,8 @@ const ViewSingleDeal = () => {
         message: error.response?.data?.message || "Error submitting deal commitment",
         severity: 'error'
       });
+    } finally {
+      setIsCommitting(false);
     }
   };
 
@@ -639,10 +693,10 @@ const ViewSingleDeal = () => {
                     <ShoppingCart color="success" fontSize="small" />
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Total Sales
+                        Total Commitments
                       </Typography>
                       <Typography variant="body1" fontWeight="500" color="success.main">
-                        {deal?.totalSold || 0} units (${deal?.totalRevenue || 0})
+                        {deal?.totalCommitments || 0} commitments
                       </Typography>
                     </Box>
                   </Box>
@@ -693,7 +747,7 @@ const ViewSingleDeal = () => {
                 )}
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
-                    {deal?.distributor?.businessName}
+                    {deal?.distributor?.businessName || 'Unknown Business'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Verified Distributor
@@ -747,21 +801,6 @@ const ViewSingleDeal = () => {
                     </Box>
                   </Grid>
                 )}
-                {deal?.distributor?.address && (
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Store color="primary" fontSize="small" />
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          Address
-                        </Typography>
-                        <Typography variant="body1">
-                          {deal.distributor.address}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                )}
               </Grid>
             </Paper>
 
@@ -781,8 +820,8 @@ const ViewSingleDeal = () => {
               <Button
                 variant="contained"
                 fullWidth
-                startIcon={<ShoppingCart />}
                 onClick={handleGetDeal}
+                disabled={isCommitting}
                 sx={{ 
                   py: 1.5,
                   borderRadius: 2,
@@ -796,11 +835,12 @@ const ViewSingleDeal = () => {
                   }
                 }}
               >
-                Get Deal
+                Make Commitment
               </Button>
               <IconButton
                 color="error"
                 onClick={toggleFavorite}
+                disabled={isFavoriteLoading}
                 sx={{
                   border: '1px solid',
                   borderRadius: 2,
@@ -813,7 +853,11 @@ const ViewSingleDeal = () => {
                   }
                 }}
               >
-                {isFavorite ? <Favorite /> : <FavoriteBorder />}
+                {isFavoriteLoading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  isFavorite ? <Favorite /> : <FavoriteBorder />
+                )}
               </IconButton>
             </Box>
           </Box>
@@ -837,24 +881,25 @@ const ViewSingleDeal = () => {
             <Typography variant="h6" gutterBottom>
               Price Information
             </Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
+
             <Typography variant="body2" color="text.secondary">
               Original Price: ${deal?.originalCost}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Discount Price: ${deal?.discountPrice}
             </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
             <Typography variant="body2" color="text.secondary">
-              Min Qty for Discount: {deal?.minQtyForDiscount}
+              Total Commitments: {deal?.totalCommitments || 0}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Total Sold: {deal?.totalSold || 0} units (${deal?.totalRevenue || 0})
+
+<Typography variant="body2" color="text.secondary">
+              Min Quantity For Deal: {deal?.minQtyForDiscount || 0}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Views: {deal?.views || 0}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Impressions: {deal?.impressions || 0}
-            </Typography>
+            </Box>
+
             <TextField
               label="Quantity"
               type="number"
@@ -862,9 +907,11 @@ const ViewSingleDeal = () => {
               variant="outlined"
               value={quantity}
               onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-              error={quantity < (deal?.minQtyForDiscount || 0)}
-              helperText={quantity < (deal?.minQtyForDiscount || 0) ? 
-                `Minimum quantity required: ${deal?.minQtyForDiscount}` : ''}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3
+                }
+              }}
             />
             <Box 
               sx={{ 
@@ -903,6 +950,7 @@ const ViewSingleDeal = () => {
           <Button 
             onClick={handleCloseGetDeal} 
             color="secondary"
+            disabled={isCommitting}
             sx={{ borderRadius: 2 }}
           >
             Cancel
@@ -911,9 +959,14 @@ const ViewSingleDeal = () => {
             variant="contained"
             color="primary"
             onClick={handleCommitDeal}
+            disabled={isCommitting}
             sx={{ borderRadius: 2 }}
           >
-            Confirm Purchase
+            {isCommitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              'Confirm Purchase'
+            )}
           </Button>
         </DialogActions>
       </Dialog>

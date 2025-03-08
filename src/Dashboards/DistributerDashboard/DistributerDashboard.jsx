@@ -13,10 +13,9 @@ import Commitments from '../DashBoardComponents/Commitment';
 import Orders from './DistributerPages/Orders';
 import DefualtPage from './DistributerPages/DefualtPage';
 import NotificationIcon from '../../Components/Notification/NotificationIcon';
-import LoadSplash from '../../Components/SplashPage/LoadSplash';
 import DisplaySplashContent from '../../Components/SplashPage/DisplaySplashContent';
 import { Helmet } from 'react-helmet';
-
+import AllDeals from './DistributerPages/AcceptAllCommitments';
 const DistributerDashboard = () => {
   const navigate  = useNavigate();
   let match = useMatch('/dashboard/distributor/*');
@@ -44,7 +43,6 @@ const DistributerDashboard = () => {
 
   const links = [
     { path: '', label: 'Dashboard' },
-    { path: 'overview', label: 'Overview' },
     { path: 'orders', label: 'Orders' },
     { path: `profile/${userId}`, label: 'Profile' },
     { 
@@ -55,7 +53,7 @@ const DistributerDashboard = () => {
         { path: `deal/bulk`, label: 'Bulk Upload' },
       ]
     },
-    { path: `allcommitments/view/${userId}`, label: 'All Commitments' },
+    { path: `all/committed/deals`, label: 'All Committed Deals' },
   ];
 
   return (
@@ -65,7 +63,7 @@ const DistributerDashboard = () => {
         <meta name="description" content="NMGA Distributor Dashboard - Manage your distribution network, track orders, and monitor sales performance" />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <DisplaySplashContent content={splashContent} />
+      {splashContent.length > 0 && <DisplaySplashContent content={splashContent} />}
       <div style={{ display: 'flex', width: '100%' }}>
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>
@@ -74,10 +72,6 @@ const DistributerDashboard = () => {
             <Logout />
           </div>
           <Routes>
-            <Route path="overview" element={<>
-              <AnnouncementToast event="distributor_dashboard" />
-              <div>Distributer Overview</div>
-            </>} />
             <Route path="" element={<>
               <AnnouncementToast event="signup" />
               <DefualtPage />
@@ -110,9 +104,14 @@ const DistributerDashboard = () => {
               <AnnouncementToast event="deal_management" />
               <Commitments />
             </>} />
+            <Route path="allDeals" element={<>
+              <AnnouncementToast event="deal_management" />
+              <AllDeals />
+            </>} />
           </Routes>
         </div>
       </div>
+
     </>
   );
 }

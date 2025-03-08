@@ -57,7 +57,7 @@ const MemberDashboard = () => {
         <meta name="description" content="NMGA Procurement Dashboard - Manage procurement processes, track orders, and optimize your supply chain" />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <DisplaySplashContent content={splashContent} />
+      {splashContent.length > 0 && <DisplaySplashContent content={splashContent} />}
       <div style={{ display: 'flex', width: '100%' }}>
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>

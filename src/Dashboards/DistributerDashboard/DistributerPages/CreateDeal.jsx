@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Grid, Box, Paper, Skeleton } from '@mui/material';
+import { TextField, Button, Container, Typography, Grid, Box, Paper, Skeleton, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CloudinaryUpload from '../../../Components/cloudinary/cloudinary';
@@ -65,6 +65,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     severity: 'success'
   });
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -99,7 +100,10 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
     try {
+      setIsSubmitting(true);
       setLoading(true);
       if (initialData) {
         const updateData = {
@@ -111,7 +115,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
           `${process.env.REACT_APP_BACKEND_URL}/deals/update/${initialData._id}`,
           updateData
         );
-        
+
         setToast({
           open: true,
           message: 'Deal updated successfully!',
@@ -130,6 +134,9 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
           message: 'Deal created successfully!',
           severity: 'success'
         });
+        if(response.data) {
+          navigate(-1);
+        }
       }
     } catch (error) {
       setToast({
@@ -138,6 +145,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
         severity: 'error'
       });
     } finally {
+      setIsSubmitting(false);
       setLoading(false);
     }
   };
@@ -251,7 +259,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
             <Grid item xs={12} sm={6} md={4}>
               <TextField
-                label="Minimum Quantity for Discount"
+                label="Minimum Quantity for Deal"
                 name="minQtyForDiscount"
                 type="number"
                 value={formData.minQtyForDiscount}
@@ -291,7 +299,8 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
               <Button 
                 type="submit" 
                 variant="contained" 
-                color="primary" 
+                color="primary"
+                disabled={isSubmitting}
                 sx={{ 
                   mt: 2,
                   px: 4,
@@ -299,7 +308,11 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   borderRadius: 2
                 }}
               >
-                {initialData ? 'Update Deal' : 'Create Deal'}
+                {isSubmitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  initialData ? 'Update Deal' : 'Create Deal'
+                )}
               </Button>
             </Grid>
           </Grid>

@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import './DefualtPage.css';
 import axios from 'axios';
+import TopMembers from '../../../Pages/TopMembers';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -391,6 +392,11 @@ const DefualtPage = () => {
           </Card>
         </Grid>
       </Grid>
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} md={12}>
+          <TopMembers />
+        </Grid>
+      </Grid>
       {/* Recent Activity Sections */}
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
@@ -482,7 +488,7 @@ const DefualtPage = () => {
 
       {/* Notifications and Payments Section */}
       <Grid container spacing={3} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>Recent Notifications</Typography>

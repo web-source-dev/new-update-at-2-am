@@ -103,11 +103,11 @@ const Sidebar = ({ match, links }) => {
         return <LocalShipping />;
       case "Profile":
         return <Person />;
-      case "Deal Create":
+      case "Create Deal":
         return <Store />;
-      case "Deal manage":
+      case "Manage Deals":
         return <Business />;
-      case "Deal Bulk":
+      case "Bulk Upload":
         return <Inventory />;
       case "User Creation/Deletion":
         return <GroupAdd />;
@@ -135,6 +135,8 @@ const Sidebar = ({ match, links }) => {
         return <History />;
       case "All Commitments":
         return <AssignmentIcon />;
+      case "All Deals":
+        return <Business />;
       default:
         return <Description />;
     }

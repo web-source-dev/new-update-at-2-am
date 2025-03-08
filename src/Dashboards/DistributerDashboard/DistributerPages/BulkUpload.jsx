@@ -32,6 +32,7 @@ const BulkUploadSkeleton = () => (
 const BulkUpload = () => {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '', details: [] });
 
     const handleFileChange = (event) => {
@@ -45,7 +46,9 @@ const BulkUpload = () => {
     };
 
     const handleDownloadTemplate = async () => {
+        if (isDownloading) return;
         try {
+            setIsDownloading(true);
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/bulk/template`, {
                 responseType: 'blob'
             });
@@ -59,11 +62,13 @@ const BulkUpload = () => {
         } catch (error) {
             console.error('Error downloading template:', error);
             setMessage({ type: 'error', text: 'Error downloading template. Please try again later.' });
+        } finally {
+            setIsDownloading(false);
         }
     };
 
     const handleUpload = async () => {
-        if (!file) {
+        if (!file || loading) {
             setMessage({ type: 'error', text: 'Please select a file first' });
             return;
         }
@@ -87,11 +92,9 @@ const BulkUpload = () => {
                 type: 'success', 
                 text: `Successfully uploaded ${response.data.count} deals` 
             });
-            setFile(null);
-            // Reset the file input
         } catch (error) {
             const errorData = error.response?.data;
-            console.error('Error uploading deals:', errorData); // Log the error for debugging
+            console.error('Error uploading deals:', errorData);
             setMessage({ 
                 type: 'error', 
                 text: errorData?.message || 'Error uploading deals. Please check the file format and try again.',
@@ -133,8 +136,9 @@ const BulkUpload = () => {
                         </Typography>
                         <Button
                             variant="outlined"
-                            startIcon={<DownloadIcon />}
+                            startIcon={isDownloading ? <CircularProgress size={20} /> : <DownloadIcon />}
                             onClick={handleDownloadTemplate}
+                            disabled={isDownloading}
                             sx={{ 
                                 mt: 1,
                                 borderRadius: 2,
@@ -146,7 +150,7 @@ const BulkUpload = () => {
                                 }
                             }}
                         >
-                            Download Template
+                            {isDownloading ? 'Downloading...' : 'Download Template'}
                         </Button>
                     </Box>
 
@@ -176,7 +180,8 @@ const BulkUpload = () => {
                             <Button
                                 variant="contained"
                                 component="span"
-                                startIcon={<CloudUploadIcon />}
+                                startIcon={loading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                                disabled={loading}
                                 sx={{ 
                                     mb: 1,
                                     borderRadius: 2,
@@ -184,7 +189,7 @@ const BulkUpload = () => {
                                     py: 1
                                 }}
                             >
-                                Select CSV File
+                                {loading ? 'Uploading...' : 'Select CSV File'}
                             </Button>
                         </label>
                         {file && (

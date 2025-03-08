@@ -83,7 +83,7 @@ const AddAnnouncement = ({ onClose, onAdd, initialData }) => {
     content: '',
     category: 'General',
     priority: 'Medium',
-    event: 'custom',
+    event: '',
     startTime: '',
     endTime: '',
     tags: [],
@@ -104,7 +104,6 @@ const AddAnnouncement = ({ onClose, onAdd, initialData }) => {
   }, [initialData]);
 
   const eventOptions = [
-    'custom',
     'login',
     'signup',
     'admin_dashboard',

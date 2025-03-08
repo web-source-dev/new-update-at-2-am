@@ -35,8 +35,10 @@ import {
   Stack,
   ButtonGroup,
   Skeleton,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
-import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, FilterAlt, Search, ViewModule, ViewList, ViewComfy, Sort, Groups } from "@mui/icons-material";
+import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, FilterAlt, Search, ViewModule, ViewList, ViewComfy, Sort, Groups, ProductionQuantityLimits } from "@mui/icons-material";
 import axios from "axios";
 import { styled } from '@mui/material/styles';
 import Toast from '../Components/Toast/Toast';
@@ -44,6 +46,7 @@ import { useNavigate } from 'react-router-dom';
 import { FilterTextField, FilterSelect, FilterFormControl } from '../Dashboards/DashBoardComponents/FilterStyles';
 import { FilterSection, FilterItem } from '../Dashboards/DashBoardComponents/FilterSection';
 import { GridCardsSkeleton } from '../Components/Skeletons/LoadingSkeletons';
+import { io } from 'socket.io-client';
 
 const StyledSlider = styled(Slider)(({ theme }) => ({
   height: 8,
@@ -99,6 +102,7 @@ const DisplayDeals = () => {
   const [minQuantity, setMinQuantity] = useState([1, 100]);
   const [categories, setCategories] = useState([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [userCommitments, setUserCommitments] = useState([]);
   const [toast, setToast] = useState({
     open: false,
     message: '',
@@ -111,32 +115,88 @@ const DisplayDeals = () => {
   const [rowsPerPage, setRowsPerPage] = useState(12);
   const [viewMode, setViewMode] = useState('grid');
 
+  const fetchDeals = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetchAll/buy`);
+      setDeals(response.data);
+      setFilteredDeals(response.data);
+
+      const uniqueCategories = [...new Set(response.data.map(deal => deal.category))];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      setError("Error fetching deals. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [filter, setFilter] = useState({
     searchQuery: '',
     category: '',
     priceRange: [1, 1000],
-    minQuantity: [1, 100]
+    minQuantity: [1, 100],
+    favoritesOnly: false,
+    committedOnly: false
   });
 
   const [isFilterLoading, setIsFilterLoading] = useState(false);
   const filterDebounceTimeout = useRef(null);
 
-  useEffect(() => {
-    const fetchDeals = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetchAll/buy`);
-        setDeals(response.data);
-        setFilteredDeals(response.data);
+  const [isCommitting, setIsCommitting] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [isViewLoading, setIsViewLoading] = useState(false);
+  
+  const [socket, setSocket] = useState(null);
 
-        const uniqueCategories = [...new Set(response.data.map(deal => deal.category))];
-        setCategories(uniqueCategories);
-      } catch (error) {
-        setError("Error fetching deals. Please try again.");
-      } finally {
-        setLoading(false);
-      }
+  const user_id = localStorage.getItem("user_id");
+
+  useEffect(() => {
+    // Create socket connection
+    const newSocket = io(process.env.REACT_APP_BACKEND_URL);
+    setSocket(newSocket);
+
+    // Handle connection events
+    newSocket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    // Clean up socket connection on component unmount
+    return () => {
+      newSocket.disconnect();
     };
+  }, []);
+
+  // Listen for real-time deal updates
+  useEffect(() => {
+    if (!socket) return;
+
+    // Handle updates for all deals
+    socket.on('deal-update', (data) => {
+      console.log('Received deal update:', data);
+      
+      if (data.type === 'created') {
+        fetchDeals();
+      }
+      else if (data.type === 'updated') {
+       fetchDeals();
+      }
+      else if (data.type === 'deleted') {
+        fetchDeals();
+      }
+
+    });
+
+    return () => {
+      socket.off('deal-update');
+    };
+  }, [socket, categories]);
+
+  useEffect(() => {
+
     fetchDeals();
+    
+    // Also refresh user data when component mounts
+    refreshUserData();
   }, []);
 
   useEffect(() => {
@@ -148,45 +208,52 @@ const DisplayDeals = () => {
     filterDebounceTimeout.current = setTimeout(() => {
       let filtered = [...deals];
 
+      // Apply search query filter
       if (filter.searchQuery) {
+        const query = filter.searchQuery.toLowerCase();
         filtered = filtered.filter(deal => 
-          (deal.name?.toLowerCase().includes(filter.searchQuery.toLowerCase()) ||
-           deal.description?.toLowerCase().includes(filter.searchQuery.toLowerCase()))
+          deal.name.toLowerCase().includes(query) || 
+          deal.description.toLowerCase().includes(query)
         );
       }
 
+      // Apply category filter
       if (filter.category) {
-        filtered = filtered.filter(deal => 
-          deal.category && deal.category === filter.category
-        );
+        filtered = filtered.filter(deal => deal.category === filter.category);
       }
 
-      if (filter.priceRange[0] !== 0 || filter.priceRange[1] !== 1000) {
-        filtered = filtered.filter(deal =>
-          deal.discountPrice != null &&
-          deal.discountPrice >= filter.priceRange[0] && 
-          deal.discountPrice <= filter.priceRange[1]
-        );
+      // Apply price range filter
+      filtered = filtered.filter(deal => 
+        deal.discountPrice >= filter.priceRange[0] && 
+        deal.discountPrice <= filter.priceRange[1]
+      );
+
+      // Apply min quantity filter
+      filtered = filtered.filter(deal => 
+        deal.minQtyForDiscount >= filter.minQuantity[0] && 
+        deal.minQtyForDiscount <= filter.minQuantity[1]
+      );
+
+      // Apply favorites filter
+      if (filter.favoritesOnly) {
+        filtered = filtered.filter(deal => userFavorites.includes(deal._id));
       }
 
-      if (filter.minQuantity[0] !== 1 || filter.minQuantity[1] !== 100) {
-        filtered = filtered.filter(deal =>
-          deal.minQuantity != null &&
-          deal.minQuantity >= filter.minQuantity[0] && 
-          deal.minQuantity <= filter.minQuantity[1]
-        );
+      // Apply committed deals filter
+      if (filter.committedOnly) {
+        filtered = filtered.filter(deal => userCommitments.includes(deal._id));
       }
 
       setFilteredDeals(filtered);
       setIsFilterLoading(false);
-    }, 300); // 300ms debounce
+    }, 500);
 
     return () => {
       if (filterDebounceTimeout.current) {
         clearTimeout(filterDebounceTimeout.current);
       }
     };
-  }, [filter, deals]);
+  }, [deals, filter, userFavorites, userCommitments]);
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -205,8 +272,16 @@ const DisplayDeals = () => {
     return true;
   };
 
-  const handleOpenView = (deal) => {
-    navigate(`/deals-catlog/deals/${deal._id}`);
+  const handleOpenView = async (deal) => {
+    if (isViewLoading) return;
+    try {
+      setIsViewLoading(true);
+      navigate(`/deals-catlog/deals/${deal._id}`);
+    } catch (error) {
+      console.error('Error navigating to view:', error);
+    } finally {
+      setIsViewLoading(false);
+    }
   };
   const handleCloseView = () => setSelectedDeal(null);
 
@@ -221,32 +296,42 @@ const DisplayDeals = () => {
     setQuantity(1);
   };
 
-  const user_id = localStorage.getItem("user_id");
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
-          { params: { user_id } }
-        );
-        setUserFavorites(response.data.map((fav) => fav.dealId));
-      } catch (error) {
-        console.error("Error fetching favorites", error);
-      }
-    };
-  
-    fetchFavorites();
-  }, []);
-  
+  // Function to refresh user data (favorites and commitments)
+  const refreshUserData = async () => {
+    const user_id = localStorage.getItem('user_id');
+    if (!user_id) return;
+
+    try {
+      // Fetch favorites
+      const favoritesResponse = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
+        { params: { user_id } }
+      );
+      setUserFavorites(favoritesResponse.data.map((fav) => fav.dealId));
+
+      // Fetch commitments
+      const commitmentsResponse = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/deals/commit/fetch/${user_id}`
+      );
+      setUserCommitments(commitmentsResponse.data.map(commitment => commitment.dealId._id));
+    } catch (error) {
+      console.error("Error refreshing user data", error);
+    }
+  };
+
   const toggleFavorite = async (dealId) => {
-    if (!checkAuth()) return;
+    if (!checkAuth() || isFavoriteLoading) return;
     
     try {
+      setIsFavoriteLoading(true);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/favorite/toggle`,
         { dealId, user_id }
       );
-      setUserFavorites(response.data.favorites);
+      
+      // Refresh user data to update favorites
+      await refreshUserData();
+      
       setToast({
         open: true,
         message: response.data.message,
@@ -256,29 +341,21 @@ const DisplayDeals = () => {
       console.error("Error updating favorites", error);
       setToast({
         open: true,
-        message: error.response?.data?.error || "Error updating favorites",
+        message: "Error updating favorites",
         severity: 'error'
       });
+    } finally {
+      setIsFavoriteLoading(false);
     }
   };
 
   const handleCommitDeal = async () => {
-    if (!checkAuth()) return;
-    if (!selectedDeal) return;
-
-    // Validate minimum quantity
-    if (quantity < selectedDeal.minQtyForDiscount) {
-      setToast({
-        open: true,
-        message: `Minimum quantity required for discount is ${selectedDeal.minQtyForDiscount}`,
-        severity: 'error'
-      });
-      return;
-    }
+    if (!checkAuth() || !selectedDeal || isCommitting) return;
 
     const totalPrice = quantity * selectedDeal.discountPrice;
 
     try {
+      setIsCommitting(true);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${selectedDeal._id}`,
         {
@@ -288,6 +365,9 @@ const DisplayDeals = () => {
           totalPrice,
         }
       );
+
+      // Refresh user data to update commitments
+      await refreshUserData();
 
       setToast({
         open: true,
@@ -306,6 +386,8 @@ const DisplayDeals = () => {
         message: error.response?.data?.message || "Error submitting deal commitment",
         severity: 'error'
       });
+    } finally {
+      setIsCommitting(false);
     }
   };
 
@@ -321,7 +403,9 @@ const DisplayDeals = () => {
       searchQuery: '',
       category: '',
       priceRange: [0, 1000],
-      minQuantity: [1, 100]
+      minQuantity: [1, 100],
+      favoritesOnly: false,
+      committedOnly: false
     });
   };
 
@@ -383,11 +467,10 @@ const DisplayDeals = () => {
       background: 'linear-gradient(to bottom, #f3f4f6, #ffffff)',
       pb: 4
     }}>
-      {/* Header Section */}
       <Box sx={{ 
         background: 'linear-gradient(45deg, #1a237e, #0d47a1)',
         color: 'white',
-        py: { xs: 4, md: 6 },
+        py: { xs: 4, md: 4 },
         px: { xs: 2, sm: 4 },
         mb: 4
       }}>
@@ -404,7 +487,7 @@ const DisplayDeals = () => {
                 variant="h3" 
                 fontWeight="800"
                 sx={{
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                  fontSize: { xs: '1.3rem', sm: '1.6rem', md: '2rem' },
                   mb: 1,
                   background: 'linear-gradient(45deg, #ffffff 30%, #e3f2fd 90%)',
                   backgroundClip: 'text',
@@ -418,7 +501,7 @@ const DisplayDeals = () => {
                 sx={{ 
                   opacity: 0.9,
                   fontWeight: 400,
-                  fontSize: { xs: '1rem', sm: '1.1rem' }
+                  fontSize: { xs: '0.7rem', sm: '0.9rem' }
                 }}
               >
                 Discover amazing products at unbeatable prices
@@ -482,7 +565,7 @@ const DisplayDeals = () => {
       <Container maxWidth="100%">
         <Box sx={{ 
           display: 'flex',
-          gap: { xs: 2, lg: 4 },
+          gap: { xs: 2, lg: 3 },
           flexDirection: { xs: 'column', lg: 'row' }
         }}>
           {/* Filters Panel */}
@@ -498,7 +581,7 @@ const DisplayDeals = () => {
               borderColor: 'divider',
               position: { xs: 'static', lg: 'sticky' },
               top: 24,
-              height: { lg: 'calc(100vh - 200px)' },
+              height: { lg: 'calc(100vh - 50px)' },
               display: { xs: mobileFiltersOpen ? 'block' : 'none', lg: 'block' }
             }}
           >
@@ -507,10 +590,11 @@ const DisplayDeals = () => {
                 Filter Products
               </Typography>
               
-              <Stack spacing={3}>
+              <Stack spacing={2}>
                 <TextField
                   placeholder="Search products..."
                   value={filter.searchQuery}
+                  size="small"
                   onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
                   InputProps={{
                     startAdornment: (
@@ -610,10 +694,49 @@ const DisplayDeals = () => {
                   />
                 </Box>
 
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    My Deals
+                  </Typography>
+                  <Stack direction="column" spacing={1}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={filter.favoritesOnly}
+                          onChange={(e) => handleFilterChange('favoritesOnly', e.target.checked)}
+                          color="primary"
+                        />
+                      }
+                      label={
+                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Favorite fontSize="small" color={filter.favoritesOnly ? "error" : "action"} />
+                          Favorites Only
+                        </Typography>
+                      }
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={filter.committedOnly}
+                          onChange={(e) => handleFilterChange('committedOnly', e.target.checked)}
+                          color="primary"
+                        />
+                      }
+                      label={
+                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <ShoppingCart fontSize="small" color={filter.committedOnly ? "primary" : "action"} />
+                          Committed Only
+                        </Typography>
+                      }
+                    />
+                  </Stack>
+                </Box>
+
                 {Object.values(filter).some(value => 
                   value !== '' && 
+                  value !== false &&
                   (Array.isArray(value) ? 
-                    (value[0] !== 1 && value[1] !== 100) || (value[0] !== 0 && value[1] !== 1000) 
+                    (value[0] !== 0 && value[1] !== 1000) || (value[0] !== 1 && value[1] !== 100) 
                     : true)
                 ) && (
                   <Button
@@ -665,7 +788,7 @@ const DisplayDeals = () => {
                   width: '100%',
                   margin: 0,
                   '& .MuiGrid-item': {
-                    width: { xs: '100%', sm: '50%', md: '300px' },
+                    width: { xs: '100%', sm: '50%', md: '320px' },
                     padding: 1.5,
                   }
                 }}
@@ -758,7 +881,7 @@ const DisplayDeals = () => {
                               }}
                             />
                             <Chip
-                              label={`${deal.totalSold} sold`}
+                              label={`${deal.totalCommitments || 0} commits`}
                               size="small"
                               sx={{
                                 bgcolor: 'rgba(255,255,255,0.9)',
@@ -839,46 +962,57 @@ const DisplayDeals = () => {
                             </Box>
                           </Box>
 
-                          {/* Distributor and Stats Row */}
+                          {/* Distributor Info */}
                           <Box sx={{ 
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
+                            display: 'flex', 
+                            alignItems: 'center', 
                             gap: 1,
-                            mb: 1
+                            mb: 1.5,
+                            p: 1,
+                            bgcolor: 'grey.50',
+                            borderRadius: 1
                           }}>
-                            <Box sx={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: 1,
-                              flex: 1
-                            }}>
-                              <Avatar 
-                                src={deal.distributor?.logo}
-                                alt={deal.distributor?.businessName}
-                                sx={{ width: 30, height: 30 }}
-                              >
-                                {deal.distributor?.businessName?.charAt(0) || 'D'}
-                              </Avatar>
+                            <Avatar 
+                              src={deal.distributor?.logo} 
+                              alt={deal.distributor?.businessName || deal.distributor?.name}
+                              sx={{ 
+                                width: 24, 
+                                height: 24,
+                                bgcolor: 'primary.main'
+                              }}
+                            >
+                              {(deal.distributor?.businessName || deal.distributor?.name)?.charAt(0) || 'D'}
+                            </Avatar>
+                            <Box sx={{ flex: 1, overflow: 'hidden' }}>
                               <Typography 
                                 variant="caption" 
-                                color="text.secondary"
+                                color="text.primary"
                                 sx={{
+                                  display: 'block',
+                                  fontWeight: 500,
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis'
                                 }}
                               >
-                                {deal.distributor?.businessName || 'Unknown Distributor'}
+                                {deal.distributor?.businessName || 'Unknown Business'}
                               </Typography>
+                              {deal.distributor?.name && (
+                                <Typography 
+                                  variant="caption" 
+                                  color="text.secondary"
+                                  sx={{
+                                    display: 'block',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    fontSize: '0.7rem'
+                                  }}
+                                >
+                                  {deal.distributor.name}
+                                </Typography>
+                              )}
                             </Box>
-                            <Typography
-                              variant="caption"
-                              color="success.main"
-                              fontWeight="500"
-                            >
-                              Save ${(deal.originalCost - deal.discountPrice).toFixed(2)}/unit
-                            </Typography>
                           </Box>
 
                           {/* Quick Stats */}
@@ -892,25 +1026,56 @@ const DisplayDeals = () => {
                             borderRadius: 1,
                             mb: 1.5
                           }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5,  }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Visibility sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
                               <Typography variant="caption" color="text.secondary">
                                 {deal.views || 0}
                               </Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, }}>
-                              <Groups sx={{ fontSize: '0.875rem', color: 'primary.main' }} />
-                              <Typography variant="caption" color="primary">
-                                Min: {deal.minQtyForDiscount}
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <ProductionQuantityLimits sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
+                              <Typography variant="caption" color="text.secondary">
+                                Min Qty: {deal.minQtyForDiscount || 0}
                               </Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, }}>
-                              <ShoppingCart sx={{ fontSize: '0.875rem', color: 'success.main' }} />
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Typography variant="caption" color="success.main">
-                                {deal.totalSold} sold
+                                {Math.round(((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}% off
                               </Typography>
                             </Box>
                           </Box>
+
+                          {/* Status Indicators */}
+                          {(userFavorites.includes(deal._id) || userCommitments.includes(deal._id)) && (
+                            <Box sx={{ 
+                              display: 'flex',
+                              gap: 1,
+                              mb: 1.5
+                            }}>
+                              {userFavorites.includes(deal._id) && (
+                                <Chip
+                                  icon={<Favorite fontSize="small" />}
+                                  label="Favorite"
+                                  size="small"
+                                  color="error"
+                                  variant="outlined"
+                                  sx={{ borderRadius: 1 }}
+                                />
+                              )}
+                              {userCommitments.includes(deal._id) && (
+                                <Chip
+                                  icon={<ShoppingCart fontSize="small" />}
+                                  label="Committed"
+                                  size="small"
+                                  color="primary"
+                                  variant="outlined"
+                                  sx={{ borderRadius: 1 }}
+                                />
+                              )}
+                            </Box>
+                          )}
 
                           {/* Description Preview */}
                           <Typography
@@ -930,15 +1095,13 @@ const DisplayDeals = () => {
                           </Typography>
 
                           {/* Action Buttons */}
-                          <Box sx={{ 
-                            display: 'flex',
-                            gap: 1
-                          }}>
+                          <Box sx={{ display: 'flex', gap: 1 }}>
                             <Button
                               variant="contained"
                               size="small"
                               fullWidth
                               onClick={() => handleOpenGetDeal(deal)}
+                              disabled={isCommitting}
                               sx={{ 
                                 borderRadius: 1,
                                 py: 0.5,
@@ -951,13 +1114,17 @@ const DisplayDeals = () => {
                                   boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)'
                                 }
                               }}
-                              startIcon={<ShoppingCart sx={{ fontSize: '1rem' }} />}
                             >
-                              Get Deal
+                              {isCommitting ? (
+                                <CircularProgress size={24} color="inherit" />
+                              ) : (
+                                'Make Commitment'
+                              )}
                             </Button>
                             <IconButton
                               size="small"
                               onClick={() => handleOpenView(deal)}
+                              disabled={isViewLoading}
                               sx={{
                                 border: '1px solid',
                                 borderColor: 'divider',
@@ -965,11 +1132,16 @@ const DisplayDeals = () => {
                                 p: 0.5
                               }}
                             >
-                              <Visibility sx={{ fontSize: '1.25rem' }} />
+                              {isViewLoading ? (
+                                <CircularProgress size={20} />
+                              ) : (
+                                <Visibility sx={{ fontSize: '1.25rem' }} />
+                              )}
                             </IconButton>
                             <IconButton
                               size="small"
                               onClick={() => toggleFavorite(deal._id)}
+                              disabled={isFavoriteLoading}
                               sx={{
                                 border: '1px solid',
                                 borderColor: 'divider',
@@ -978,10 +1150,13 @@ const DisplayDeals = () => {
                                 color: userFavorites.includes(deal._id) ? 'error.main' : 'inherit'
                               }}
                             >
-                              {userFavorites.includes(deal._id) ? 
-                                <Favorite sx={{ fontSize: '1.25rem' }} /> : 
-                                <FavoriteBorder sx={{ fontSize: '1.25rem' }} />
-                              }
+                              {isFavoriteLoading ? (
+                                <CircularProgress size={20} />
+                              ) : (
+                                userFavorites.includes(deal._id) ? 
+                                  <Favorite sx={{ fontSize: '1.25rem' }} /> : 
+                                  <FavoriteBorder sx={{ fontSize: '1.25rem' }} />
+                              )}
                             </IconButton>
                           </Box>
                         </Box>
@@ -1104,11 +1279,13 @@ const DisplayDeals = () => {
             <Box sx={{ 
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
               gap: 2,
               p: 2,
               bgcolor: 'primary.lighter',
               borderRadius: 3
             }}>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Avatar
                 src={selectedDeal?.images[0]}
                 alt={selectedDeal?.name}
@@ -1120,9 +1297,14 @@ const DisplayDeals = () => {
                   {selectedDeal?.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {selectedDeal?.distributor?.businessName}
+                  {selectedDeal?.distributor?.businessName || 'Unknown Business'}
                 </Typography>
               </Box>
+              </Box>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'left' ,flexDirection:'column'}}>
+              <Chip label={`Min Qty: ${selectedDeal?.minQtyForDiscount || 0}`} color="primary" /> 
+              <Chip label={`Total Commitments: ${selectedDeal?.totalCommitments || 0}`} color="primary" />
+            </Box>
             </Box>
 
             <Box sx={{ 
@@ -1156,9 +1338,6 @@ const DisplayDeals = () => {
               variant="outlined"
               value={quantity}
               onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-              error={quantity < (selectedDeal?.minQtyForDiscount || 0)}
-              helperText={quantity < (selectedDeal?.minQtyForDiscount || 0) ? 
-                `Minimum quantity required: ${selectedDeal?.minQtyForDiscount}` : ''}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 3
@@ -1201,6 +1380,7 @@ const DisplayDeals = () => {
           <Button
             onClick={handleCloseGetDeal}
             variant="outlined"
+            disabled={isCommitting}
             sx={{ 
               borderRadius: 2,
               textTransform: 'none'
@@ -1211,22 +1391,24 @@ const DisplayDeals = () => {
           <Button
             variant="contained"
             onClick={handleCommitDeal}
-            disabled={quantity < (selectedDeal?.minQtyForDiscount || 0)}
+            disabled={isCommitting}
             sx={{ 
               borderRadius: 2,
               textTransform: 'none',
               px: 3,
               background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-              '&:not(:disabled)': {
-                boxShadow: '0 3px 12px rgba(25, 118, 210, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
-                  boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)'
-                }
+              boxShadow: '0 3px 12px rgba(25, 118, 210, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
+                boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)'
               }
             }}
           >
-            Confirm Purchase
+            {isCommitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              'Confirm Purchase'
+            )}
           </Button>
         </DialogActions>
       </Dialog>

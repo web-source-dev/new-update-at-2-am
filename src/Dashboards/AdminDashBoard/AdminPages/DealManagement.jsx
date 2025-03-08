@@ -5,12 +5,13 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {
   Container, Typography, Grid, TextField, IconButton, FormControl, InputLabel, Select, MenuItem,
   Button, Box, Tooltip, Menu, Card, CardMedia, CardContent, CardActions, Paper, TableContainer,
   Table, TableHead, TableRow, TableCell, TableBody, Switch, Pagination, TablePagination, Badge, Collapse
 } from '@mui/material';
-import { Search, Clear, Add, GetApp, ViewModule, ViewList, ViewComfy, Edit, Visibility, Delete, FilterAlt, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { Search, Clear, Add, GetApp, ViewModule, ViewList, ViewComfy, Edit, Visibility, Delete, FilterAlt, ExpandLess, ExpandMore, MoreVert } from '@mui/icons-material';
 import Toast from '../../../Components/Toast/Toast';
 import { FilterTextField, FilterSelect, FilterFormControl } from '../../DashBoardComponents/FilterStyles';
 import { Chip, Divider } from '@mui/material';
@@ -21,7 +22,7 @@ import { GridCardsSkeleton, TableSkeleton } from '../../../Components/Skeletons/
 const DealsManagment = () => {
   const [deals, setDeals] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [layout, setLayout] = useState('grid');
+  const [layout, setLayout] = useState('list');
   const [anchorEl, setAnchorEl] = useState(null);
   const [toast, setToast] = useState({
     open: false,
@@ -37,6 +38,7 @@ const DealsManagment = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [anchorElMap, setAnchorElMap] = useState({});
 
   useEffect(() => {
     const fetchDeals = async () => {
@@ -215,6 +217,14 @@ const DealsManagment = () => {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  const handleMenuOpen = (event, dealId) => {
+    setAnchorElMap(prev => ({ ...prev, [dealId]: event.currentTarget }));
+  };
+
+  const handleMenuClose = (dealId) => {
+    setAnchorElMap(prev => ({ ...prev, [dealId]: null }));
+  };
 
   if (loading) {
     return layout === 'grid' ? (
@@ -434,8 +444,8 @@ const DealsManagment = () => {
           )}
           {filter.sortBy && (
             <Chip
-              label={`Sort: ${filter.sortBy === 'price' ? 'Price' : 
-                             filter.sortBy === 'nameAsc' ? 'Name A to Z' : 'Name Z to A'}`}
+              label={`Sort: ${filter.sortBy === 'price' ? 'Price' :
+                filter.sortBy === 'nameAsc' ? 'Name A to Z' : 'Name Z to A'}`}
               onDelete={() => setFilter(prev => ({ ...prev, sortBy: '' }))}
               color="primary"
               variant="outlined"
@@ -487,153 +497,162 @@ const DealsManagment = () => {
         </Grid>
       </Grid>
       {layout === 'grid' && (
-  <Grid container spacing={3}>
-    {paginatedDeals.map((deal) => (
-      <Grid item xs={12} sm={6} md={4} key={deal._id}>
-        <Card sx={{ 
-          borderRadius: 5, 
-          boxShadow: 6, 
-          overflow: "hidden", 
-          position: 'relative', 
-          transition: 'transform 0.3s, box-shadow 0.3s', 
-          '&:hover': { 
-            transform: 'scale(1.03)', 
-            boxShadow: 10 
-          }, 
-          bgcolor: '#ffffff' 
-        }}>
-          {/* Product Image */}
-          <CardMedia
-            component="img"
-            image={deal.images[0] || "https://via.placeholder.com/300"}
-            alt={deal.name}
-            sx={{ width: '100%', height: 180, objectFit: "cover", borderRadius: '10px 10px 0 0' }}
-          />
-
-          <CardContent sx={{ p: 3, bgcolor: 'linear-gradient(135deg, #eef2ff 0%, #d9e2ff 100%)' }}>
-            {/* Distributor Section */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              {deal.distributor.logo ? (
+        <Grid container spacing={3}>
+          {paginatedDeals.map((deal) => (
+            <Grid item xs={12} sm={6} md={4} key={deal._id}>
+              <Card sx={{
+                borderRadius: 5,
+                boxShadow: 6,
+                overflow: "hidden",
+                position: 'relative',
+                transition: 'transform 0.3s, box-shadow 0.3s',
+                '&:hover': {
+                  transform: 'scale(1.03)',
+                  boxShadow: 10
+                },
+                bgcolor: '#ffffff'
+              }}>
+                {/* Product Image */}
                 <CardMedia
                   component="img"
-                  height="45"
-                  image={deal.distributor.logo}
-                  alt={deal?.distributor?.name}
-                  sx={{ width: 45, borderRadius: '50%', mr: 2, border: '2px solid #ddd' }}
+                  image={deal.images[0] || "https://via.placeholder.com/300"}
+                  alt={deal.name}
+                  sx={{ width: '100%', height: 180, objectFit: "cover", borderRadius: '10px 10px 0 0' }}
                 />
-              ) : (
-                <Box
-                  sx={{
-                    width: 45,
-                    height: 45,
-                    borderRadius: '50%',
-                    backgroundColor: 'primary.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mr: 2,
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: 20,
-                  }}
-                >
-                  {deal.distributor?.name ? deal.distributor.name.charAt(0) : 'N/A'}
-                </Box>
-              )}
-              <Tooltip title={deal.distributor.email}>
-                <Typography variant="body2" color="text.secondary">
-                  {deal?.distributor?.name}
-                </Typography>
-              </Tooltip>
-            </Box>
 
-            {/* Product Name */}
-            <Typography variant="h6" fontWeight="bold" sx={{ mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-              {deal.name}
-            </Typography>
+                <CardContent sx={{ p: 3, bgcolor: 'linear-gradient(135deg, #eef2ff 0%, #d9e2ff 100%)' }}>
+                  {/* Distributor Section */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    {deal.distributor.logo ? (
+                      <CardMedia
+                        component="img"
+                        height="45"
+                        image={deal.distributor.logo}
+                        alt={deal?.distributor?.name}
+                        sx={{ width: 45, borderRadius: '50%', mr: 2, border: '2px solid #ddd' }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 45,
+                          height: 45,
+                          borderRadius: '50%',
+                          backgroundColor: 'primary.main',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mr: 2,
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: 20,
+                        }}
+                      >
+                        {deal.distributor?.name ? deal.distributor.name.charAt(0) : 'N/A'}
+                      </Box>
+                    )}
+                    <Tooltip title={deal.distributor.email}>
+                      <Typography variant="body2" color="text.secondary">
+                        {deal?.distributor?.name}
+                      </Typography>
+                    </Tooltip>
+                  </Box>
 
-            {/* Description */}
-            <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: 2, mb: 2 }}>
-              {deal.description}
-            </Typography>
+                  {/* Product Name */}
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    {deal.name}
+                  </Typography>
 
-            {/* Pricing Section */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through', fontSize: 14, mr: 1 }}>
-                ${deal.originalCost}
-              </Typography>
-              <Typography variant="body2" color="green" fontWeight="bold" sx={{ fontSize: 16 }}>
-                ${deal.discountPrice}
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: 14, ml: 1, bgcolor: 'green', color: 'white', px: 1, borderRadius: 1 }}>
-                -{Math.round(((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}%
-              </Typography>
-            </Box>
+                  {/* Description */}
+                  <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: 2, mb: 2 }}>
+                    {deal.description}
+                  </Typography>
 
-            {/* Extra Deal Info */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">Min Qty: {deal.minQtyForDiscount}</Typography>
-              <Typography variant="body2" color="text.secondary">Sold: {deal.totalSold} units</Typography>
-              <Typography variant="body2" color="text.secondary">Revenue: ${deal.totalRevenue}</Typography>
-              <Typography variant="body2" color="text.secondary">Views: {deal.views}</Typography>
-              <Typography variant="body2" color="text.secondary">Impressions: {deal.impressions}</Typography>
-            </Box>
+                  {/* Pricing Section */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through', fontSize: 14, mr: 1 }}>
+                      ${deal.originalCost}
+                    </Typography>
+                    <Typography variant="body2" color="green" fontWeight="bold" sx={{ fontSize: 16 }}>
+                      ${deal.discountPrice}
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontSize: 14, ml: 1, bgcolor: 'green', color: 'white', px: 1, borderRadius: 1 }}>
+                      -{Math.round(((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}%
+                    </Typography>
+                  </Box>
 
-            {/* Progress Bar for Sold Units */}
-            <Box sx={{ width: '100%', mb: 2 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                Deal Progress
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={(deal.totalSold / deal.minQtyForDiscount) * 100}
-                sx={{ height: 6, borderRadius: 2 }}
-              />
-            </Box>
+                  {/* Extra Deal Info */}
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Min Qty: {deal.minQtyForDiscount}</Typography>
+                    <Typography variant="body2" color="text.secondary">Commits: {deal.totalCommitments}</Typography>
+                    <Typography variant="body2" color="text.secondary">Views: {deal.views}</Typography>
+                    <Typography variant="body2" color="text.secondary">Impressions: {deal.impressions}</Typography>
+                  </Box>
 
-            {/* Deal Expiry */}
-            <Typography variant="body2" color="error.main" fontWeight="bold">
-              Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
-            </Typography>
-          </CardContent>
+                  {/* Progress Bar for Sold Units */}
+                  <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
+                      Deal Progress
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, gap: 1 }}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                      sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                    />
 
-          {/* Action Buttons */}
-          <CardActions sx={{ display: "flex", justifyContent: "center", p: 2, gap: 2 }}>
-            {user_role === 'distributor' && (
-              <Tooltip title="Edit">
-                <Button variant="contained" color="primary" size="small" onClick={() => handleEdit(deal)}>
-                  <Edit fontSize="small" sx={{ mr: 1 }} /> Edit
-                </Button>
-              </Tooltip>
-            )}
-            <Tooltip title="View">
-              <Button variant="outlined" color="info" size="small" onClick={() => handleView(deal._id)}>
-                <Visibility fontSize="small" sx={{ mr: 1 }} /> View
-              </Button>
-            </Tooltip>
-            <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
-              <Switch
-                checked={deal.status === 'active'}
-                onChange={() => handleToggleChange(deal._id, deal.status)}
-                color="primary"
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button variant="contained" color="error" size="small" onClick={() => handleDelete(deal._id)}>
-                <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
-              </Button>
-            </Tooltip>
-          </CardActions>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
-)}
+                    {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                      <CheckCircleIcon
+                        sx={{
+                          color: 'success.main'
+                        }}
+                      />
+                    )}
+                  </Box>
+
+                  {/* Deal Expiry */}
+                  <Typography variant="body2" color="error.main" fontWeight="bold">
+                    Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
+                  </Typography>
+                </CardContent>
+
+                {/* Action Buttons */}
+                <CardActions sx={{ display: "flex", justifyContent: "center", p: 2, gap: 2 }}>
+                  {user_role === 'distributor' && (
+                    <Tooltip title="Edit">
+                      <Button variant="contained" color="primary" size="small" onClick={() => handleEdit(deal)}>
+                        <Edit fontSize="small" sx={{ mr: 1 }} /> Edit
+                      </Button>
+                    </Tooltip>
+                  )}
+                  <Tooltip title="View">
+                    <Button variant="outlined" color="info" size="small" onClick={() => handleView(deal._id)}>
+                      <Visibility fontSize="small" sx={{ mr: 1 }} /> View
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
+                    <Switch
+                      checked={deal.status === 'active'}
+                      onChange={() => handleToggleChange(deal._id, deal.status)}
+                      color="primary"
+                    />
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <Button variant="contained" color="error" size="small" onClick={() => handleDelete(deal._id)}>
+                      <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
+                    </Button>
+                  </Tooltip>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {layout === 'list' && (
         <Box>
           {paginatedDeals.map((deal) => (
-            <Paper key={deal._id} sx={{ mb: 2, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e0e0e0', borderRadius: 2, transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}>
+            <Paper key={deal._id} sx={{ mb: 1, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e0e0e0', borderRadius: 2, bgcolor:'#f9f9f9a2', transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <CardMedia
                   component="img"
@@ -652,19 +671,65 @@ const DealsManagment = () => {
                   <Typography variant="body2" color="text.secondary">
                     Original Price: ${deal.originalCost} | Discounted Price: ${deal.discountPrice}
                   </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Min Qty: {deal.minQtyForDiscount} | Commits: {deal.totalCommitments}
+                  </Typography>
+                  
                 </Box>
               </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '250px', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Deal Progress
+                </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                      sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                        <CheckCircleIcon
+                          sx={{
+                            color: 'success.main'
+                          }}
+                        />
+                      )}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.error">
+                    Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
+                  </Typography>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Tooltip title="View">
-                  <IconButton color="info" onClick={() => handleView(deal._id)}>
-                    <Visibility />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete">
-                  <IconButton color="error" onClick={() => handleDelete(deal._id)}>
-                    <Delete />
-                  </IconButton>
-                </Tooltip>
+                <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
+                  <MoreVert />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorElMap[deal._id]}
+                  open={Boolean(anchorElMap[deal._id])}
+                  onClose={() => handleMenuClose(deal._id)}
+                >
+                  {user_role === 'distributor' && (
+                    <MenuItem onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
+                      <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                    </MenuItem>
+                  )}
+                  <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
+                    <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                  </MenuItem>
+                  <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
+                    <Switch
+                      checked={deal.status === 'active'}
+                      size="small"
+                      sx={{ mr: 1 }}
+                    />
+                    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                  </MenuItem>
+                  <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
+                    <Delete sx={{ mr: 1 }} fontSize="small" color="error" /> Delete
+                  </MenuItem>
+                </Menu>
               </Box>
             </Paper>
           ))}
@@ -677,25 +742,16 @@ const DealsManagment = () => {
               <TableRow bgcolor="info.main">
                 <TableCell sx={{ color: '#fff' }}><strong>Image</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Name</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Description</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Size</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Original Cost</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Discount Price</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Min Qty For Discount</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Category</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Status</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Total Sold</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Total Revenue</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Views</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Impressions</strong></TableCell>
+                <TableCell sx={{ color: '#fff' }}><strong>Price</strong></TableCell>
+                <TableCell sx={{ color: '#fff' }}><strong>Deal Progress</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Ends At</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedDeals.map((deal, index) => (
-                <TableRow key={deal._id} sx={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white', '&:hover': { backgroundColor: '#e0e0e0' }, height: '60px' }}>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>
+                <TableRow key={deal._id} sx={{ backgroundColor:'f9f9f9', height: '60px' }}>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <CardMedia
                       component="img"
                       height="80"
@@ -704,41 +760,56 @@ const DealsManagment = () => {
                       sx={{ objectFit: "cover", width: 80 }}
                     />
                   </TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.name}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: 2 }}>
-                    {deal.description}
-                  </TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.size}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>${deal.originalCost}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>${deal.discountPrice}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.minQtyForDiscount}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.category}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.status}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.totalSold}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>${deal.totalRevenue}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.views}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{deal.impressions}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>{new Date(deal.dealEndsAt).toLocaleString()}</TableCell>
-                  <TableCell sx={{ padding: '16px', border: '1px solid #e0e0e0' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      {user_role === 'distributor' && (
-                        <Tooltip title="Edit">
-                          <IconButton color="primary" onClick={() => handleEdit(deal)}>
-                            <Edit />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      <Tooltip title="View">
-                        <IconButton color="info" onClick={() => handleView(deal._id)}>
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton color="error" onClick={() => handleDelete(deal._id)}>
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{deal.name}</TableCell>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}> <span style={{ textDecoration: 'line-through' }}>${deal.originalCost}</span> / ${deal.discountPrice}</TableCell>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                        sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                      />
+                      <Typography variant="body2" color="text.secondary"> 
+                        {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                          <CheckCircleIcon
+                            sx={{
+                              color: 'success.main'
+                            }}
+                          />
+                        )}
+                      </Typography>
                     </Box>
+                  </TableCell>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{new Date(deal.dealEndsAt).toLocaleString()}</TableCell>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
+                    <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
+                      <MoreVert />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorElMap[deal._id]}
+                      open={Boolean(anchorElMap[deal._id])}
+                      onClose={() => handleMenuClose(deal._id)}
+                    >
+                      {user_role === 'distributor' && (
+                        <MenuItem onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
+                          <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                        </MenuItem>
+                      )}
+                      <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
+                        <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                      </MenuItem>
+                      <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
+                        <Switch
+                          checked={deal.status === 'active'}
+                          size="small"
+                          sx={{ mr: 1 }}
+                        />
+                        {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                      </MenuItem>
+                      <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
+                        <Delete sx={{ mr: 1 }} fontSize="small" color="error" /> Delete
+                      </MenuItem>
+                    </Menu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -746,17 +817,15 @@ const DealsManagment = () => {
           </Table>
         </TableContainer>
       )}
-      <Box sx={{ 
-        mt: 4, 
-        display: 'flex', 
+      <Box sx={{
+        mt: 4,
+        display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 2,
         flexWrap: 'wrap',
-        bgcolor: 'background.paper',
         p: 2,
         borderRadius: 2,
-        boxShadow: '0 0 10px rgba(0,0,0,0.1)'
       }}>
         <TablePagination
           component="div"

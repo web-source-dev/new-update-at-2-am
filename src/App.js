@@ -30,6 +30,11 @@ import Header from './Components/HeaderFotter/Header';
 import Footer from './Components/HeaderFotter/Footer';
 import SingleDealCommitments from './Dashboards/DashBoardComponents/SingleDealCommitments';
 import Disclaimer from './Pages/Disclaimer';
+import AllTopMembers from './Pages/AllTopMembers';
+import EachMemberDetail from './Pages/EachMemberDetail';
+import TopMembers from './Pages/TopMembers';
+import DealAnalytics from './Dashboards/Components/DealAnalytics';
+
 // Layout component to handle conditional rendering of Header and Footer
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -101,6 +106,17 @@ const App = () => {
         <Route path="/commitment-charts/:userId" element={<CommitmentCharts />} />
         <Route path="/payment/:commitmentId" element={<PaymentPage />} />
         <Route path="/thank-you" element={<ThankYou />} />
+        
+        {/* Member Routes */}
+        <Route path="/all-members" element={<AllTopMembers />} />
+        <Route path="/member-details/:memberId" element={<EachMemberDetail />} />
+        <Route path="/top-members" element={<TopMembers />} />
+
+        {/* Distributor Routes */}
+        <Route path="/distributor/deal-analytics/:dealId" element={<DealAnalytics />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin/deal-analytics/:dealId" element={<DealAnalytics />} />
       </Routes>
     </Router>
     <Box

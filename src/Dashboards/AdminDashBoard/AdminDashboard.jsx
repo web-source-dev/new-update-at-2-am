@@ -17,7 +17,7 @@ import DisplaySplashContent from '../../Components/SplashPage/DisplaySplashConte
 import LoadSplash from '../../Components/SplashPage/LoadSplash';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
-
+import AllDealsAdmin from './AdminPages/AllDealsAdmin';
 const AdminDashboard = () => {
   let match = useMatch('/dashboard/admin/*');
   const navigate = useNavigate();
@@ -46,8 +46,8 @@ const AdminDashboard = () => {
     { path: '', label: 'Dashboard' },
     { path: 'analytics', label: 'Analytics' },
     { path: 'usermanagement', label: 'User Manage' },
+    { path: 'all-deals', label: 'All Committed Deals' },
     { path: 'logs', label: 'User Monitoring' },
-    { path: 'overview', label: 'Overview' },
     { path: 'splash-content', label: 'Splash Content' },
     { path: 'deal-management', label: 'Deal Management' },
     { path: 'announcements', label: 'Announcements' },
@@ -60,7 +60,7 @@ const AdminDashboard = () => {
         <meta name="description" content="NMGA Admin Dashboard - Manage users, monitor activities, and control system settings" />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <DisplaySplashContent content={splashContent} />
+      {splashContent.length > 0 && <DisplaySplashContent content={splashContent} />}
       <div style={{ display: 'flex', width: '100%' }}>
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>
@@ -106,9 +106,14 @@ const AdminDashboard = () => {
               <AnnouncementToast event="announcements" />
               <Announcements />
             </>} />
+            <Route path="all-deals" element={<>
+              <AnnouncementToast event="all_deals" />
+              <AllDealsAdmin />
+            </>} />
           </Routes>
         </div>
       </div>
+
     </>
   );
 }
