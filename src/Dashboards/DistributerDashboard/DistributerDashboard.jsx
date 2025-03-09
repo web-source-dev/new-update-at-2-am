@@ -104,7 +104,7 @@ const DistributerDashboard = () => {
               <AnnouncementToast event="deal_management" />
               <Commitments />
             </>} />
-            <Route path="allDeals" element={<>
+            <Route path="all/committed/deals" element={<>
               <AnnouncementToast event="deal_management" />
               <AllDeals />
             </>} />
