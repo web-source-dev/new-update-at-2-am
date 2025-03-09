@@ -715,6 +715,9 @@ const ManageDeals = () => {
 
                     </Grid>
                   </Grid>
+           <Typography variant="body2" color="text.secondary">
+                        Deal Progress : {deal.totalCommitmentQuantity} / {deal.minQtyForDiscount}
+                      </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, mt: 2, gap: 1 }}>
                     <LinearProgress
                       variant="determinate"
@@ -865,7 +868,7 @@ const ManageDeals = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2" color="text.secondary">
-                        Deal Progress : {deal.commitments.length} / {deal.minQtyForDiscount}
+                        Deal Progress : {deal.totalCommitmentQuantity} / {deal.minQtyForDiscount}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '70%', mb: 2, mt: 2, gap: 1 }}>
                         <LinearProgress
