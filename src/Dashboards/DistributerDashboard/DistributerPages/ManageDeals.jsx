@@ -771,11 +771,6 @@ const ManageDeals = () => {
                       color="primary"
                     />
                   </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton color="error" onClick={() => handleDelete(deal._id)}>
-                      <Delete />
-                    </IconButton>
-                  </Tooltip>
                 </CardActions>
               </Card>
             </Grid>
@@ -919,9 +914,6 @@ const ManageDeals = () => {
                     />
                     {deal.status === 'active' ? 'Deactivate' : 'Activate'}
                   </MenuItem>
-                  <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
-                    <Delete sx={{ mr: 1 }} fontSize="small" color="error" /> Delete
-                  </MenuItem>
                 </Menu>
               </Box>
             </Paper>
@@ -1035,9 +1027,6 @@ const ManageDeals = () => {
                           sx={{ mr: 1 }}
                         />
                         {deal.status === 'active' ? 'Deactivate' : 'Activate'}
-                      </MenuItem>
-                      <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
-                        <Delete sx={{ mr: 1 }} fontSize="small" color="error" /> Delete
                       </MenuItem>
                     </Menu>
                   </TableCell>

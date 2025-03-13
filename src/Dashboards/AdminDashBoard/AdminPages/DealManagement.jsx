@@ -637,11 +637,6 @@ const DealsManagment = () => {
                       color="primary"
                     />
                   </Tooltip>
-                  <Tooltip title="Delete">
-                    <Button variant="contained" color="error" size="small" onClick={() => handleDelete(deal._id)}>
-                      <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
-                    </Button>
-                  </Tooltip>
                 </CardActions>
               </Card>
             </Grid>
@@ -726,9 +721,6 @@ const DealsManagment = () => {
                     />
                     {deal.status === 'active' ? 'Deactivate' : 'Activate'}
                   </MenuItem>
-                  <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
-                    <Delete sx={{ mr: 1 }} fontSize="small" color="error" /> Delete
-                  </MenuItem>
                 </Menu>
               </Box>
             </Paper>
@@ -805,9 +797,6 @@ const DealsManagment = () => {
                           sx={{ mr: 1 }}
                         />
                         {deal.status === 'active' ? 'Deactivate' : 'Activate'}
-                      </MenuItem>
-                      <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
-                        <Delete sx={{ mr: 1 }} fontSize="small" color="error" /> Delete
                       </MenuItem>
                     </Menu>
                   </TableCell>
