@@ -8,52 +8,34 @@ import {
   Card,
   CardContent,
   CardMedia,
-  Paper,
   Avatar,
-  TextField,
-  Chip,
-  LinearProgress,
-  IconButton,
-  Divider,
-  Tabs,
-  Tab,
   useTheme,
   useMediaQuery,
   Fade,
-  Slide,
+  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { motion } from "framer-motion";
-import CategoryIcon from '@mui/icons-material/Category';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import InventoryIcon from '@mui/icons-material/Inventory';
 import GroupsIcon from '@mui/icons-material/Groups';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
 import StorefrontIcon from '@mui/icons-material/Storefront';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import SecurityIcon from '@mui/icons-material/Security';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import HandshakeIcon from '@mui/icons-material/Handshake';
-import InsightsIcon from '@mui/icons-material/Insights';
-import EventIcon from '@mui/icons-material/Event';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import PeopleIcon from '@mui/icons-material/People';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import AssessmentIcon from '@mui/icons-material/Assessment';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import SpeedIcon from '@mui/icons-material/Speed';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SearchIcon from '@mui/icons-material/Search';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { format } from 'date-fns';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import TimerIcon from '@mui/icons-material/Timer';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Toast from '../Components/Toast/Toast';
+
 // Enhanced Styled Components
 const GradientHeroSection = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%)',
@@ -84,20 +66,6 @@ const AnimatedCard = styled(motion(Card))({
   }
 });
 
-const GlassCard = styled(Paper)({
-  background: 'rgba(255, 255, 255, 0.8)',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: 16,
-});
-
-const StyledTab = styled(Tab)({
-  fontSize: '1rem',
-  textTransform: 'none',
-  minWidth: 120,
-  fontWeight: 600,
-});
-
 const FeatureIcon = styled(Box)({
   width: 60,
   height: 60,
@@ -113,9 +81,14 @@ const FeatureIcon = styled(Box)({
 const HomePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [activeTab, setActiveTab] = useState(0);
   const [isVisible, setIsVisible] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [latestDeals, setLatestDeals] = useState([]);
+  const [dealsLoading, setDealsLoading] = useState(true);
+  const [toast, setToast] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,13 +104,60 @@ const HomePage = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  const navigate = useNavigate();
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+  useEffect(() => {
+    const fetchLatestDeals = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/common/latest-deals`);
+        setLatestDeals(response.data.deals);
+      } catch (error) {
+        console.error('Error fetching latest deals:', error);
+      } finally {
+        setDealsLoading(false);
+      }
+    };
+
+    fetchLatestDeals();
+  }, []);
+
+  const navigate = useNavigate();
+  const [redirectLoading, setRedirectLoading] = useState(false);
+  const user_id = localStorage.getItem('user_id');
+  const handleDealClick = (dealId) => {
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to view deals',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
+    navigate(`/deals-catlog/deals/${dealId}`);
   };
 
+  const handleToastClose = () => {
+    setToast({
+      open: false,
+      message: '',
+      severity: 'success'
+    });
+  };
+
+  if (redirectLoading) {
+    return <Box sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh'
+    }}>
+      <CircularProgress size={40} />
+    </Box>
+  }
   return (
     <>
       {/* Hero Section */}
@@ -397,7 +417,7 @@ const HomePage = () => {
       </Box>
 
       {/* Active Deals Dashboard */}
-      <Box sx={{ py: 10 }}>
+      <Box sx={{ py: 10, bgcolor: '#f8f9fa' }}>
         <Container>
           <Typography variant="h3" fontWeight="800" textAlign="center" gutterBottom>
             Active
@@ -406,66 +426,135 @@ const HomePage = () => {
           <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
             Explore current group purchasing opportunities
           </Typography>
-          <Grid container spacing={4}>
-            {[
-              {
-                title: 'Bulk Electronics Purchase',
-                image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400',
-                price: '$250,000',
-                members: 45,
-                category: 'Electronics'
-              },
-              {
-                title: 'Office Supplies Bundle',
-                image: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=400',
-                price: '$75,000',
-                members: 32,
-                category: 'Office Supplies'
-              },
-              {
-                title: 'Industrial Equipment',
-                image: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=400',
-                price: '$480,000',
-                members: 28,
-                category: 'Industrial'
-              },
-              {
-                title: 'Food Service Package',
-                image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',
-                price: '$125,000',
-                members: 52,
-                category: 'Food & Beverage'
-              }
-            ].map((deal, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <AnimatedCard
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={deal.image}
-                    alt={deal.title}
-                  />
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {deal.title}
-                    </Typography>
-                    <Typography variant="h5" color="primary" gutterBottom>
-                      {deal.price}
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {deal.members} members joined
-                      </Typography>
-                      <Chip label={deal.category} size="small" />
+          {dealsLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={4}>
+              {latestDeals.map((deal, index) => (
+                <Grid item xs={12} sm={6} md={4} key={deal._id}>
+                  <AnimatedCard
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ duration: 0.3 }}
+                    onClick={() => handleDealClick(deal._id)}
+                    sx={{ 
+                      cursor: 'pointer',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                  >
+                    <Box sx={{ position: 'relative' }}>
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={deal.images?.[0] || 'https://via.placeholder.com/400x200?text=No+Image'}
+                        alt={deal.name}
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 16,
+                          right: 16,
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 2,
+                        }}
+                      >
+                        {Math.round((1 - deal.discountPrice / deal.originalCost) * 100)}% OFF
+                      </Box>
                     </Box>
-                  </CardContent>
-                </AnimatedCard>
-              </Grid>
-            ))}
-          </Grid>
+                    
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar
+                              src={deal.distributor?.logo}
+                              alt={deal.distributor?.businessName || deal.distributor?.name}
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                mr: 1,
+                                borderRadius: '50%',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'primary.main'
+                              }}
+                            >
+                              {(deal.distributor?.businessName || deal.distributor?.name)?.charAt(0) || 'D'}
+                            </Avatar> 
+                        <Typography variant="subtitle2" fontWeight="bold" color="text.secondary">
+                          {deal.distributor?.businessName}
+                        </Typography>
+                      </Box>
+
+                      <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        {deal.name}
+                      </Typography>
+
+                      <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2 }}>
+                        <Typography variant="h5" color="primary" fontWeight="bold">
+                          ${deal.discountPrice.toLocaleString()}
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            textDecoration: 'line-through',
+                            ml: 1,
+                            color: 'text.secondary'
+                          }}
+                        >
+                          ${deal.originalCost.toLocaleString()}
+                        </Typography>
+                      </Box>
+
+                      <Grid container spacing={1} sx={{ mb: 2 }}>
+                        <Grid item xs={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <PeopleAltIcon sx={{ fontSize: 16, mr: 0.5, color: 'primary.main' }} />
+                            <Typography variant="body2">
+                              {deal.totalCommittedQty || 0}/{deal.minQtyForDiscount} units
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <VisibilityIcon sx={{ fontSize: 16, mr: 0.5, color: 'primary.main' }} />
+                            <Typography variant="body2">
+                              {deal.views} views
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+
+                      {deal.dealEndsAt && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <TimerIcon sx={{ fontSize: 16, mr: 0.5, color: 'error.main' }} />
+                          <Typography variant="body2" color="error.main">
+                            Ends {format(new Date(deal.dealEndsAt), 'MMM dd, yyyy')}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDealClick(deal._id);
+                        }}
+                        sx={{ mt: 'auto' }}
+                      >
+                        Make Commitment
+                      </Button>
+                    </CardContent>
+                  </AnimatedCard>
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Container>
       </Box>
 
@@ -498,7 +587,7 @@ const HomePage = () => {
                   "answer": "Since payments are not processed on the platform, members and distributors must coordinate payments directly through their preferred methods."
                 },
                 {
-                  "question": "Can a distributor edit or cancel a deal after it’s created?",
+                  "question": "Can a distributor edit or cancel a deal after it's created?",
                   "answer": "Yes, distributors can edit or cancel a deal as long as no commitments have been made. Once commitments are placed, the distributor may need to coordinate changes directly with committed members."
                 },
                 {
@@ -569,6 +658,12 @@ const HomePage = () => {
           </Grid>
         </Container>
       </Box>
+      <Toast 
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        handleClose={handleToastClose}
+      />  
     </>
   );
 };

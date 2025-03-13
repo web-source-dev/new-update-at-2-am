@@ -17,36 +17,27 @@ import {
   TextField,
   Box,
   Slider,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
   useTheme,
   useMediaQuery,
   Avatar,
   TablePagination,
   Pagination,
   Paper,
-  Badge,
-  Collapse,
   Chip,
-  Divider,
   InputAdornment,
   Stack,
   ButtonGroup,
-  Skeleton,
   FormControlLabel,
   Switch,
+  Tooltip,
 } from "@mui/material";
 import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, FilterAlt, Search, ViewModule, ViewList, ViewComfy, Sort, Groups, ProductionQuantityLimits } from "@mui/icons-material";
 import axios from "axios";
 import { styled } from '@mui/material/styles';
 import Toast from '../Components/Toast/Toast';
 import { useNavigate } from 'react-router-dom';
-import { FilterTextField, FilterSelect, FilterFormControl } from '../Dashboards/DashBoardComponents/FilterStyles';
-import { FilterSection, FilterItem } from '../Dashboards/DashBoardComponents/FilterSection';
-import { GridCardsSkeleton } from '../Components/Skeletons/LoadingSkeletons';
 import { io } from 'socket.io-client';
+import InfoIcon from '@mui/icons-material/Info';
 
 const StyledSlider = styled(Slider)(({ theme }) => ({
   height: 8,
@@ -96,10 +87,6 @@ const DisplayDeals = () => {
   const [quantity, setQuantity] = useState(1);
   const [userFavorites, setUserFavorites] = useState([]);
   const [filteredDeals, setFilteredDeals] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 1000]);
-  const [category, setCategory] = useState("");
-  const [minQuantity, setMinQuantity] = useState([1, 100]);
   const [categories, setCategories] = useState([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [userCommitments, setUserCommitments] = useState([]);
@@ -145,7 +132,7 @@ const DisplayDeals = () => {
   const [isCommitting, setIsCommitting] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const [isViewLoading, setIsViewLoading] = useState(false);
-  
+
   const [socket, setSocket] = useState(null);
 
   const user_id = localStorage.getItem("user_id");
@@ -173,12 +160,12 @@ const DisplayDeals = () => {
     // Handle updates for all deals
     socket.on('deal-update', (data) => {
       console.log('Received deal update:', data);
-      
+
       if (data.type === 'created') {
         fetchDeals();
       }
       else if (data.type === 'updated') {
-       fetchDeals();
+        fetchDeals();
       }
       else if (data.type === 'deleted') {
         fetchDeals();
@@ -194,7 +181,7 @@ const DisplayDeals = () => {
   useEffect(() => {
 
     fetchDeals();
-    
+
     // Also refresh user data when component mounts
     refreshUserData();
   }, []);
@@ -211,8 +198,8 @@ const DisplayDeals = () => {
       // Apply search query filter
       if (filter.searchQuery) {
         const query = filter.searchQuery.toLowerCase();
-        filtered = filtered.filter(deal => 
-          deal.name.toLowerCase().includes(query) || 
+        filtered = filtered.filter(deal =>
+          deal.name.toLowerCase().includes(query) ||
           deal.description.toLowerCase().includes(query)
         );
       }
@@ -223,14 +210,14 @@ const DisplayDeals = () => {
       }
 
       // Apply price range filter
-      filtered = filtered.filter(deal => 
-        deal.discountPrice >= filter.priceRange[0] && 
+      filtered = filtered.filter(deal =>
+        deal.discountPrice >= filter.priceRange[0] &&
         deal.discountPrice <= filter.priceRange[1]
       );
 
       // Apply min quantity filter
-      filtered = filtered.filter(deal => 
-        deal.minQtyForDiscount >= filter.minQuantity[0] && 
+      filtered = filtered.filter(deal =>
+        deal.minQtyForDiscount >= filter.minQuantity[0] &&
         deal.minQtyForDiscount <= filter.minQuantity[1]
       );
 
@@ -259,7 +246,7 @@ const DisplayDeals = () => {
     const token = localStorage.getItem('token');
     const user_role = localStorage.getItem('user_role');
     const user_id = localStorage.getItem('user_id');
-    
+
     if (!token || !user_role || !user_id) {
       setToast({
         open: true,
@@ -286,11 +273,23 @@ const DisplayDeals = () => {
   const handleCloseView = () => setSelectedDeal(null);
 
   const handleOpenGetDeal = (deal) => {
-    if (!checkAuth()) return;
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to commit a deal',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
     setSelectedDeal(deal);
     setGetDealOpen(true);
   };
-  
+
   const handleCloseGetDeal = () => {
     setGetDealOpen(false);
     setQuantity(1);
@@ -319,19 +318,32 @@ const DisplayDeals = () => {
     }
   };
 
+  const [redirectLoading, setRedirectLoading] = useState(false);
+
   const toggleFavorite = async (dealId) => {
-    if (!checkAuth() || isFavoriteLoading) return;
-    
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to add to favorites',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
     try {
       setIsFavoriteLoading(true);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/favorite/toggle`,
         { dealId, user_id }
       );
-      
+
       // Refresh user data to update favorites
       await refreshUserData();
-      
+
       setToast({
         open: true,
         message: response.data.message,
@@ -350,6 +362,19 @@ const DisplayDeals = () => {
   };
 
   const handleCommitDeal = async () => {
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to commit a deal',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
     if (!checkAuth() || !selectedDeal || isCommitting) return;
 
     const totalPrice = quantity * selectedDeal.discountPrice;
@@ -427,47 +452,24 @@ const DisplayDeals = () => {
     page * rowsPerPage + rowsPerPage
   );
 
-  const getGridColumns = () => {
-    switch (viewMode) {
-      case 'grid':
-        return {
-          xs: 12,
-          sm: 6,
-          md: 4,
-          lg: 4,
-          xl: 3
-        };
-      case 'compact':
-        return {
-          xs: 12,
-          sm: 6,
-          md: 3,
-          lg: 3,
-          xl: 2
-        };
-      case 'list':
-        return {
-          xs: 12
-        };
-      default:
-        return {
-          xs: 12,
-          sm: 6,
-          md: 4,
-          lg: 4,
-          xl: 3
-        };
-    }
-  };
-
-
+  if (redirectLoading) {
+    return <Box sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh'
+    }}>
+      <CircularProgress size={40} />
+    </Box>
+  }
+  
   return (
-    <Box sx={{ 
+    <Box sx={{
       minHeight: '100vh',
       background: 'linear-gradient(to bottom, #f3f4f6, #ffffff)',
       pb: 4
     }}>
-      <Box sx={{ 
+      <Box sx={{
         background: 'linear-gradient(45deg, #1a237e, #0d47a1)',
         color: 'white',
         py: { xs: 4, md: 4 },
@@ -475,16 +477,16 @@ const DisplayDeals = () => {
         mb: 4
       }}>
         <Container maxWidth="xl">
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'flex-start', md: 'center' },
             justifyContent: 'space-between',
             gap: 3
           }}>
             <Box>
-              <Typography 
-                variant="h3" 
+              <Typography
+                variant="h3"
                 fontWeight="800"
                 sx={{
                   fontSize: { xs: '1.3rem', sm: '1.6rem', md: '2rem' },
@@ -496,9 +498,9 @@ const DisplayDeals = () => {
               >
                 Exclusive Deals
               </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
+              <Typography
+                variant="h6"
+                sx={{
                   opacity: 0.9,
                   fontWeight: 400,
                   fontSize: { xs: '0.7rem', sm: '0.9rem' }
@@ -508,15 +510,15 @@ const DisplayDeals = () => {
               </Typography>
             </Box>
 
-            <Box sx={{ 
-              display: 'flex', 
-              gap: 2,
+            <Box sx={{
+              display: 'flex',
+              gap: 1,
               flexWrap: 'wrap'
             }}>
               {!isMobile && (
-                <ButtonGroup 
-                  variant="contained" 
-                  sx={{ 
+                <ButtonGroup
+                  variant="contained"
+                  sx={{
                     bgcolor: 'rgba(255,255,255,0.1)',
                     backdropFilter: 'blur(10px)',
                     borderRadius: 3,
@@ -534,28 +536,28 @@ const DisplayDeals = () => {
                     }
                   }}
                 >
-                 
+
                 </ButtonGroup>
               )}
               {isMobile && (
-              <Button
-                variant="contained"
-                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                startIcon={<FilterList />}
-                endIcon={mobileFiltersOpen ? <ExpandLess /> : <ExpandMore />}
-                sx={{ 
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  borderRadius: 3,
-                  px: 3,
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.3)',
-                  }
-                }}
-              >
-                Filters {filteredDeals.length > 0 && `(${filteredDeals.length})`}
-              
-              </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                  startIcon={<FilterList />}
+                  endIcon={mobileFiltersOpen ? <ExpandLess /> : <ExpandMore />}
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    color: 'white',
+                    borderRadius: 3,
+                    px: 3,
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.3)',
+                    }
+                  }}
+                >
+                  Filters {filteredDeals.length > 0 && `(${filteredDeals.length})`}
+
+                </Button>
               )}
             </Box>
           </Box>
@@ -563,16 +565,16 @@ const DisplayDeals = () => {
       </Box>
 
       <Container maxWidth="100%">
-        <Box sx={{ 
+        <Box sx={{
           display: 'flex',
-          gap: { xs: 2, lg: 3 },
+          gap: 1,
           flexDirection: { xs: 'column', lg: 'row' }
         }}>
           {/* Filters Panel */}
           <Paper
             elevation={0}
-            sx={{ 
-              width: { xs: '100%', lg: '300px' },
+            sx={{
+              width: { xs: '100%', lg: '290px' },
               flexShrink: 0,
               borderRadius: 4,
               overflow: 'hidden',
@@ -589,7 +591,7 @@ const DisplayDeals = () => {
               <Typography variant="h6" fontWeight="600" gutterBottom>
                 Filter Products
               </Typography>
-              
+
               <Stack spacing={2}>
                 <TextField
                   placeholder="Search products..."
@@ -627,10 +629,10 @@ const DisplayDeals = () => {
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Categories
                   </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: 1 
+                  <Box sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 1
                   }}>
                     {categories.map((cat) => (
                       <Chip
@@ -732,26 +734,26 @@ const DisplayDeals = () => {
                   </Stack>
                 </Box>
 
-                {Object.values(filter).some(value => 
-                  value !== '' && 
+                {Object.values(filter).some(value =>
+                  value !== '' &&
                   value !== false &&
-                  (Array.isArray(value) ? 
-                    (value[0] !== 0 && value[1] !== 1000) || (value[0] !== 1 && value[1] !== 100) 
+                  (Array.isArray(value) ?
+                    (value[0] !== 0 && value[1] !== 1000) || (value[0] !== 1 && value[1] !== 100)
                     : true)
                 ) && (
-                  <Button
-                    variant="outlined"
-                    startIcon={<Clear />}
-                    onClick={clearFilters}
-                    color="error"
-                    sx={{
-                      borderRadius: 3,
-                      textTransform: 'none'
-                    }}
-                  >
-                    Clear All Filters
-                  </Button>
-                )}
+                    <Button
+                      variant="outlined"
+                      startIcon={<Clear />}
+                      onClick={clearFilters}
+                      color="error"
+                      sx={{
+                        borderRadius: 3,
+                        textTransform: 'none'
+                      }}
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
               </Stack>
             </Box>
           </Paper>
@@ -759,8 +761,8 @@ const DisplayDeals = () => {
           {/* Main Content */}
           <Box sx={{ flexGrow: 1 }}>
             {loading || isFilterLoading ? (
-              <Box sx={{ 
-                display: 'flex', 
+              <Box sx={{
+                display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -773,22 +775,22 @@ const DisplayDeals = () => {
                 </Typography>
               </Box>
             ) : error ? (
-              <Alert 
-                severity="error" 
+              <Alert
+                severity="error"
                 sx={{ borderRadius: 3 }}
               >
                 {error}
               </Alert>
             ) : filteredDeals.length > 0 ? (
-              <Grid 
-                container 
+              <Grid
+                container
                 spacing={3}
                 columns={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}
                 sx={{
                   width: '100%',
                   margin: 0,
                   '& .MuiGrid-item': {
-                    width: { xs: '100%', sm: '50%', md: '320px' },
+                    width: { xs: '100%', sm: '50%', md: '300px' },
                     padding: 1.5,
                   }
                 }}
@@ -806,9 +808,9 @@ const DisplayDeals = () => {
                         transition: "all 0.3s ease",
                         bgcolor: 'white',
                         position: 'relative',
-                        "&:hover": { 
+                        "&:hover": {
                           transform: 'translateY(-8px)',
-                          boxShadow: '0 12px 40px rgba(0,0,0,0.12)' 
+                          boxShadow: '0 12px 40px rgba(0,0,0,0.12)'
                         },
                       }}
                     >
@@ -833,8 +835,8 @@ const DisplayDeals = () => {
                       </Box>
 
                       {/* Image Section */}
-                      <Box 
-                        sx={{ 
+                      <Box
+                        sx={{
                           position: 'relative',
                           width: '100%',
                           pt: '60%'
@@ -910,23 +912,23 @@ const DisplayDeals = () => {
                       </Box>
 
                       {/* Content Section */}
-                      <CardContent 
-                        sx={{ 
+                      <CardContent
+                        sx={{
                           p: 2,
                           '&:last-child': { pb: 2 }
                         }}
                       >
                         <Box sx={{ mb: 1.5 }}>
                           {/* Title and Price Row */}
-                          <Box sx={{ 
-                            display: 'flex', 
+                          <Box sx={{
+                            display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'flex-start',
                             gap: 1,
                             mb: 1
                           }}>
-                            <Typography 
-                              variant="subtitle1" 
+                            <Typography
+                              variant="subtitle1"
                               sx={{
                                 fontWeight: 600,
                                 fontSize: '1rem',
@@ -940,20 +942,20 @@ const DisplayDeals = () => {
                             >
                               {deal.name}
                             </Typography>
-                            <Box sx={{ 
-                              display: 'flex', 
+                            <Box sx={{
+                              display: 'flex',
                               alignItems: 'center',
                               gap: 1
                             }}>
-                              <Typography 
-                                variant="subtitle1" 
-                                color="primary" 
+                              <Typography
+                                variant="subtitle1"
+                                color="primary"
                                 fontWeight="bold"
                               >
                                 ${deal.discountPrice}
                               </Typography>
-                              <Typography 
-                                variant="caption" 
+                              <Typography
+                                variant="caption"
                                 color="text.secondary"
                                 sx={{ textDecoration: 'line-through' }}
                               >
@@ -963,29 +965,33 @@ const DisplayDeals = () => {
                           </Box>
 
                           {/* Distributor Info */}
-                          <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                          <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
                             gap: 1,
                             mb: 1.5,
                             p: 1,
-                            bgcolor: 'grey.50',
+                            bgcolor: 'grey.200',
                             borderRadius: 1
                           }}>
-                            <Avatar 
-                              src={deal.distributor?.logo} 
+                            <Avatar
+                              src={deal.distributor?.logo}
                               alt={deal.distributor?.businessName || deal.distributor?.name}
-                              sx={{ 
-                                width: 24, 
-                                height: 24,
-                                bgcolor: 'primary.main'
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: 'primary.main',
+                                mr: 1,
+                                borderRadius: '50%',
+                                border: '1px solid',
+                                borderColor: 'divider',
                               }}
                             >
                               {(deal.distributor?.businessName || deal.distributor?.name)?.charAt(0) || 'D'}
                             </Avatar>
                             <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                              <Typography 
-                                variant="caption" 
+                              <Typography
+                                variant="caption"
                                 color="text.primary"
                                 sx={{
                                   display: 'block',
@@ -998,8 +1004,8 @@ const DisplayDeals = () => {
                                 {deal.distributor?.businessName || 'Unknown Business'}
                               </Typography>
                               {deal.distributor?.name && (
-                                <Typography 
-                                  variant="caption" 
+                                <Typography
+                                  variant="caption"
                                   color="text.secondary"
                                   sx={{
                                     display: 'block',
@@ -1016,7 +1022,7 @@ const DisplayDeals = () => {
                           </Box>
 
                           {/* Quick Stats */}
-                          <Box sx={{ 
+                          <Box sx={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'start',
@@ -1042,14 +1048,47 @@ const DisplayDeals = () => {
 
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Typography variant="caption" color="success.main">
-                                {Math.round(((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}% off
+                                {deal.minQtyForDiscount - deal.totalCommitmentQuantity || 0} remaining
+                                {deal.minQtyForDiscount - deal.totalCommitmentQuantity === 0 && (
+                               <Tooltip
+                               title={
+                                 <Typography sx={{ fontSize: "16px", color: "white" }}>
+                                   You can commit more, but this one has completed its requirements
+                                 </Typography>
+                               }
+                               placement="top"
+                               arrow
+                               PopperProps={{
+                                 modifiers: [
+                                   {
+                                     name: "preventOverflow",
+                                     options: {
+                                       boundary: "window",
+                                     },
+                                   },
+                                 ],
+                               }}
+                               sx={{
+                                 '& .MuiTooltip-tooltip': {
+                                   backgroundColor: "#333",
+                                   color: "white",
+                                   fontSize: "16px", // Increase font size
+                                   padding: "10px",
+                                   borderRadius: "8px",
+                                   boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+                                 },
+                               }}
+                             >
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: "middle", color: "info.main" }} />
+                                  </Tooltip>
+                                )}
                               </Typography>
                             </Box>
                           </Box>
 
                           {/* Status Indicators */}
                           {(userFavorites.includes(deal._id) || userCommitments.includes(deal._id)) && (
-                            <Box sx={{ 
+                            <Box sx={{
                               display: 'flex',
                               gap: 1,
                               mb: 1.5
@@ -1081,7 +1120,7 @@ const DisplayDeals = () => {
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            sx={{ 
+                            sx={{
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: 'vertical',
@@ -1102,7 +1141,7 @@ const DisplayDeals = () => {
                               fullWidth
                               onClick={() => handleOpenGetDeal(deal)}
                               disabled={isCommitting}
-                              sx={{ 
+                              sx={{
                                 borderRadius: 1,
                                 py: 0.5,
                                 textTransform: 'none',
@@ -1153,8 +1192,8 @@ const DisplayDeals = () => {
                               {isFavoriteLoading ? (
                                 <CircularProgress size={20} />
                               ) : (
-                                userFavorites.includes(deal._id) ? 
-                                  <Favorite sx={{ fontSize: '1.25rem' }} /> : 
+                                userFavorites.includes(deal._id) ?
+                                  <Favorite sx={{ fontSize: '1.25rem' }} /> :
                                   <FavoriteBorder sx={{ fontSize: '1.25rem' }} />
                               )}
                             </IconButton>
@@ -1166,9 +1205,9 @@ const DisplayDeals = () => {
                 ))}
               </Grid>
             ) : deals.length > 0 ? (
-              <Box 
-                sx={{ 
-                  textAlign: 'center', 
+              <Box
+                sx={{
+                  textAlign: 'center',
                   py: 8,
                   bgcolor: 'white',
                   borderRadius: 4,
@@ -1184,9 +1223,9 @@ const DisplayDeals = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box 
-                sx={{ 
-                  textAlign: 'center', 
+              <Box
+                sx={{
+                  textAlign: 'center',
                   py: 8,
                   bgcolor: 'white',
                   borderRadius: 4,
@@ -1202,9 +1241,9 @@ const DisplayDeals = () => {
 
             {/* Pagination */}
             {filteredDeals.length > 0 && (
-              <Box sx={{ 
-                mt: 4, 
-                display: 'flex', 
+              <Box sx={{
+                mt: 4,
+                display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: 2,
@@ -1257,8 +1296,8 @@ const DisplayDeals = () => {
       </Container>
 
       {/* Dialogs */}
-      <Dialog 
-        open={getDealOpen} 
+      <Dialog
+        open={getDealOpen}
         onClose={handleCloseGetDeal}
         maxWidth="sm"
         fullWidth
@@ -1276,7 +1315,7 @@ const DisplayDeals = () => {
         </DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ pt: 2 }}>
-            <Box sx={{ 
+            <Box sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1286,28 +1325,28 @@ const DisplayDeals = () => {
               borderRadius: 3
             }}>
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Avatar
-                src={selectedDeal?.images[0]}
-                alt={selectedDeal?.name}
-                variant="rounded"
-                sx={{ width: 80, height: 80 }}
-              />
-              <Box>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  {selectedDeal?.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {selectedDeal?.distributor?.businessName || 'Unknown Business'}
-                </Typography>
+                <Avatar
+                  src={selectedDeal?.images[0]}
+                  alt={selectedDeal?.name}
+                  variant="rounded"
+                  sx={{ width: 80, height: 80 }}
+                />
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    {selectedDeal?.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {selectedDeal?.distributor?.businessName || 'Unknown Business'}
+                  </Typography>
+                </Box>
               </Box>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'left', flexDirection: 'column' }}>
+                <Chip label={`Min Qty: ${selectedDeal?.minQtyForDiscount || 0}`} color="primary" />
+                <Chip label={`Total Commitments: ${selectedDeal?.totalCommitments || 0}`} color="primary" />
               </Box>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'left' ,flexDirection:'column'}}>
-              <Chip label={`Min Qty: ${selectedDeal?.minQtyForDiscount || 0}`} color="primary" /> 
-              <Chip label={`Total Commitments: ${selectedDeal?.totalCommitments || 0}`} color="primary" />
-            </Box>
             </Box>
 
-            <Box sx={{ 
+            <Box sx={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
               gap: 2
@@ -1345,15 +1384,15 @@ const DisplayDeals = () => {
               }}
             />
 
-            <Paper 
+            <Paper
               elevation={0}
-              sx={{ 
+              sx={{
                 p: 2,
                 borderRadius: 3,
                 bgcolor: 'primary.lighter'
               }}
             >
-              <Box sx={{ 
+              <Box sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 mb: 2
@@ -1363,7 +1402,7 @@ const DisplayDeals = () => {
                   ${(quantity * (selectedDeal?.discountPrice || 0)).toFixed(2)}
                 </Typography>
               </Box>
-              <Box sx={{ 
+              <Box sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 color: 'success.main'
@@ -1381,7 +1420,7 @@ const DisplayDeals = () => {
             onClick={handleCloseGetDeal}
             variant="outlined"
             disabled={isCommitting}
-            sx={{ 
+            sx={{
               borderRadius: 2,
               textTransform: 'none'
             }}
@@ -1392,7 +1431,7 @@ const DisplayDeals = () => {
             variant="contained"
             onClick={handleCommitDeal}
             disabled={isCommitting}
-            sx={{ 
+            sx={{
               borderRadius: 2,
               textTransform: 'none',
               px: 3,
@@ -1413,7 +1452,7 @@ const DisplayDeals = () => {
         </DialogActions>
       </Dialog>
 
-      <Toast 
+      <Toast
         open={toast.open}
         message={toast.message}
         severity={toast.severity}

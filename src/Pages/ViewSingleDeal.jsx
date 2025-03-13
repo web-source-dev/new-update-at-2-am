@@ -128,11 +128,13 @@ const ViewSingleDeal = () => {
         setDeal(response.data);
         
         // Check if deal is in favorites
+        if (user_id) {
         const favResponse = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
           { params: { user_id } }
         );
         setIsFavorite(favResponse.data.some(fav => fav.dealId === dealId));
+      }
       } catch (err) {
         setError(err.response?.data?.message || 'Error fetching deal details');
       } finally {
@@ -155,14 +157,46 @@ const ViewSingleDeal = () => {
     );
   };
 
-  const handleGetDeal = () => setGetDealOpen(true);
+  const handleGetDeal = () => {
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to get deal',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
+    setGetDealOpen(true);
+    setQuantity(1);
+  };
+  
   const handleCloseGetDeal = () => {
     setGetDealOpen(false);
     setQuantity(1);
   };
 
+  const [redirectLoading, setRedirectLoading] = useState(false);
+
   const toggleFavorite = async () => {
     if (isFavoriteLoading) return;
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to add to favorites',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
     try {
       setIsFavoriteLoading(true);
       const response = await axios.post(
@@ -188,6 +222,19 @@ const ViewSingleDeal = () => {
 
   const handleCommitDeal = async () => {
     if (!deal || isCommitting) return;
+    if (!user_id) {
+      setToast({
+        open: true,
+        message: 'Please login to commit a deal',
+        severity: 'error'
+      });
+      setTimeout(() => 
+        setRedirectLoading(true), 2000);
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectPath', currentPath);
+      setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
     
     const totalPrice = quantity * deal.discountPrice;
 
@@ -236,6 +283,17 @@ const ViewSingleDeal = () => {
     );
   }
 
+  if (redirectLoading) {
+    return <Box sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh'
+    }}>
+      <CircularProgress size={40} />
+    </Box>
+  }
+  
   return (
     <Container 
       maxWidth={false} 
@@ -261,7 +319,7 @@ const ViewSingleDeal = () => {
       >
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/deals-catlog')}
           sx={{ 
             borderRadius: 2,
             '&:hover': {
@@ -965,7 +1023,7 @@ const ViewSingleDeal = () => {
             {isCommitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Confirm Purchase'
+              'Make Commitment'
             )}
           </Button>
         </DialogActions>

@@ -92,12 +92,53 @@ const ContactUs = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const [snackbarMessage, setSnackbarMessage] = useState('Thank you for your message! We\'ll get back to you soon.');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData);
+    
+    // Get user data from localStorage
+    const user_id = localStorage.getItem('user_id');
+    const user_role = localStorage.getItem('user_role');
+
+    if (!user_id || !user_role) {
+      setSnackbarMessage('Please login to submit the form');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/contact/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          user_id,
+          user_role
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSnackbarMessage('Thank you for your message! We\'ll get back to you soon.');
+        setSnackbarSeverity('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setSnackbarMessage(data.message || 'Error submitting form');
+        setSnackbarSeverity('error');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSnackbarMessage('Error submitting form. Please try again.');
+      setSnackbarSeverity('error');
+    }
+    
     setOpenSnackbar(true);
-    setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
   const contactInfo = [
@@ -300,8 +341,8 @@ const ContactUs = () => {
         autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity="success">
-          Thank you for your message! We'll get back to you soon.
+        <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity}>
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>

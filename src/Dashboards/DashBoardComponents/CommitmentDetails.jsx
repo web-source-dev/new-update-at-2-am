@@ -241,7 +241,7 @@ const CommitmentDetails = () => {
                         <Box sx={{ 
                             position: { md: 'sticky' },
                             top: { md: '20px' },
-                            height: { md: 'calc(100vh - 100px)' },
+                            height: { md: 'calc(100vh)' },
                             overflow: 'hidden'
                         }}>
                             <CommitmentChat 

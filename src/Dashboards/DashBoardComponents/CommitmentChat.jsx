@@ -168,12 +168,14 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
       markMessagesAsRead();
     }
   }, [messages, commitment]);
+  const [sending, setSending] = useState(false);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !canAccessChat()) return;
 
     try {
+      setSending(true);
       await axios.post(`${process.env.REACT_APP_BACKEND_URL}/chat/${commitmentId}`, {
         senderId: currentUserId,
         message: newMessage.trim(),
@@ -185,6 +187,8 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
     } catch (error) {
       console.error('Error sending message:', error);
       setError(error.response?.data?.message || 'Failed to send message');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -345,9 +349,9 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
               <DoneAllIcon 
                 sx={{ 
                   fontSize: 12, 
-                  opacity: 0.7, 
+                  opacity: 1, 
                   ml: 0.5, 
-                  color: message.isRead ? (isAdminMessage ? 'error.main' : 'primary.main') : 'inherit' 
+                  color: message.isRead ? (isAdminMessage ? 'error.main' : 'primary.main') : 'inherit'
                 }} 
               />
             )}
@@ -562,7 +566,8 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
                 }
               }}
             >
-              <SendIcon />
+              {sending ? <CircularProgress size={24} /> : <SendIcon />}
+
             </IconButton>
           </Tooltip>
         </Box>

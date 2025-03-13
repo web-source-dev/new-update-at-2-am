@@ -29,11 +29,14 @@ import {
   Stack,
   Grid,
   Menu,
-
-  IconButton
+  styled,
+  IconButton,
+  ListItemIcon,
+  Divider
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+
 import { 
   Check as CheckIcon, 
   Close as CloseIcon, 
@@ -49,6 +52,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
 
+const isMobile = window.innerWidth <= 600;
+
 // Add debounce function
 const debounce = (func, wait) => {
   let timeout;
@@ -61,6 +66,18 @@ const debounce = (func, wait) => {
     timeout = setTimeout(later, wait);
   };
 };
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [theme.breakpoints.down('sm')]: {
+    padding: '8px 4px',
+    '&:first-of-type': {
+      paddingLeft: 8,
+    },
+    '&:last-of-type': {
+      paddingRight: 8,
+    },
+  },
+}));
 
 const AcceptAllCommitments = () => {
   const [deals, setDeals] = useState([]);
@@ -569,105 +586,136 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
   const dealsWithPendingCommitments = deals.filter(deal => deal.pendingCommitments > 0);
 
   return (
-    <Box p={3}>
-      {/* Filters Section */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2} alignItems="center" justifyContent="space-between">
-          <Grid item xs={12} sm={10} display="flex" gap={2}>
-          <Grid item xs={12} sm={2.7}>
-            <TextField
-              fullWidth
-              label="Search Deals"
-              value={searchInput}  // Use searchInput instead of searchTerm
-              onChange={handleSearch}
-              placeholder="Type to search..."
-              InputProps={{
-                endAdornment: <SearchIcon />,
-                sx: { '& .MuiOutlinedInput-root': { borderRadius: 1 } }
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={2.7}>
-            <FormControl fullWidth>
-              <InputLabel>Month</InputLabel>
-              <Select
-                value={selectedMonth}
-                onChange={handleMonthChange}
-                label="Month"
-                disabled={!!(startDate || endDate)}
-              >
-                <MenuItem value="">All Months</MenuItem>
-                {months.map(month => (
-                  <MenuItem key={month.value} value={month.value}>
-                    {month.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+    <Box p={{ xs: 1, sm: 3 }}>
+      {/* Filters Section - Make it stack on mobile */}
+      <Paper sx={{ p: { xs: 1, sm: 2 }, mb: 2 }}>
+        <Grid 
+          container 
+          spacing={{ xs: 1, sm: 2 }} 
+          direction={{ xs: 'column', sm: 'row' }}
+        >
+          <Grid item xs={12} sm={10}>
+            <Grid 
+              container 
+              spacing={{ xs: 1, sm: 2 }}
+              direction={{ xs: 'column', sm: 'row' }}
+            >
+              <Grid item xs={12} sm={2.7}>
+                <TextField
+                  fullWidth
+                  label="Search Deals"
+                  value={searchInput}
+                  onChange={handleSearch}
+                  placeholder="Type to search..."
+                  size="small"
+                  InputProps={{
+                    endAdornment: <SearchIcon />,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2.7}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Month</InputLabel>
+                  <Select
+                    value={selectedMonth}
+                    onChange={handleMonthChange}
+                    label="Month"
+                    disabled={!!(startDate || endDate)}
+                  >
+                    <MenuItem value="">All Months</MenuItem>
+                    {months.map(month => (
+                      <MenuItem key={month.value} value={month.value}>
+                        {month.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Start Date"
+                    value={startDate}
+                    onChange={(date) => handleDateChange(date, true)}
+                    renderInput={(params) => <TextField {...params} fullWidth size="small" />}
+                    disabled={!!selectedMonth}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        height: '40px',
+                        width: { xs: '350px', sm: 'auto' },
+                      },
+                    }}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="End Date"
+                    value={endDate}
+                    onChange={(date) => handleDateChange(date, false)}
+                    renderInput={(params) => <TextField {...params} fullWidth size="small" />}
+                    disabled={!!selectedMonth}
+                    minDate={startDate}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        height: '40px',
+                        width: { xs: '350px', sm: 'auto' },
+                      },
+                    }}
+                  />
+                </LocalizationProvider>
+              </Grid>
+            </Grid>
           </Grid>
           <Grid item xs={12} sm={2}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                sx={{ width: '100%' }}
-                label="Start Date"
-                value={startDate}
-                onChange={(date) => handleDateChange(date, true)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-                disabled={!!selectedMonth}
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={2}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="End Date"
-                sx={{ width: '100%' }}
-                value={endDate}
-                onChange={(date) => handleDateChange(date, false)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-                disabled={!!selectedMonth}
-                minDate={startDate}
-              />
-            </LocalizationProvider>
-          </Grid>
-          </Grid>
-          <Grid item xs={12} sm={1.7}  display="flex" justifyContent="flex-end">
             <Button 
               variant="outlined" 
               color="error" 
               onClick={handleClearFilters}
-              sx={{ mt: { xs: 1, md: 0 },
-              width: '100%',
-              height: '55px'
-             }}
-             startIcon={<CloseIcon />}
-            > 
-            Clear
+              fullWidth
+              size="small"
+              startIcon={<CloseIcon />}
+            >
+              Clear Filters
             </Button>
           </Grid>
         </Grid>
       </Paper>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">
+      {/* Header Section - Stack elements on mobile */}
+      <Box 
+        display="flex" 
+        flexDirection={{ xs: 'column', sm: 'row' }} 
+        justifyContent="space-between" 
+        alignItems={{ xs: 'stretch', sm: 'center' }} 
+        gap={2}
+        mb={2}
+      >
+        <Box display="flex" flexDirection={{ xs: 'row', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={2}>
+        <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
           Manage Deal Commitments
         </Typography>
-        <Box display="flex" gap={2} alignItems="center">
-          <IconButton
+        <IconButton
             color="primary"
             onClick={handleDownloadClick}
             disabled={!deals.length || exportLoading}
-            title="Export Data"
           >
-            <Tooltip title="Export Data">
-              {exportLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                <GetApp />
-              )}
-              <Typography variant="body2">Export</Typography>
-            </Tooltip>
+            {exportLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (<>
+            
+            <GetApp />
+            </>
+            )}
           </IconButton>
+        </Box>
+        <Box 
+          display="flex" 
+          flexDirection={{ xs: 'row', sm: 'row' }}
+          gap={1} 
+          alignItems="center"
+        >
           {dealsWithPendingCommitments.length > 0 && (
             <>
               <FormControlLabel
@@ -675,100 +723,162 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                   <Checkbox
                     checked={selectAllDeals}
                     onChange={(e) => setSelectAllDeals(e.target.checked)}
-                    color="primary"
+                    size="small"
                   />
                 }
-                label="Select Pending Deals"
+                label={<Typography sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>All</Typography>}
               />
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={actionInProgress && selectedActionType === 'approve' ? <CircularProgress size={20} color="inherit" /> : <CheckIcon />}
-                onClick={() => handleBulkDealsAction('approve')}
-                disabled={actionInProgress || selectedDeals.length === 0}
+              <Box 
+                display="flex" 
+                gap={1} 
+                flexDirection={{ xs: 'row', sm: 'row' }}
+                width={{ xs: '100%', sm: 'auto' }}
               >
-                {actionInProgress && selectedActionType === 'approve' ? 'Approving...' : `Approve Selected Deals (${selectedDeals.length})`}
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={actionInProgress && selectedActionType === 'decline' ? <CircularProgress size={20} color="inherit" /> : <CloseIcon />}
-                onClick={() => handleBulkDealsAction('decline')}
-                disabled={actionInProgress || selectedDeals.length === 0}
-              >
-                {actionInProgress && selectedActionType === 'decline' ? 'Declining...' : `Decline Selected Deals (${selectedDeals.length})`}
-              </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  fullWidth
+                  startIcon={actionInProgress && selectedActionType === 'approve' ? 
+                    <CircularProgress size={20} color="inherit" /> : 
+                    <CheckIcon />
+                  }
+                  onClick={() => handleBulkDealsAction('approve')}
+                  disabled={actionInProgress || selectedDeals.length === 0}
+                >
+                  {actionInProgress && selectedActionType === 'approve' ? 
+                    'Approving...' : 
+                    `Approve (${selectedDeals.length})`
+                  }
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  fullWidth
+                  startIcon={actionInProgress && selectedActionType === 'decline' ? 
+                    <CircularProgress size={20} color="inherit" /> : 
+                    <CloseIcon />
+                  }
+                  onClick={() => handleBulkDealsAction('decline')}
+                  disabled={actionInProgress || selectedDeals.length === 0}
+                >
+                  {actionInProgress && selectedActionType === 'decline' ? 
+                    'Declining...' : 
+                    `Decline (${selectedDeals.length})`
+                  }
+                </Button>
+              </Box>
             </>
           )}
         </Box>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
+      {/* Responsive Table */}
+      <TableContainer 
+        component={Paper}
+        sx={{
+          overflowX: 'auto',
+          '.MuiTable-root': {
+            minWidth: { xs: '100%', sm: 650 }
+          }
+        }}
+      >
+        <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
+              <StyledTableCell padding="checkbox" sx={{ display: { xs: 'table-cell', sm: 'table-cell' } }}>
                 {dealsWithPendingCommitments.length > 0 && (
                   <Checkbox
                     checked={selectAllDeals}
                     onChange={(e) => setSelectAllDeals(e.target.checked)}
+                    size="small"
                   />
                 )}
-              </TableCell>
-              <TableCell>Deal Name</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Total Commitments</TableCell>
-              <TableCell>Minimum Quantity</TableCell>
-              <TableCell>Quantity Committed</TableCell>
-              <TableCell>Total Amount</TableCell>
-              <TableCell>Actions</TableCell>
+              </StyledTableCell>
+              <StyledTableCell>Deal Name</StyledTableCell>
+              <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Category</StyledTableCell>
+              <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Total Commitments</StyledTableCell>
+              <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Min Qty</StyledTableCell>
+              <StyledTableCell>Qty Committed</StyledTableCell>
+              <StyledTableCell>Total Amount</StyledTableCell>
+              <StyledTableCell>Actions</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {deals.map((deal) => (
               <TableRow key={deal._id}>
-                <TableCell padding="checkbox">
+                <StyledTableCell padding="checkbox" sx={{ display: { xs: 'table-cell', sm: 'table-cell' } }}>
                   {deal.pendingCommitments > 0 && (
                     <Checkbox
                       checked={selectedDeals.includes(deal._id)}
                       onChange={() => handleDealSelect(deal._id)}
+                      size="small"
                     />
                   )}
-                </TableCell>
-                <TableCell>{deal.name}</TableCell>
-                <TableCell>{deal.category}</TableCell>
-                <TableCell>{deal.totalCommitments}</TableCell>
-                <TableCell>{deal.minimumQuantity}</TableCell>
-                <TableCell>{deal.totalQuantity}</TableCell>
-                <TableCell>${deal.totalAmount.toFixed(2)}</TableCell>
-                <TableCell>
-                  <Box display="flex" gap={1}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleBulkAction(deal._id, 'approve')}
-                      disabled={actionInProgress || deal.pendingCommitments === 0}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="error"
-                      onClick={() => handleBulkAction(deal._id, 'decline')}
-                      disabled={actionInProgress || deal.pendingCommitments === 0}
-                    >
-                      Decline
-                    </Button>
+                </StyledTableCell>
+                <StyledTableCell sx={{ maxWidth: { xs: '100px', sm: 'none' } }}>
+                  <Typography noWrap>{deal.name}</Typography>
+                </StyledTableCell>
+                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
+                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.totalCommitments}</StyledTableCell>
+                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
+                <StyledTableCell>{deal.totalQuantity}</StyledTableCell>
+                <StyledTableCell>${deal.totalAmount.toFixed(2)}</StyledTableCell>
+                <StyledTableCell>
+                  <Box 
+                    display="flex" 
+                    gap={1}
+                    sx={{
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      '.MuiButton-root': {
+                        minWidth: { xs: '70px', sm: 'auto' },
+                        padding: { xs: '4px 8px', sm: '6px 16px' },
+                      }
+                    }}
+                  >
+                    {/* Show buttons on larger screens */}
+                    <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleBulkAction(deal._id, 'approve')}
+                        disabled={actionInProgress || deal.pendingCommitments === 0}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleBulkAction(deal._id, 'decline')}
+                        disabled={actionInProgress || deal.pendingCommitments === 0}
+                      >
+                        Decline
+                      </Button>
+                    </Box>
+                    {/* Show only menu on mobile */}
                     <IconButton
                       size="small"
-                      onClick={(event) => handleMenuClick(event,deal)}
+                      onClick={(event) => handleMenuClick(event, deal)}
+                      sx={{ 
+                        display: { xs: 'flex', sm: 'none' },
+                        alignSelf: 'center'
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                    {/* Show menu on desktop too */}
+                    <IconButton
+                      size="small"
+                      onClick={(event) => handleMenuClick(event, deal)}
+                      sx={{ display: { xs: 'none', sm: 'flex' } }}
                     >
                       <MoreVertIcon />
                     </IconButton>
                   </Box>
-                </TableCell>
+                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -776,7 +886,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
       </TableContainer>
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={3}>
+      <Box display="flex" justifyContent="center" mt={3} sx={{ minWidth: { xs: '100%', sm: '300px' } }}>
         <Stack spacing={2}>
           <Pagination
             count={totalPages}
@@ -963,9 +1073,52 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        PaperProps={{
+          sx: {
+            width: { xs: '200px', sm: 'auto' }
+          }
+        }}
       >
-        <MenuItem onClick={handleViewDeal}>View</MenuItem>
-        <MenuItem onClick={handleAnalyticsDeal}>Analytics</MenuItem>
+        {/* Show Approve/Decline only on mobile */}
+        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+          <MenuItem 
+            onClick={() => {
+              handleBulkAction(selectedDealId._id, 'approve');
+              handleMenuClose();
+            }}
+            disabled={actionInProgress || !selectedDealId?.pendingCommitments}
+          >
+            <ListItemIcon>
+              <CheckIcon fontSize="small" color="primary" />
+            </ListItemIcon>
+            Approve
+          </MenuItem>
+          <MenuItem 
+            onClick={() => {
+              handleBulkAction(selectedDealId._id, 'decline');
+              handleMenuClose();
+            }}
+            disabled={actionInProgress || !selectedDealId?.pendingCommitments}
+          >
+            <ListItemIcon>
+              <CloseIcon fontSize="small" color="error" />
+            </ListItemIcon>
+            Decline
+          </MenuItem>
+          <Divider />
+        </Box>
+        <MenuItem onClick={handleViewDeal}>
+          <ListItemIcon>
+            <VisibilityIcon fontSize="small" />
+          </ListItemIcon>
+          View
+        </MenuItem>
+        <MenuItem onClick={handleAnalyticsDeal}>
+          <ListItemIcon>
+            <AnalyticsIcon fontSize="small" />
+          </ListItemIcon>
+          Analytics
+        </MenuItem>
       </Menu>
     </Box>
   );

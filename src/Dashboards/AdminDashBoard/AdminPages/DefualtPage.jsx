@@ -16,7 +16,7 @@ import {
 import './DefualtPage.css';
 import axios from 'axios';
 import TopMembers from '../../../Pages/TopMembers';
-
+import TopPerformingDistributor from '../../../Pages/TopPerformingDistributor';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 const DefaultPageSkeleton = () => (
@@ -395,6 +395,11 @@ const DefualtPage = () => {
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} md={12}>
           <TopMembers />
+        </Grid>
+      </Grid>
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} md={12}>
+          <TopPerformingDistributor />
         </Grid>
       </Grid>
       {/* Recent Activity Sections */}

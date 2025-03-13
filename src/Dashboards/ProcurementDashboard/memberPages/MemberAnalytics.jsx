@@ -114,7 +114,7 @@ const MemberAnalytics = ({ userId }) => {
 
       <Grid container spacing={3}>
         {/* Spending Trends */}
-        <Grid item xs={12}>
+        <Grid item xs={12} mb={2}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Spending Trends
@@ -150,7 +150,7 @@ const MemberAnalytics = ({ userId }) => {
         </Grid>
 
         {/* Category Distribution */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} mb={8}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Category Distribution
@@ -178,7 +178,7 @@ const MemberAnalytics = ({ userId }) => {
         </Grid>
 
         {/* Monthly Activity */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} mb={8}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Monthly Activity
@@ -198,7 +198,7 @@ const MemberAnalytics = ({ userId }) => {
         </Grid>
 
         {/* Commitment Status */}
-        <Grid item xs={12}>
+        <Grid item xs={12} mb={2}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Commitment Status Distribution

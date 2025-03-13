@@ -18,9 +18,6 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const TopMembers = () => {
@@ -37,7 +34,7 @@ const TopMembers = () => {
           return;
         }
 
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/members/top-members/${userRole}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/distributors/top-distributors/${userRole}`);
 
         setTopMembers(response.data.topMembers);
       } catch (error) {
@@ -50,14 +47,6 @@ const TopMembers = () => {
     fetchTopMembers();
   }, [navigate]);
 
-  const handleViewMember = (memberId) => {
-    navigate(`/member-details/${memberId}`);
-  };
-
-  const handleViewAllMembers = () => {
-    navigate('/all-members');
-  };
-
   // Function to get medal color based on rank
   const getMedalColor = (index) => {
     switch (index) {
@@ -69,6 +58,10 @@ const TopMembers = () => {
       default: return '#9e9e9e'; // Grey for others
 
     }
+  };
+
+  const handleViewMember = (memberId) => {
+    navigate(`/dashboard/admin/profile-management/${memberId}`);
   };
 
   if (loading) {
@@ -98,46 +91,28 @@ const TopMembers = () => {
   }
 
   return (
-      <Paper elevation={3} sx={{ p:3, borderRadius: 2 }}>
+      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="h5" component="h2">
-              Top 5 Co-op Members
+              Top Performing Distributors
             </Typography>
           </Box>
-          <Button 
-            variant="outlined" 
-            onClick={handleViewAllMembers}
-            sx={{ borderRadius: 2 }}
-          >
-            View All
-          </Button>
         </Box>
         
         <Divider sx={{ mb: 3 }} />
         
-        <TableContainer component={Paper} elevation={0} maxWidth="xl" sx={{ minWidth: { xs: '100%', sm: '300px' } }}>
-          <Table aria-label="top members table" sx={{ minWidth: { xs: '100%', sm: '300px' } }}>
+        <TableContainer>
+          <Table aria-label="top distributors table">
             <TableHead>
               <TableRow>
                 <TableCell>No.</TableCell>
-                <TableCell>Member</TableCell>
+                <TableCell>Distributor</TableCell>
                 <TableCell>Business Name</TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Total Commitments">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography variant="body2">Total Commitments</Typography>
-                    </Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Total Spent">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <AttachMoneyIcon sx={{ mr: 0.5 }} />
-                      <Typography variant="body2">Total Spent</Typography>
-                    </Box>
-                  </Tooltip>
-                </TableCell>
+                <TableCell align="center">Total Deals</TableCell>
+                <TableCell align="center">Active Deals</TableCell>
+                <TableCell align="center">All Commitments</TableCell>
+                <TableCell align="center">Total Revenue</TableCell>
                 <TableCell align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -156,8 +131,8 @@ const TopMembers = () => {
                       sx={{ 
                         bgcolor: getMedalColor(index), 
                         color: 'white',
-                        width: 30,
-                        height: 30,
+                        width: 35,
+                        height: 35,
                         borderRadius: '50%',
                         display: 'flex',
                         justifyContent: 'center',
@@ -169,42 +144,62 @@ const TopMembers = () => {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Avatar 
+                        src={member.logo}
+                        alt={member.name}
                         sx={{ 
-                          width: 40, 
-                          height: 40, 
-                          mr: 2,
-                          bgcolor: 'primary.main',
+                          width: 45, 
+                          height: 45,
                           border: `2px solid ${getMedalColor(index)}`
                         }}
                       >
-                        {member.logo ? (
-                          <img 
-                            src={member.logo} 
-                            alt={member.name} 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                        ) : (
-                          member.name.charAt(0)
-                        )}
+                        {member.name.charAt(0)}
                       </Avatar>
-                      <Typography variant="body1">{member.name}</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {member.name}
+                      </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>{member.businessName || 'Individual Member'}</TableCell>
-                  <TableCell align="center">{member.stats.totalCommitments}</TableCell>
-                  <TableCell align="center">${member.stats.totalSpent.toFixed(2)}</TableCell>
+                  <TableCell>{member.businessName || 'N/A'}</TableCell>
                   <TableCell align="center">
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {member.stats.totalDeals}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body1" color="success.main" sx={{ fontWeight: 500 }}>
+                      {member.stats.activeDeals}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {member.stats.totalCommitments}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      ${member.stats.totalSpent.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="View Details">
                     <Button
                       variant="contained"
                       size="small"
                       startIcon={<VisibilityIcon />}
                       onClick={() => handleViewMember(member._id)}
-                      sx={{ borderRadius: 2 }}
+                      sx={{ 
+                        borderRadius: 2,
+                        backgroundColor: 'primary.main',
+                        '&:hover': {
+                          backgroundColor: 'primary.dark',
+                        }
+                      }}
                     >
                       View
                     </Button>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}

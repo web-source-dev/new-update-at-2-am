@@ -7,25 +7,11 @@ import {
   Grid,
   CircularProgress,
   Container,
-  Chip,
   Button,
-  Select,
   MenuItem,
-  FormControl,
   InputLabel,
-  TextField,
-  Tooltip,
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper,
 } from '@mui/material';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -56,8 +42,7 @@ import {
     Group as GroupIcon,
     Business as BusinessIcon,
 } from '@mui/icons-material';
-import { subMonths, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { FilterTextField, FilterSelect, FilterFormControl } from '../../DashBoardComponents/FilterStyles';
+import { FilterSelect, FilterFormControl } from '../../DashBoardComponents/FilterStyles';
 import { FilterSection, FilterItem } from '../../DashBoardComponents/FilterSection';
 import RecentComit from './RecentComit';
 import { AnalyticsSkeleton } from '../../../Components/Skeletons/LoadingSkeletons';
@@ -264,16 +249,6 @@ const Analytics = () => {
         cancelled: totals.cancelledAmount || 0
       }
     };
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'warning',
-      approved: 'success',
-      declined: 'error',
-      cancelled: 'error'
-    };
-    return colors[status] || 'default';
   };
 
   const formatDate = (dateStr) => {
@@ -514,71 +489,6 @@ const Analytics = () => {
     </ResponsiveContainer>
   );
 
-  // Add BarChart component
-  const StatusBarChart = ({ data }) => (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-        <XAxis 
-          dataKey="name" 
-          tick={{ fontSize: 12 }}
-          interval={0}
-        />
-        <YAxis 
-          tick={{ fontSize: 12 }}
-          tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}
-        />
-        <RechartsTooltip
-          content={({ active, payload, label }) => {
-            if (active && payload && payload.length) {
-              return (
-                <Card sx={{ p: 1.5, boxShadow: 3, backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    {label}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: payload[0].color, fontWeight: 'bold' }}>
-                    {formatCurrency(payload[0].value)}
-                  </Typography>
-                </Card>
-              );
-            }
-            return null;
-          }}
-        />
-        <Bar 
-          dataKey="value" 
-          radius={[4, 4, 0, 0]}
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  );
-
-  const chartConfig = {
-    count: {
-      gradient: {
-        id: 'colorCount',
-        color: '#8884d8',
-      },
-      areaProps: {
-        stroke: '#8884d8',
-        fill: 'url(#colorCount)',
-      },
-    },
-    amount: {
-      gradient: {
-        id: 'colorAmount',
-        color: '#82ca9d',
-      },
-      areaProps: {
-        stroke: '#82ca9d',
-        fill: 'url(#colorAmount)',
-      },
-    },
-  };
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -620,21 +530,6 @@ const Analytics = () => {
     return null;
   };
 
-  const InsightCard = ({ title, value, trend, color }) => (
-    <Card elevation={2} sx={{ p: 2, height: '100%' }}>
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="h4" sx={{ color, fontWeight: 'bold' }}>
-        {value}
-      </Typography>
-      {trend && (
-        <Typography variant="caption" sx={{ color: trend > 0 ? 'success.main' : 'error.main' }}>
-          {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% vs last period
-        </Typography>
-      )}
-    </Card>
-  );
 
   // Add refresh functionality
   const handleRefresh = () => {
@@ -743,12 +638,6 @@ const Analytics = () => {
     </Card>
   );
 
-  // Add trend calculation helper
-  const calculateTrend = (currentData, previousData) => {
-    if (!previousData || previousData === 0) return 0;
-    return ((currentData - previousData) / previousData * 100).toFixed(1);
-  };
-
   // Add new admin-specific stat cards
   const AdminStatCards = ({ data }) => (
     <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -789,34 +678,6 @@ const Analytics = () => {
         />
       </Grid>
     </Grid>
-  );
-
-  // Add top distributors table
-  const TopDistributorsTable = ({ distributors }) => (
-    <TableContainer component={Paper} sx={{ mt: 3 }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Distributor</TableCell>
-            <TableCell align="right">Total Commitments</TableCell>
-            <TableCell align="right">Total Amount</TableCell>
-            <TableCell align="right">Success Rate</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {distributors.map((distributor) => (
-            <TableRow key={distributor._id}>
-              <TableCell>{distributor.distributor[0]?.name || 'N/A'}</TableCell>
-              <TableCell align="right">{distributor.totalCommitments}</TableCell>
-              <TableCell align="right">{formatCurrency(distributor.totalAmount)}</TableCell>
-              <TableCell align="right">
-                {(distributor.successRate * 100).toFixed(1)}%
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
   );
 
   if (loading) {
@@ -929,15 +790,7 @@ const Analytics = () => {
           {userRole === 'admin' && (
             <>
               <AdminStatCards data={commitmentData} />
-              <Grid container spacing={3}>
-                {/* ... existing charts ... */}
-              </Grid>
-              <Box mt={4} mb={4}>
-                <Typography variant="h6" gutterBottom>
-                  Top Performing Distributors
-                </Typography>
-                <TopDistributorsTable distributors={commitmentData.topDistributors} />
-              </Box>
+            
             </>
           )}
           {userRole === 'admin' && (

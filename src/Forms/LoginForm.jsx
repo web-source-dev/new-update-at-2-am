@@ -252,7 +252,9 @@ const LoginForm = () => {
         window.location.href = '/dashboard/distributor';
       } else {
         localStorage.setItem('user_id', user.id);
-        window.location.href = '/deals-catlog';
+        const redirectPath = localStorage.getItem('redirectPath');
+        localStorage.removeItem('redirectPath');
+        window.location.href = redirectPath || '/deals-catlog';
       }
     } catch (error) {
       const errorData = error.response?.data;

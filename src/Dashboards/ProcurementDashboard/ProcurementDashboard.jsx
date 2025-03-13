@@ -62,6 +62,34 @@ const MemberDashboard = () => {
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <button onClick={() => {
+              navigate('/deals-catlog');
+            }}
+              style={{
+                border: '2px solid #007bff',
+                color: '#007bff',
+                backgroundColor: 'white',
+                padding: '10px 20px',
+                cursor: 'pointer',
+                borderRadius: 25,
+                fontSize: '16px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                transition: 'background-color 0.3s ease',
+                marginRight: '20px',  
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#0056b3';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'white';
+                e.target.style.color = '#007bff';
+              }}
+
+            >
+              Explore Deals
+            </button>
             <NotificationIcon />
             <Logout />
           </div>

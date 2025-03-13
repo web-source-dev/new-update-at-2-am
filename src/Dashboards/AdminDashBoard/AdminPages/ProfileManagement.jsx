@@ -175,8 +175,8 @@ const ProfileManagement = () => {
   }
 
   return (
-    <Container>
-        <AnnouncementToast event="signup" />
+    <Container maxWidth="xl" sx={{ minWidth: { xs: '100%', sm: '300px' } }}>
+      <AnnouncementToast event="signup" />
       <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mb: 2 }}>Back</Button>
       <Card elevation={3} sx={{ mt: 2, p: 3, position: 'relative' }}>
         <CardContent>
@@ -193,15 +193,20 @@ const ProfileManagement = () => {
           </Grid>
         </CardContent>
         <Divider />
-        <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)} sx={{ mb: 2 }}>
-          <Tab label="Profile" />
-          <Tab label="Activity Logs" />
-          <Tab label="Commitments" />
-          <Tab label="Settings" />
-          {commitmentRole !== 'member' && (
-            <Tab label="Deals Managment" />
-          )}
-        </Tabs>
+        <Tabs
+  value={tabIndex}
+  onChange={(e, newValue) => setTabIndex(newValue)}
+  sx={{ mb: 2, width: '100%' }}
+  variant="scrollable"
+  scrollButtons="auto"
+>
+  <Tab label="Profile" />
+  <Tab label="Activity Logs" />
+  <Tab label="Commitments" />
+  <Tab label="Settings" />
+  {commitmentRole !== 'member' && <Tab label="Deals Management" />}
+</Tabs>
+
         <Box hidden={tabIndex !== 0} sx={{ p: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}><Typography variant="body1"><strong>Business:</strong> {user.businessName || 'N/A'}</Typography></Grid>

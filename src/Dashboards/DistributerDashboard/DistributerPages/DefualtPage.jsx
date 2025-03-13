@@ -173,7 +173,7 @@ const DefualtPage = () => {
       </Typography>
 
       <Grid container spacing={3} mb={6}>
-        <Grid item xs={12} sm={6} md={3} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ mb: 5 }}>
           <StatCard
             title="Active Deals"
             value={stats?.activeDeals || 0}
@@ -181,7 +181,7 @@ const DefualtPage = () => {
             color={CARD_COLORS.deals}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ mb: 5 }}>
           <StatCard
             title="Total Sales"
             value={formatCurrency(stats?.totalSales || 0)}
@@ -189,7 +189,7 @@ const DefualtPage = () => {
             color={CARD_COLORS.sales}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ mb: 5 }}>
           <StatCard
             title="Pending Commitments"
             value={stats?.pendingCommitments || 0}
@@ -197,7 +197,7 @@ const DefualtPage = () => {
             color={CARD_COLORS.pending}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ mb: 5 }}>
           <StatCard
             title="Total Views"
             value={stats?.totalViews?.toLocaleString() || 0}
@@ -211,13 +211,13 @@ const DefualtPage = () => {
       </Grid>
 
       <Grid container spacing={3} mb={10}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={8} sx={{ mb: 5 }}>
           <StyledCard>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#2C3E50' }}>
                 Sales Trend
               </Typography>
-              <Box height={300}>
+              <Box height={300} mb={5}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={salesData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
@@ -253,13 +253,13 @@ const DefualtPage = () => {
           </StyledCard>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4} sx={{ mb: 5 }}>
           <StyledCard>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#2C3E50' }}>
                 Category Distribution
               </Typography>
-              <Box height={300}>
+              <Box height={300} mb={5}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -326,13 +326,13 @@ const DefualtPage = () => {
       </Grid>
 
       <Grid container spacing={3} mb={10}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ mb: 5 }}>
           <StyledCard>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#2C3E50' }}>
                 Recent Deals
               </Typography>
-              <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
+              <TableContainer component={Paper} sx={{ boxShadow: 'none', minWidth: { xs: '100%', sm: '300px' } }}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -373,13 +373,13 @@ const DefualtPage = () => {
           </StyledCard>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ mb: 5 }}>
           <StyledCard>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#2C3E50' }}>
                 Recent Commitments
               </Typography>
-              <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
+              <TableContainer component={Paper} sx={{ boxShadow: 'none',minWidth: { xs: '100%', sm: '300px' } }}>
                 <Table>
                   <TableHead>
                     <TableRow>

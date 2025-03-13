@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
 
 const AllTopMembers = () => {
   const [members, setMembers] = useState([]);
@@ -94,6 +95,12 @@ const AllTopMembers = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Helmet>
+        <title>NMGA - All Members</title>
+        <meta name="description" content="NMGA All Members - View all members in the NMGA network" />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <Button onClick={() => navigate(-1)} sx={{ mb: 3 }}>Go Back</Button>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1" gutterBottom>

@@ -18,6 +18,7 @@ import LoadSplash from '../../Components/SplashPage/LoadSplash';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import AllDealsAdmin from './AdminPages/AllDealsAdmin';
+import AdminContactDisplay from './AdminPages/AdminContactDisplay';
 const AdminDashboard = () => {
   let match = useMatch('/dashboard/admin/*');
   const navigate = useNavigate();
@@ -51,6 +52,8 @@ const AdminDashboard = () => {
     { path: 'splash-content', label: 'Splash Content' },
     { path: 'deal-management', label: 'Deal Management' },
     { path: 'announcements', label: 'Announcements' },
+    { path: 'request/contact/manage', label: 'Contacts' },
+    
   ];
 
   return (
@@ -110,7 +113,12 @@ const AdminDashboard = () => {
               <AnnouncementToast event="all_deals" />
               <AllDealsAdmin />
             </>} />
+            
+            <Route path="request/contact/manage" element={<>
+              <AdminContactDisplay />
+            </>} />
           </Routes>
+          
         </div>
       </div>
 
