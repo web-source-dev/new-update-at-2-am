@@ -133,10 +133,7 @@ const ViewDeal = () => {
                 Minimum Quantity for Discount: <strong>{deal.minQtyForDiscount}</strong>
               </Typography>
               <Typography variant="body1">
-                Total Sold: <strong>{deal.totalSold}</strong> units
-              </Typography>
-              <Typography variant="body1">
-                Total Revenue: <strong>${deal.totalRevenue}</strong>
+                Total Commitments: <strong>{deal.totalCommittedQuantity}</strong>
               </Typography>
               <Typography variant="body1">
                 Views: <strong>{deal.views}</strong>
@@ -151,22 +148,12 @@ const ViewDeal = () => {
                 <Button 
                   variant="contained" 
                   color="primary" 
-                  startIcon={isNavigating ? <CircularProgress size={20} color="inherit" /> : <ShoppingCart />}
+                  startIcon={isNavigating ? <CircularProgress size={20} color="inherit" /> : null}
                   fullWidth
                   onClick={handleViewCommitments}
                   disabled={isNavigating}
                 >
                   {isNavigating ? 'Loading...' : 'View Commitments'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  color={deal.status === 'active' ? 'secondary' : 'primary'}
-                  startIcon={isStatusUpdating ? <CircularProgress size={20} color="inherit" /> : <FavoriteBorder />}
-                  fullWidth
-                  onClick={toggleDealStatus}
-                  disabled={isStatusUpdating}
-                >
-                  {isStatusUpdating ? 'Updating...' : (deal.status === 'active' ? 'Deactivate' : 'Activate')}
                 </Button>
               </Box>
             </CardContent>

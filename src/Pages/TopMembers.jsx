@@ -124,9 +124,9 @@ const TopMembers = () => {
                 <TableCell>Member</TableCell>
                 <TableCell>Business Name</TableCell>
                 <TableCell align="center">
-                  <Tooltip title="Total Commitments">
+                  <Tooltip title="Deals Committed">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography variant="body2">Total Commitments</Typography>
+                      <Typography variant="body2">Deals Committed</Typography>
                     </Box>
                   </Tooltip>
                 </TableCell>

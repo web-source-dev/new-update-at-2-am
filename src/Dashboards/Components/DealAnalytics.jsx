@@ -200,16 +200,9 @@ const DealAnalytics = () => {
                     <Box mt={1} display="flex" flexDirection="column" gap={0.5}>
                       <Box display="flex" justifyContent="space-between">
                         <Typography variant="body2">Total Commitments:</Typography>
-                        <Typography variant="body1">{formatNumber(safeAccess(overview, 'totalCommitments'))}</Typography>
-                      </Box>
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography variant="body2">Total Quantity:</Typography>
                         <Typography variant="body1">{formatNumber(safeAccess(overview, 'totalQuantity'))}</Typography>
                       </Box>
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography variant="body2">Conversion Rate:</Typography>
-                        <Typography variant="body1">{formatPercent(safeAccess(overview, 'conversionRate'))}</Typography>
-                      </Box>
+                    
                     </Box>
                   </Box>
                 </Grid>
@@ -265,7 +258,7 @@ const DealAnalytics = () => {
                 <Assessment />
                 <Box>
                   <Typography variant="h6">Total Commitments</Typography>
-                  <Typography variant="h4">{formatNumber(safeAccess(overview, 'totalCommitments'))}</Typography>
+                  <Typography variant="h4">{formatNumber(safeAccess(overview, 'totalQuantity'))}</Typography>
                   <Typography variant="body2">
                     Completion Rate: {formatPercent(safeAccess(overview, 'orderCompletionRate'))}
                   </Typography>
@@ -327,9 +320,8 @@ const DealAnalytics = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell>Member</TableCell>
-                      <TableCell align="right">Orders</TableCell>
                       <TableCell align="right">Quantity</TableCell>
-                      <TableCell align="right">Value</TableCell>
+                      <TableCell align="right">Price</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -346,7 +338,6 @@ const DealAnalytics = () => {
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell align="right">{formatNumber(member.totalCommitments)}</TableCell>
                         <TableCell align="right">{formatNumber(member.totalQuantity)}</TableCell>
                         <TableCell align="right">{formatCurrency(member.totalValue)}</TableCell>
                       </TableRow>

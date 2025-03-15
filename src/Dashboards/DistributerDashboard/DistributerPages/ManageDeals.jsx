@@ -710,7 +710,7 @@ const ManageDeals = () => {
                         Min Qty for Deal: {deal.minQtyForDiscount}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Commits: {deal.commitments.length}
+                        Members: {deal.commitments.length}
                       </Typography>
 
                     </Grid>

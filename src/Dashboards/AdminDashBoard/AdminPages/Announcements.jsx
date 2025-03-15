@@ -242,7 +242,7 @@ const Announcements = () => {
   }
 
   return (
-    <Container style={{ overflowX: 'hidden' }}>
+    <Container maxWidth='xl' style={{ overflowX: 'hidden'}}>
       <DashboardHeader>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -290,7 +290,7 @@ const Announcements = () => {
         </Box>
       </DashboardHeader>
 
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid container spacing={3} sx={{ mb: 10 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

@@ -31,7 +31,7 @@ import {
   Switch,
   Tooltip,
 } from "@mui/material";
-import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, FilterAlt, Search, ViewModule, ViewList, ViewComfy, Sort, Groups, ProductionQuantityLimits } from "@mui/icons-material";
+import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, Search, ProductionQuantityLimits, PowerOffOutlined, Person } from "@mui/icons-material";
 import axios from "axios";
 import { styled } from '@mui/material/styles';
 import Toast from '../Components/Toast/Toast';
@@ -279,7 +279,7 @@ const DisplayDeals = () => {
         message: 'Please login to commit a deal',
         severity: 'error'
       });
-      setTimeout(() => 
+      setTimeout(() =>
         setRedirectLoading(true), 2000);
       const currentPath = window.location.pathname;
       localStorage.setItem('redirectPath', currentPath);
@@ -327,7 +327,7 @@ const DisplayDeals = () => {
         message: 'Please login to add to favorites',
         severity: 'error'
       });
-      setTimeout(() => 
+      setTimeout(() =>
         setRedirectLoading(true), 2000);
       const currentPath = window.location.pathname;
       localStorage.setItem('redirectPath', currentPath);
@@ -368,7 +368,7 @@ const DisplayDeals = () => {
         message: 'Please login to commit a deal',
         severity: 'error'
       });
-      setTimeout(() => 
+      setTimeout(() =>
         setRedirectLoading(true), 2000);
       const currentPath = window.location.pathname;
       localStorage.setItem('redirectPath', currentPath);
@@ -462,7 +462,7 @@ const DisplayDeals = () => {
       <CircularProgress size={40} />
     </Box>
   }
-  
+
   return (
     <Box sx={{
       minHeight: '100vh',
@@ -883,7 +883,8 @@ const DisplayDeals = () => {
                               }}
                             />
                             <Chip
-                              label={`${deal.totalCommitments || 0} commits`}
+                              label={deal.totalCommitments || 0} // Ensure only text inside label
+                              icon={<Person />} // Use icon prop to display the user profile icon
                               size="small"
                               sx={{
                                 bgcolor: 'rgba(255,255,255,0.9)',
@@ -892,7 +893,7 @@ const DisplayDeals = () => {
                                 fontSize: '0.75rem',
                                 height: '24px'
                               }}
-                            />
+                            />;
                           </Box>
                           <Typography
                             variant="caption"
@@ -1050,36 +1051,36 @@ const DisplayDeals = () => {
                               <Typography variant="caption" color="success.main">
                                 {deal.minQtyForDiscount - deal.totalCommitmentQuantity || 0} remaining
                                 {deal.minQtyForDiscount - deal.totalCommitmentQuantity === 0 && (
-                               <Tooltip
-                               title={
-                                 <Typography sx={{ fontSize: "16px", color: "white" }}>
-                                   You can commit more, but this one has completed its requirements
-                                 </Typography>
-                               }
-                               placement="top"
-                               arrow
-                               PopperProps={{
-                                 modifiers: [
-                                   {
-                                     name: "preventOverflow",
-                                     options: {
-                                       boundary: "window",
-                                     },
-                                   },
-                                 ],
-                               }}
-                               sx={{
-                                 '& .MuiTooltip-tooltip': {
-                                   backgroundColor: "#333",
-                                   color: "white",
-                                   fontSize: "16px", // Increase font size
-                                   padding: "10px",
-                                   borderRadius: "8px",
-                                   boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
-                                 },
-                               }}
-                             >
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: "middle", color: "info.main" }} />
+                                  <Tooltip
+                                    title={
+                                      <Typography sx={{ fontSize: "16px", color: "white" }}>
+                                        You can commit more, but this one has completed its requirements
+                                      </Typography>
+                                    }
+                                    placement="top"
+                                    arrow
+                                    PopperProps={{
+                                      modifiers: [
+                                        {
+                                          name: "preventOverflow",
+                                          options: {
+                                            boundary: "window",
+                                          },
+                                        },
+                                      ],
+                                    }}
+                                    sx={{
+                                      '& .MuiTooltip-tooltip': {
+                                        backgroundColor: "#333",
+                                        color: "white",
+                                        fontSize: "16px", // Increase font size
+                                        padding: "10px",
+                                        borderRadius: "8px",
+                                        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+                                      },
+                                    }}
+                                  >
+                                    <InfoIcon fontSize="small" sx={{ verticalAlign: "middle", color: "info.main" }} />
                                   </Tooltip>
                                 )}
                               </Typography>
@@ -1342,8 +1343,15 @@ const DisplayDeals = () => {
               </Box>
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'left', flexDirection: 'column' }}>
                 <Chip label={`Min Qty: ${selectedDeal?.minQtyForDiscount || 0}`} color="primary" />
-                <Chip label={`Total Commitments: ${selectedDeal?.totalCommitments || 0}`} color="primary" />
-              </Box>
+                <Chip 
+  label={`Remaining Quantity: ${
+    selectedDeal?.minQtyForDiscount && selectedDeal?.totalCommitmentQuantity !== undefined
+      ? selectedDeal.minQtyForDiscount - selectedDeal.totalCommitmentQuantity
+      : "N/A"
+  }`} 
+  color="success" 
+/>
+               </Box>
             </Box>
 
             <Box sx={{

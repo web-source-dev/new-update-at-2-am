@@ -202,7 +202,6 @@ const ProfileManagement = () => {
 >
   <Tab label="Profile" />
   <Tab label="Activity Logs" />
-  <Tab label="Commitments" />
   <Tab label="Settings" />
   {commitmentRole !== 'member' && <Tab label="Deals Management" />}
 </Tabs>
@@ -279,14 +278,11 @@ const ProfileManagement = () => {
             <Typography variant="body2">No logs found.</Typography>
           )}
         </Box>
-        <Box hidden={tabIndex !== 2} sx={{ p: 2 }}>
-          <Commitments userId={userId} />
-        </Box>
-        <Box hidden={tabIndex !== 3} sx={{ p: 2 }}> {/* New Settings Tab Content */}
+        <Box hidden={tabIndex !== 2} sx={{ p: 2 }}> {/* New Settings Tab Content */}
           <MemberSettings userId={userId} /> {/* Call UserSettings component */}
         </Box>
         {userRole !== 'member' && (
-        <Box hidden={tabIndex !== 4} sx={{ p: 2 }}> {/* New Settings Tab Content */}
+        <Box hidden={tabIndex !== 3} sx={{ p: 2 }}> {/* New Settings Tab Content */}
           <ManageDeals userId={userId} /> {/* Call UserSettings component */}
         </Box>
         )}

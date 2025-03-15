@@ -111,7 +111,7 @@ const SingleDealCommitments = () => {
                 <TableRow>
                   <TableCell>Buyer</TableCell>
                   <TableCell>Contact</TableCell>
-                  <TableCell align="right">Quantity</TableCell>
+                  <TableCell align="right">Commited Quantity</TableCell>
                   <TableCell align="right">Total Price</TableCell>
                   <TableCell align="center">Status</TableCell>
                   <TableCell align="center">Action</TableCell>
@@ -132,8 +132,8 @@ const SingleDealCommitments = () => {
                         {commitment.userId.phone}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">{commitment.quantity}</TableCell>
-                    <TableCell align="right">
+                    <TableCell align="center">{commitment.quantity}</TableCell>
+                    <TableCell align="center">
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
                         <AttachMoney sx={{ fontSize: 14 }} />
                         {commitment.totalPrice}

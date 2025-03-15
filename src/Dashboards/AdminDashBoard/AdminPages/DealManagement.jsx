@@ -235,7 +235,7 @@ const DealsManagment = () => {
   }
 
   return (
-    <Container>
+    <Container maxWidth={'xl'}>
       <Typography variant="h4" gutterBottom>
         Manage Deals
       </Typography>
@@ -583,7 +583,7 @@ const DealsManagment = () => {
                   {/* Extra Deal Info */}
                   <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">Min Qty: {deal.minQtyForDiscount}</Typography>
-                    <Typography variant="body2" color="text.secondary">Commits: {deal.totalCommitments}</Typography>
+                    <Typography variant="body2" color="text.secondary">Members: {deal.totalCommitments}</Typography>
                     <Typography variant="body2" color="text.secondary">Views: {deal.views}</Typography>
                     <Typography variant="body2" color="text.secondary">Impressions: {deal.impressions}</Typography>
                   </Box>
@@ -667,7 +667,7 @@ const DealsManagment = () => {
                     Original Price: ${deal.originalCost} | Discounted Price: ${deal.discountPrice}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Min Qty: {deal.minQtyForDiscount} | Commits: {deal.totalCommitments}
+                    Min Qty: {deal.minQtyForDiscount} | Members: {deal.totalCommitments}
                   </Typography>
                   
                 </Box>

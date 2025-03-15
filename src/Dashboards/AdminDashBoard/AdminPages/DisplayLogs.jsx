@@ -300,7 +300,7 @@ const DisplayLogs = () => {
                 </Grid>
             </Grid>
 
-            <ContentContainer>
+            <ContentContainer sx={{mt:10}}>
                 <Paper sx={{ mb: 3, p: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Button

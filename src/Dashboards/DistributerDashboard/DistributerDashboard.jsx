@@ -10,12 +10,13 @@ import EditDeal from './DistributerPages/EditDeal';
 import AnnouncementToast from '../../Components/Toast/announcmentToast';
 import BulkUpload from './DistributerPages/BulkUpload';
 import Commitments from '../DashBoardComponents/Commitment';
-import Orders from './DistributerPages/Orders';
 import DefualtPage from './DistributerPages/DefualtPage';
 import NotificationIcon from '../../Components/Notification/NotificationIcon';
 import DisplaySplashContent from '../../Components/SplashPage/DisplaySplashContent';
 import { Helmet } from 'react-helmet';
 import AllDeals from './DistributerPages/AcceptAllCommitments';
+import AllMembersForDistributor from '../../TopMembersDistributer/AllMembersforDistributor';
+import ViewSingleMember from '../../TopMembersDistributer/viewSingleMember';
 const DistributerDashboard = () => {
   const navigate  = useNavigate();
   let match = useMatch('/dashboard/distributor/*');
@@ -43,7 +44,6 @@ const DistributerDashboard = () => {
 
   const links = [
     { path: '', label: 'Dashboard' },
-    { path: 'orders', label: 'Orders' },
     { path: `profile/${userId}`, label: 'Profile' },
     { 
       title: 'Deals',
@@ -76,10 +76,6 @@ const DistributerDashboard = () => {
               <AnnouncementToast event="signup" />
               <DefualtPage />
             </>} />
-            <Route path="orders" element={<>
-              <AnnouncementToast event="orders" />
-              <Orders />
-            </>} />
             <Route path="profile/:userId" element={<>
               <AnnouncementToast event="profile" />
               <ProfileManagement />
@@ -108,10 +104,17 @@ const DistributerDashboard = () => {
               <AnnouncementToast event="deal_management" />
               <AllDeals />
             </>} />
+            <Route path="all/co-op-membors/:distributorId" element={<>
+              <AnnouncementToast event="deal_management" />
+              <AllMembersForDistributor />
+            </>} />
+            <Route path="view/co-op-membors/:distributorId/member/:memberId" element={<>
+              <AnnouncementToast event="deal_management" />
+              <ViewSingleMember />
+            </>} />
           </Routes>
         </div>
       </div>
-
     </>
   );
 }

@@ -841,9 +841,8 @@ const AllDealsAdmin = () => {
               <StyledTableCell>Deal Name</StyledTableCell>
               <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Distributor</StyledTableCell>
               <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Category</StyledTableCell>
-              <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Total Commitments</StyledTableCell>
               <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Min Qty</StyledTableCell>
-              <StyledTableCell>Qty Committed</StyledTableCell>
+              <StyledTableCell>Total Commitments</StyledTableCell>
               <StyledTableCell>Total Amount</StyledTableCell>
               <StyledTableCell>Actions</StyledTableCell>
             </TableRow>
@@ -867,7 +866,6 @@ const AllDealsAdmin = () => {
                   {deal.distributor ? (deal.distributor.businessName || deal.distributor.name) : 'Unknown'}
                 </StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
-                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.totalCommitments}</StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
                 <StyledTableCell>{deal.totalQuantity}</StyledTableCell>
                 <StyledTableCell>${deal.totalAmount.toFixed(2)}</StyledTableCell>
@@ -1036,7 +1034,7 @@ const AllDealsAdmin = () => {
                   <TableRow>
                     <TableCell padding="checkbox"></TableCell>
                     <TableCell>Member</TableCell>
-                    <TableCell>Quantity</TableCell>
+                    <TableCell>Commitments</TableCell>
                     <TableCell>Total Price</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Date</TableCell>

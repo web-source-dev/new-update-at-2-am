@@ -38,6 +38,7 @@ import {
   LocalOffer,
   Groups,
   Visibility,
+  QueryStats,
 } from '@mui/icons-material';
 import axios from 'axios';
 import Toast from '../Components/Toast/Toast';
@@ -628,10 +629,19 @@ const ViewSingleDeal = () => {
                     '& .MuiChip-label': { px: 1 }
                   }}
                 />
-                <Chip 
-                  icon={<Groups />}
+                <Chip
                   label={`Min Qty: ${deal?.minQtyForDiscount}`}
                   color="info" 
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 1,
+                    '& .MuiChip-label': { px: 1 }
+                  }}
+                />
+                
+                <Chip 
+                  label={`Remeaning Quantity: ${deal?.minQtyForDiscount - deal?.totalCommittedQuantity}`}
+                  color="success" 
                   variant="outlined"
                   sx={{
                     borderRadius: 1,
@@ -754,7 +764,7 @@ const ViewSingleDeal = () => {
                         Total Commitments
                       </Typography>
                       <Typography variant="body1" fontWeight="500" color="success.main">
-                        {deal?.totalCommitments || 0} commitments
+                        {deal?.totalCommittedQuantity || 0} commitments
                       </Typography>
                     </Box>
                   </Box>

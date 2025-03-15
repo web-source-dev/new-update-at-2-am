@@ -39,6 +39,7 @@ import {
   Bar,
 } from 'recharts';
 import TopMembers from '../../../Pages/TopMembers';
+import TopMembersForDistributor from '../../../TopMembersDistributer/TopMembers.forDistributor';
 
 // Soft color palette
 const SOFT_COLORS = [
@@ -207,7 +208,7 @@ const DefualtPage = () => {
         </Grid>
       </Grid>
         <Grid item xs={12} md={12} sx={{ mb: 4 ,mt: 4}}>
-          <TopMembers />
+          <TopMembersForDistributor />
       </Grid>
 
       <Grid container spacing={3} mb={10}>
