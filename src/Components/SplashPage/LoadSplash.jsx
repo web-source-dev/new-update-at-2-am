@@ -163,13 +163,26 @@ const LoadSplash = () => {
                 }
               }}
             >
-              <CardMedia
-                component="img"
-                height="180"
-                image={content.cards[0]?.media[0]?.url || 'default-image-url.jpg'}
-                alt={content.cards[0]?.title}
-                sx={{ objectFit: 'cover' }}
-              />
+{content.cards[0]?.media[0]?.type === "image" ? (
+  <CardMedia
+    component="img"
+    height="300"
+    image={content.cards[0]?.media[0]?.url || "default-image-url.jpg"}
+    alt={content.cards[0]?.title}
+    sx={{ objectFit: "cover" }}
+  />
+) : content.cards[0]?.media[0]?.type === "video" ? (
+  <video
+    height="300"
+    src={content.cards[0]?.media[0]?.url}
+    controls
+    autoPlay
+    loop
+    style={{ width: "100%", objectFit: "cover", borderRadius: "4px" }}
+  />
+) : null}
+
+
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box sx={{ 
                   display: 'flex', 

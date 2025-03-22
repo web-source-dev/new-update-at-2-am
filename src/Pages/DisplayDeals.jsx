@@ -286,6 +286,16 @@ const DisplayDeals = () => {
       setTimeout(() => window.location.href = '/login', 3000);
       return;
     }
+        
+    const user_role = localStorage.getItem('user_role');
+    if (user_role !== 'member') {
+      setToast({
+        open: true,
+        message: 'Only Co-op members can commit to deals',
+        severity: 'warning'
+      });
+      return;
+    }
     setSelectedDeal(deal);
     setGetDealOpen(true);
   };
@@ -334,6 +344,16 @@ const DisplayDeals = () => {
       setTimeout(() => window.location.href = '/login', 3000);
       return;
     }
+    
+    const user_role = localStorage.getItem('user_role');
+    if (user_role !== 'member') {
+      setToast({
+        open: true,
+        message: 'Only Co-op members can add deals to favorites',
+        severity: 'warning'
+      });
+      return;
+    }
     try {
       setIsFavoriteLoading(true);
       const response = await axios.post(
@@ -375,6 +395,17 @@ const DisplayDeals = () => {
       setTimeout(() => window.location.href = '/login', 3000);
       return;
     }
+    
+    const user_role = localStorage.getItem('user_role');
+    if (user_role !== 'member') {
+      setToast({
+        open: true,
+        message: 'Only Co-op members can commit to deals',
+        severity: 'warning'
+      });
+      return;
+    }
+    
     if (!checkAuth() || !selectedDeal || isCommitting) return;
 
     const totalPrice = quantity * selectedDeal.discountPrice;

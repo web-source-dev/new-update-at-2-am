@@ -11,7 +11,7 @@ const Logout = () => {
     const admin_id = localStorage.getItem('admin_id');
     const id = user_id || admin_id;
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/logout`, { id });
+     
       localStorage.clear();
       navigate('/login');
     } catch (error) {

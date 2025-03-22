@@ -17,6 +17,8 @@ import { Helmet } from 'react-helmet';
 import AllDeals from './DistributerPages/AcceptAllCommitments';
 import AllMembersForDistributor from '../../TopMembersDistributer/AllMembersforDistributor';
 import ViewSingleMember from '../../TopMembersDistributer/viewSingleMember';
+import { Button } from '@mui/material';
+import SplashAgain from '../Components/SplashAgain';
 const DistributerDashboard = () => {
   const navigate  = useNavigate();
   let match = useMatch('/dashboard/distributor/*');
@@ -68,6 +70,34 @@ const DistributerDashboard = () => {
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <Button
+              onClick={() => {
+                navigate(`offers/view/splash-content?id=${userId}&session=${userId}&role=distributor?offer=true`);
+              }}
+              style={{
+                border: '2px solid #007bff',
+                color: '#007bff',
+                backgroundColor: 'white',
+                padding: '10px 20px',
+                cursor: 'pointer',
+                borderRadius: 25,
+                fontSize: '16px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                transition: 'background-color 0.3s ease',
+                marginRight: '20px',  
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#0056b3';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'white';
+                e.target.style.color = '#007bff';
+              }}
+            >
+              View Offers
+            </Button>
             <NotificationIcon />
             <Logout />
           </div>
@@ -111,6 +141,10 @@ const DistributerDashboard = () => {
             <Route path="view/co-op-membors/:distributorId/member/:memberId" element={<>
               <AnnouncementToast event="deal_management" />
               <ViewSingleMember />
+            </>} />
+            <Route path="offers/view/splash-content" element={<>
+              <AnnouncementToast event="deal_management" />
+              <SplashAgain />
             </>} />
           </Routes>
         </div>

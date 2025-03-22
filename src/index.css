@@ -86,6 +86,10 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
 }
+::selection {
+  background: var(--blue-color);
+  color: var(--secondary-color);
+}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

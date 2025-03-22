@@ -55,7 +55,22 @@ const CreateSplashContent = () => {
         try {
           setLoading(true);
           const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/splash/${id}`);
-          setFormData(response.data);
+          
+          // Format dates properly for the date input fields
+          const formattedData = { ...response.data };
+          if (formattedData.scheduling) {
+            // Ensure dates are in YYYY-MM-DD format
+            if (formattedData.scheduling.startDate) {
+              formattedData.scheduling.startDate = new Date(formattedData.scheduling.startDate)
+                .toISOString().split('T')[0];
+            }
+            if (formattedData.scheduling.endDate) {
+              formattedData.scheduling.endDate = new Date(formattedData.scheduling.endDate)
+                .toISOString().split('T')[0];
+            }
+          }
+          
+          setFormData(formattedData);
           setIsEditing(true);
         } catch (error) {
           console.error('Error fetching splash content:', error);
@@ -70,8 +85,24 @@ const CreateSplashContent = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const [section, field] = name.split('.');
-    if (field) {
+    const nameParts = name.split('.');
+    
+    if (nameParts.length === 3) {
+      // Handle nested properties like scheduling.timeOfDay.start
+      const [section, subsection, field] = nameParts;
+      setFormData((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [subsection]: {
+            ...prev[section][subsection],
+            [field]: value
+          }
+        },
+      }));
+    } else if (nameParts.length === 2) {
+      // Handle properties like scheduling.startDate
+      const [section, field] = nameParts;
       setFormData((prev) => ({
         ...prev,
         [section]: {
@@ -80,6 +111,7 @@ const CreateSplashContent = () => {
         },
       }));
     } else {
+      // Handle top-level properties
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -165,11 +197,25 @@ const CreateSplashContent = () => {
         setError('Title and content are required');
         return;
       }
+      
+      // Ensure timeOfDay is properly formatted as an object with start and end times
+      const dataToSubmit = {
+        ...formData,
+        scheduling: {
+          ...formData.scheduling,
+          timeOfDay: {
+            start: formData.scheduling.timeOfDay?.start || '00:00',
+            end: formData.scheduling.timeOfDay?.end || '23:59'
+          }
+        }
+      };
+      
+      console.log("formdata before submitting", dataToSubmit);
 
       if (isEditing) {
-        await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/splash/${id}`, formData);
+        await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/splash/${id}`, dataToSubmit);
       } else {
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/splash/create`, formData);
+        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/splash/create`, dataToSubmit);
       }
       navigate('/dashboard/admin/splash-content');
     } catch (error) {

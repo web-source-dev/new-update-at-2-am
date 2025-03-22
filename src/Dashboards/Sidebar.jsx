@@ -273,7 +273,7 @@ const Sidebar = ({ match, links }) => {
         variant="temporary"
         open={isMobileOpen}
         onClose={toggleMobileSidebar}
-        sx={{ "& .MuiDrawer-paper": { width: 240, pt: "20px" } }}
+        sx={{ "& .MuiDrawer-paper": { width: 340, pt: "40px" } }}
         anchor="left"
       >
         <List>

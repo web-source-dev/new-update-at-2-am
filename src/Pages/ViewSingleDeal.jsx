@@ -172,6 +172,15 @@ const ViewSingleDeal = () => {
       setTimeout(() => window.location.href = '/login', 3000);
       return;
     }
+    const user_role = localStorage.getItem('user_role');
+    if (user_role !== 'member') {
+      setToast({
+        open: true,
+        message: 'Only Co-op members can commit to deals',
+        severity: 'warning'
+      });
+      return;
+    }
     setGetDealOpen(true);
     setQuantity(1);
   };
@@ -196,6 +205,16 @@ const ViewSingleDeal = () => {
       const currentPath = window.location.pathname;
       localStorage.setItem('redirectPath', currentPath);
       setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
+    
+    const user_role = localStorage.getItem('user_role');
+    if (user_role !== 'member') {
+      setToast({
+        open: true,
+        message: 'Only  Co-op members can add deals to favorites',
+        severity: 'warning'
+      });
       return;
     }
     try {
@@ -234,6 +253,16 @@ const ViewSingleDeal = () => {
       const currentPath = window.location.pathname;
       localStorage.setItem('redirectPath', currentPath);
       setTimeout(() => window.location.href = '/login', 3000);
+      return;
+    }
+    
+    const user_role = localStorage.getItem('user_role');
+    if (user_role !== 'member') {
+      setToast({
+        open: true,
+        message: 'Only Co-op members can commit to deals',
+        severity: 'warning'
+      });
       return;
     }
     

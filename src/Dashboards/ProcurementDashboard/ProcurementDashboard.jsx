@@ -9,12 +9,13 @@ import MemberOverview from './memberPages/MemberOverview';
 import MemberCommitments from './memberPages/MemberCommitments';
 import MemberFavorites from './memberPages/MemberFavorites';
 import MemberAnalytics from './memberPages/MemberAnalytics';
-import DashboardHome from './memberPages/DashboardHome';
 import MemberSettings from './memberPages/MemberSettings';
 import NotificationIcon from '../../Components/Notification/NotificationIcon';
 import DisplaySplashContent from '../../Components/SplashPage/DisplaySplashContent';
 import { Helmet } from 'react-helmet';
 import DetailedAnalytics from './memberPages/DetailedAnalytics';
+import { Button } from '@mui/material';
+import SplashAgain from '../Components/SplashAgain';
 
 const MemberDashboard = () => {
   let match = useMatch('/dashboard/co-op-member/*');
@@ -35,6 +36,8 @@ const MemberDashboard = () => {
       const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/splash`, {
         headers: { 'user-role': userRole }
       });
+      console.log('Splash content response:', response.data);
+      console.log('Splash content length:', response.data.length);
       setSplashContent(response.data);
     };
 
@@ -60,36 +63,54 @@ const MemberDashboard = () => {
       {splashContent.length > 0 && <DisplaySplashContent content={splashContent} />}
       <div style={{ display: 'flex', width: '100%' }}>
         <Sidebar match={match} links={links} />
-        <div style={{ flexGrow: 1, padding: '20px' }}>
+        <div style={{ flexGrow: 1, padding: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <button onClick={() => {
-              navigate('/deals-catlog');
-            }}
-              style={{
-                border: '2px solid #007bff',
-                color: '#007bff',
-                backgroundColor: 'white',
-                padding: '10px 20px',
-                cursor: 'pointer',
-                borderRadius: 25,
-                fontSize: '16px',
-                fontWeight: 'bold',
-                textTransform: 'uppercase',
-                transition: 'background-color 0.3s ease',
-                marginRight: '20px',  
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#0056b3';
-                e.target.style.color = 'white';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'white';
-                e.target.style.color = '#007bff';
-              }}
+          <Button 
+  onClick={() => navigate(`offers/view/splash-content?id=${userId}&session=${userId}&role=distributor?offer=true`)}
+  sx={{
+    border: '2px solid #007bff',
+    color: '#007bff',
+    backgroundColor: 'white',
+    padding: { xs: '4px 4px', md: '10px 10px' },
+    cursor: 'pointer',
+    borderRadius: 25,
+    fontSize: { xs: '12px', md: '16px' },
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    transition: 'background-color 0.3s ease',
+    marginRight: '4px',
+    '&:hover': {
+      backgroundColor: '#0056b3',
+      color: 'white',
+    },
+  }}
+>
+  View Offers
+</Button>
 
-            >
-              Explore Deals
-            </button>
+<Button 
+  onClick={() => navigate('/deals-catlog')}
+  sx={{
+    border: '2px solid #007bff',
+    color: '#007bff',
+    backgroundColor: 'white',
+    padding: { xs: '4px 4px', md: '10px 10px' },
+    cursor: 'pointer',
+    borderRadius: 25,
+    fontSize: { xs: '12px', md: '16px' },
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    transition: 'background-color 0.3s ease',
+    marginRight: '4px',
+    '&:hover': {
+      backgroundColor: '#0056b3',
+      color: 'white',
+    },
+  }}
+>
+  Explore Deals
+</Button>
+
             <NotificationIcon />
             <Logout />
           </div>
@@ -115,6 +136,9 @@ const MemberDashboard = () => {
             <Route path="profile/:userId" element={<>
               <AnnouncementToast event="profile" />
               <ProfileManagement />
+            </>} />
+            <Route path="offers/view/splash-content" element={<>
+              <SplashAgain />
             </>} />
             <Route path="settings" element={<MemberSettings userId={userId} />} />
             <Route path="detailed-analytics" element={<DetailedAnalytics userId={userId} />} />
