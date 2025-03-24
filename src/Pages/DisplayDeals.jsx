@@ -104,6 +104,18 @@ const DisplayDeals = () => {
 
   const fetchDeals = async () => {
     try {
+      if(localStorage.getItem("user_role") !== "member") {
+        setToast({
+          open: true,
+          message: 'Only Co-op members can view deals',
+          severity: 'warning'
+        });
+        setTimeout(() =>
+          setRedirectLoading(true), 2000);
+      
+        setTimeout(() => navigate(-1), 3000);
+        return;
+      }
       const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetchAll/buy`);
       setDeals(response.data);
       setFilteredDeals(response.data);
@@ -179,7 +191,7 @@ const DisplayDeals = () => {
   }, [socket, categories]);
 
   useEffect(() => {
-
+   
     fetchDeals();
 
     // Also refresh user data when component mounts
@@ -1485,7 +1497,7 @@ const DisplayDeals = () => {
             {isCommitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Confirm Purchase'
+              'Confirm Commitment'
             )}
           </Button>
         </DialogActions>

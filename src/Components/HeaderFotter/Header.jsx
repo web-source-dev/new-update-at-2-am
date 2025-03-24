@@ -17,7 +17,8 @@ import {
   ListItemText,
   ListItemIcon,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  CardMedia
 } from '@mui/material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -110,7 +111,6 @@ const Header = () => {
   const [user, setUser] = useState(null);
 
   const pages = [
-    { title: 'About', path: '/about', icon: <InfoIcon /> },
     { title: 'Deals', path: '/deals-catlog', icon: <LocalOfferIcon /> },
     { title: 'How it Works', path: '/howitworks', icon: <BusinessIcon /> },
     { title: 'Support', path: '/support', icon: <SupportIcon /> },
@@ -229,18 +229,19 @@ const Header = () => {
             <Box 
               component="span" 
               sx={{
-                bgcolor: '#64ffda',
-                color: '#1a237e',
-                px: 1.5,
-                py: 0.5,
-                borderRadius: '8px',
-                mr: 1,
+                mr: 5,
                 display: 'flex',
                 alignItems: 'center',
-                boxShadow: '0 2px 8px rgba(100, 255, 218, 0.3)'
               }}
             >
-              NMGA
+              <CardMedia 
+          component="img"
+          height="50"
+          width="200"
+          image="/fav.png"
+          alt="Logo"
+          sx={{ objectFit: 'contain' }}
+          />
             </Box>
           </Typography>
 

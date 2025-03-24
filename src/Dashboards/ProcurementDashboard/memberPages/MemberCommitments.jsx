@@ -21,30 +21,107 @@ import {
   DialogContentText,
   Skeleton,
   Alert,
-  Snackbar
+  Snackbar,
+  TextField,
+  Grid,
+  InputAdornment
 } from '@mui/material';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { 
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Pending as PendingIcon,
   Payment as PaymentIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Edit as EditIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 const MemberCommitments = ({ userId }) => {
   const [commitments, setCommitments] = useState([]);
+  const [filteredCommitments, setFilteredCommitments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [modifyDialogOpen, setModifyDialogOpen] = useState(false);
   const [selectedCommitment, setSelectedCommitment] = useState(null);
+  const [modifiedQuantity, setModifiedQuantity] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [filters, setFilters] = useState({
+    dealName: '',
+    quantity: '',
+    startDate: new Date(new Date().setDate(1)), // First day of current month
+    endDate: new Date()
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCommitments();
   }, [userId]);
+
+  useEffect(() => {
+    filterCommitments();
+  }, [commitments, filters]);
+
+  const filterCommitments = () => {
+    let filtered = [...commitments];
+
+    if (filters.dealName) {
+      filtered = filtered.filter(c => 
+        c.dealId.name.toLowerCase().includes(filters.dealName.toLowerCase())
+      );
+    }
+
+    if (filters.quantity) {
+      filtered = filtered.filter(c => 
+        c.quantity.toString().includes(filters.quantity)
+      );
+    }
+
+    if (filters.startDate && filters.endDate) {
+      filtered = filtered.filter(c => {
+        const commitmentDate = new Date(c.createdAt);
+        return commitmentDate >= filters.startDate && 
+               commitmentDate <= filters.endDate;
+      });
+    }
+
+    setFilteredCommitments(filtered);
+  };
+
+  const handleModifyQuantity = async () => {
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/member/commitments/${selectedCommitment._id}/modify`,
+        { quantity: parseInt(modifiedQuantity) }
+      );
+
+      setCommitments(commitments.map(c => 
+        c._id === selectedCommitment._id 
+          ? { ...c, quantity: parseInt(modifiedQuantity) }
+          : c
+      ));
+
+      setSnackbar({
+        open: true,
+        message: 'Quantity modified successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Error modifying quantity',
+        severity: 'error'
+      });
+    } finally {
+      setModifyDialogOpen(false);
+      setSelectedCommitment(null);
+      setModifiedQuantity('');
+    }
+  };
 
   const fetchCommitments = async () => {
     try {
@@ -173,6 +250,56 @@ const MemberCommitments = ({ userId }) => {
         My Commitments
       </Typography>
 
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              label="Deal Name"
+              value={filters.dealName}
+              onChange={(e) => setFilters({ ...filters, dealName: e.target.value })}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              label="Quantity"
+              type="number"
+              value={filters.quantity}
+              onChange={(e) => setFilters({ ...filters, quantity: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Start Date"
+                value={filters.startDate}
+                onChange={(date) => setFilters({ ...filters, startDate: date })}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </LocalizationProvider>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="End Date"
+                value={filters.endDate}
+                onChange={(date) => setFilters({ ...filters, endDate: date })}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </LocalizationProvider>
+          </Grid>
+        </Grid>
+      </Paper>
+
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableContainer>
           <Table>
@@ -188,7 +315,7 @@ const MemberCommitments = ({ userId }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {commitments
+              {filteredCommitments
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((commitment) => (
                   <TableRow key={commitment._id}>
@@ -222,18 +349,33 @@ const MemberCommitments = ({ userId }) => {
                     <TableCell>
                       <Box display="flex" gap={1}>
                       {commitment.status === 'pending' && (
-                      <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          onClick={() => {
-                            setSelectedCommitment(commitment);
-                            setCancelDialogOpen(true);
-                          }}
-                          startIcon={<CancelIcon />}
-                        >
-                          Cancel
-                        </Button>
+                        <>
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            onClick={() => {
+                              setSelectedCommitment(commitment);
+                              setModifiedQuantity(commitment.quantity.toString());
+                              setModifyDialogOpen(true);
+                            }}
+                            startIcon={<EditIcon />}
+                          >
+                            Modify
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            onClick={() => {
+                              setSelectedCommitment(commitment);
+                              setCancelDialogOpen(true);
+                            }}
+                            startIcon={<CancelIcon />}
+                          >
+                            Cancel
+                          </Button>
+                        </>
                       )}
                         <Button
                           variant="outlined"
@@ -255,7 +397,7 @@ const MemberCommitments = ({ userId }) => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={commitments.length}
+          count={filteredCommitments.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -282,6 +424,35 @@ const MemberCommitments = ({ userId }) => {
         </DialogActions>
       </Dialog>
 
+      {/* Modify Quantity Dialog */}
+      <Dialog
+        open={modifyDialogOpen}
+        onClose={() => setModifyDialogOpen(false)}
+      >
+        <DialogTitle>Modify Quantity</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Please enter the new quantity for this commitment.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Quantity"
+            type="number"
+            fullWidth
+            value={modifiedQuantity}
+            onChange={(e) => setModifiedQuantity(e.target.value)}
+            inputProps={{ min: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModifyDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleModifyQuantity} color="primary" variant="contained">
+            Modify
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
@@ -300,4 +471,4 @@ const MemberCommitments = ({ userId }) => {
   );
 };
 
-export default MemberCommitments; 
+export default MemberCommitments;

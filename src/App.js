@@ -131,11 +131,12 @@ const App = () => {
     borderRadius: 1,
     fontWeight: "bold",
     zIndex: 1000,
-    mixBlendMode:'multiply'
+    mixBlendMode: 'multiply'
   }}
 >
-  <img src='/RTNLOGO.jpg' width={"200px"}></img>
-
+  <a href="https://rtnglobal.site" target="_blank" rel="noopener noreferrer">
+    <img src="/RTNLOGO.jpg" width="200px" alt="RTN Global Logo" />
+  </a>
 </Box>
 
 
