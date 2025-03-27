@@ -122,6 +122,9 @@ const ViewSingleDeal = () => {
     };
   }, [socket, dealId]);
 
+  // State to track if user has already committed to this deal
+  const [userCommitment, setUserCommitment] = useState(null);
+
   useEffect(() => {
   
     const fetchDeal = async () => {
@@ -143,12 +146,21 @@ const ViewSingleDeal = () => {
         
         // Check if deal is in favorites
         if (user_id) {
-        const favResponse = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
-          { params: { user_id } }
-        );
-        setIsFavorite(favResponse.data.some(fav => fav.dealId === dealId));
-      }
+          const favResponse = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
+            { params: { user_id } }
+          );
+          setIsFavorite(favResponse.data.some(fav => fav.dealId === dealId));
+          
+          // Check if user has already committed to this deal
+          const commitmentsResponse = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/deals/commit/fetch/${user_id}`
+          );
+          const existingCommitment = commitmentsResponse.data.find(
+            commitment => commitment.dealId._id === dealId
+          );
+          setUserCommitment(existingCommitment || null);
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Error fetching deal details');
       } finally {
@@ -195,7 +207,13 @@ const ViewSingleDeal = () => {
       return;
     }
     setGetDealOpen(true);
-    setQuantity(1);
+    
+    // If user has already committed to this deal, pre-populate with existing quantity
+    if (userCommitment) {
+      setQuantity(userCommitment.quantity);
+    } else {
+      setQuantity(1);
+    }
   };
   
   const handleCloseGetDeal = () => {
@@ -311,6 +329,7 @@ const ViewSingleDeal = () => {
       });
     } finally {
       setIsCommitting(false);
+      window.location.reload()
     }
   };
 
@@ -938,14 +957,14 @@ const ViewSingleDeal = () => {
                   textTransform: 'none',
                   fontWeight: 600,
                   boxShadow: 2,
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  background: userCommitment ? 'linear-gradient(45deg,rgb(17, 128, 26) 30%,rgba(6, 78, 18, 0.68) 90%)' : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                   '&:hover': {
                     boxShadow: 4,
-                    background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)'
+                  background: userCommitment ? 'linear-gradient(45deg,rgb(17, 128, 26) 30%,rgba(6, 78, 18, 0.68) 90%)' : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                   }
                 }}
               >
-                Make Commitment
+                {userCommitment ? 'Edit Commitment' : 'Make Commitment'}
               </Button>
               <IconButton
                 color="error"
@@ -983,7 +1002,7 @@ const ViewSingleDeal = () => {
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" fontWeight="bold">
-            Get Deal: {deal?.name}
+            {userCommitment ? 'Edit Commitment' : 'Get Deal'}: {deal?.name}
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ pt: '16px !important' }}>
@@ -1067,15 +1086,21 @@ const ViewSingleDeal = () => {
           </Button>
           <Button
             variant="contained"
-            color="primary"
+            color={userCommitment ? "warning" : "primary"}
             onClick={handleCommitDeal}
             disabled={isCommitting}
-            sx={{ borderRadius: 2 }}
+            sx={{ 
+              borderRadius: 2,
+              background: userCommitment ? 'linear-gradient(45deg, #FF9800 30%, #FFC107 90%)' : undefined,
+              '&:hover': {
+                background: userCommitment ? 'linear-gradient(45deg, #F57C00 30%, #FF9800 90%)' : undefined
+              }
+            }}
           >
             {isCommitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Confirm Commitment'
+              userCommitment ? 'Update Commitment' : 'Confirm Commitment'
             )}
           </Button>
         </DialogActions>

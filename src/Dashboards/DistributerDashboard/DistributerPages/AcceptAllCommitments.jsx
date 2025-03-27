@@ -32,7 +32,8 @@ import {
   styled,
   IconButton,
   ListItemIcon,
-  Divider
+  Divider,
+  Chip
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -51,6 +52,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
+import { display } from '@mui/system';
 
 const isMobile = window.innerWidth <= 600;
 
@@ -821,9 +823,21 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                 </StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
-                <StyledTableCell>{deal.totalQuantity}</StyledTableCell>
-                <StyledTableCell>${deal.totalAmount.toFixed(2)}</StyledTableCell>
                 <StyledTableCell>
+  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
+</StyledTableCell>
+<StyledTableCell>
+  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
+</StyledTableCell>
+<StyledTableCell>
+  <Box sx={{display:'flex',gap:2}}>
+{deal.bulkAction ? (
+ <Chip 
+      label={deal.bulkStatus} 
+      color={deal.bulkStatus === "approved" ? "success" : "error"} 
+      variant="outlined" 
+    />
+) : (
                   <Box 
                     display="flex" 
                     gap={1}
@@ -856,8 +870,11 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                         Decline
                       </Button>
                     </Box>
-                    {/* Show only menu on mobile */}
-                    <IconButton
+                 
+                  </Box>
+)}
+                   {/* Show only menu on mobile */}
+                   <IconButton
                       size="small"
                       onClick={(event) => handleMenuClick(event, deal)}
                       sx={{ 
@@ -875,8 +892,9 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                     >
                       <MoreVertIcon />
                     </IconButton>
-                  </Box>
+                    </Box>
                 </StyledTableCell>
+
               </TableRow>
             ))}
           </TableBody>
@@ -908,18 +926,6 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             <Typography variant="h6">
               Commitment Details - {selectedDeal?.name}
             </Typography>
-            {pendingCommitmentsInDialog.length > 0 && (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={selectAll}
-                    onChange={(e) => setSelectAll(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label="Select All Pending"
-              />
-            )}
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -928,7 +934,6 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell padding="checkbox"></TableCell>
                     <TableCell>Member</TableCell>
                     <TableCell>Commitments</TableCell>
                     <TableCell>Total Price</TableCell>
@@ -939,14 +944,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                 <TableBody>
                   {selectedDeal.detailedCommitments.map((commitment) => (
                     <TableRow key={commitment._id}>
-                      <TableCell padding="checkbox">
-                        {commitment.status === 'pending' && (
-                          <Checkbox
-                            checked={selectedCommitments.includes(commitment._id)}
-                            onChange={() => handleCommitmentSelect(commitment._id)}
-                          />
-                        )}
-                      </TableCell>
+                    
                       <TableCell>{commitment.userId.businessName || commitment.userId.name}</TableCell>
                       <TableCell>{commitment.quantity}</TableCell>
                       <TableCell>${commitment.totalPrice.toFixed(2)}</TableCell>
@@ -972,33 +970,56 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             </TableContainer>
           )}
         </DialogContent>
-        <DialogActions>
-          <Box display="flex" gap={1} mx={2} mb={1}>
-            {pendingCommitmentsInDialog.length > 0 && (
-              <>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={actionInProgress && selectedActionType === 'approve' ? <CircularProgress size={20} color="inherit" /> : <CheckIcon />}
-                  onClick={() => handleDialogAction('approve')}
-                  disabled={actionInProgress || selectedCommitments.length === 0}
-                >
-                  {actionInProgress && selectedActionType === 'approve' ? 'Approving...' : `Approve Selected (${selectedCommitments.length})`}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  startIcon={actionInProgress && selectedActionType === 'decline' ? <CircularProgress size={20} color="inherit" /> : <CloseIcon />}
-                  onClick={() => handleDialogAction('decline')}
-                  disabled={actionInProgress || selectedCommitments.length === 0}
-                >
-                  {actionInProgress && selectedActionType === 'decline' ? 'Declining...' : `Decline Selected (${selectedCommitments.length})`}
-                </Button>
-              </>
-            )}
-            <Button onClick={() => setOpenDialog(false)}>Close</Button>
-          </Box>
-        </DialogActions>
+
+<DialogActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+  <Box sx={{ display: 'flex', gap: 1 }}>
+    <Button
+      variant="outlined"
+      color="primary"
+      onClick={() => {
+        // Export only the commitments from the current dialog
+        const csvData = selectedDeal.detailedCommitments.map(commitment => ({
+          'Member Name': commitment.userId.businessName || commitment.userId.name,
+          'Quantity': commitment.quantity,
+          'Total Price': `$${commitment.totalPrice.toFixed(2)}`,
+          'Status': commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1),
+          'Date': format(new Date(commitment.createdAt), 'PP')
+        }));
+
+        // Create CSV content
+        const headers = Object.keys(csvData[0]);
+        const csvContent = [
+          headers.join(','),
+          ...csvData.map(row => 
+            headers.map(header => {
+              const value = row[header];
+              return typeof value === 'string' && value.includes(',') 
+                ? `"${value}"` 
+                : value
+            }).join(',')
+          )
+        ].join('\n');
+
+        // Download the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const fileName = `${selectedDeal.name}-commitments-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        saveAs(blob, fileName);
+      }}
+      startIcon={<GetApp />}
+    >
+      Export CSV
+    </Button>
+  </Box>
+  <Box sx={{ display: 'flex', gap: 1 }}>
+    <Button
+      variant="contained"
+      color="error"
+      onClick={() => setOpenDialog(false)}
+    >
+      Close
+    </Button>
+  </Box>
+</DialogActions>
       </Dialog>
 
       {/* Add Export Menu */}

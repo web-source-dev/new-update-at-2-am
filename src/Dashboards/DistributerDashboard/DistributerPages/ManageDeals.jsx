@@ -35,11 +35,12 @@ const ManageDeals = () => {
   const location = useLocation();
   const [filter, setFilter] = useState({
     category: '',
-    status: '',
+    status: 'active',
     minPrice: '',
     maxPrice: '',
     search: '',
-    sortBy: ''
+    sortBy: '',
+    month: new Date().getMonth() + 1, // Add month filter with current month as default
   });
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -67,7 +68,12 @@ const ManageDeals = () => {
   useEffect(() => {
     const fetchDeals = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch/${userId}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch/${userId}`, {
+          params: {
+            ...filter,
+            month: filter.month
+          }
+        });
         const dealsData = response.data.deals || response.data;
         setDeals(Array.isArray(dealsData) ? dealsData : []);
       } catch (error) {
@@ -83,7 +89,7 @@ const ManageDeals = () => {
     if (userId) {  // Only fetch if userId is available
       fetchDeals();
     }
-  }, [userId, location.key]);
+  }, [userId, location.key, filter]);
 
   // Confirmation dialog handlers
   const handleConfirmDialogOpen = (title, content, action, dealId, dealName, actionType) => {
@@ -402,7 +408,7 @@ const ManageDeals = () => {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                   <FilterTextField
                     label="Search Deals"
                     name="search"
@@ -420,7 +426,7 @@ const ManageDeals = () => {
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                   <FilterFormControl fullWidth>
                     <InputLabel>Category</InputLabel>
                     <FilterSelect
@@ -433,6 +439,29 @@ const ManageDeals = () => {
                       {categories.map(cat => (
                         <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                       ))}
+                    </FilterSelect>
+                  </FilterFormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FilterFormControl fullWidth>
+                    <InputLabel>Month</InputLabel>
+                    <FilterSelect
+                      value={filter.month}
+                      onChange={(e) => setFilter({ ...filter, month: e.target.value })}
+                      label="Month"
+                    >
+                      <MenuItem value={1}>January</MenuItem>
+                      <MenuItem value={2}>February</MenuItem>
+                      <MenuItem value={3}>March</MenuItem>
+                      <MenuItem value={4}>April</MenuItem>
+                      <MenuItem value={5}>May</MenuItem>
+                      <MenuItem value={6}>June</MenuItem>
+                      <MenuItem value={7}>July</MenuItem>
+                      <MenuItem value={8}>August</MenuItem>
+                      <MenuItem value={9}>September</MenuItem>
+                      <MenuItem value={10}>October</MenuItem>
+                      <MenuItem value={11}>November</MenuItem>
+                      <MenuItem value={12}>December</MenuItem>
                     </FilterSelect>
                   </FilterFormControl>
                 </Grid>
@@ -463,6 +492,7 @@ const ManageDeals = () => {
                         fullWidth
                       />
                     </Grid>
+
                   </Grid>
                 </Grid>
 
@@ -517,6 +547,14 @@ const ManageDeals = () => {
               <Chip
                 label={`Search: ${filter.search}`}
                 onDelete={() => handleFilterChange({ target: { name: 'search', value: '' } })}
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {filter.month && (
+              <Chip
+                label={`Month: ${filter.month}`}
+                onDelete={() => handleFilterChange({ target: { name: 'month', value: '' } })}
                 color="primary"
                 variant="outlined"
               />
@@ -735,8 +773,9 @@ const ManageDeals = () => {
                   </Box>
 
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Ends: {new Date(deal.dealEndsAt).toLocaleString()}
-                  </Typography>
+  {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
+</Typography>
+
                 </CardContent>
                 <Divider />
                 <CardActions sx={{
@@ -764,13 +803,21 @@ const ManageDeals = () => {
                       <Visibility />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
-                    <Switch
-                      checked={deal.status === 'active'}
-                      onChange={() => handleToggleChange(deal._id, deal.status)}
-                      color="primary"
-                    />
-                  </Tooltip>
+                  {deal.bulkAction ? (
+   <Chip 
+   label={deal.bulkStatus} 
+   color={deal.bulkStatus === "approved" ? "success" : "error"} 
+   variant="outlined" 
+ />
+  ) : (
+    <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
+      <Switch
+        checked={deal.status === 'active'}
+        onChange={() => handleToggleChange(deal._id, deal.status)}
+        color="primary"
+      />
+    </Tooltip>
+  )}
                 </CardActions>
               </Card>
             </Grid>
@@ -879,9 +926,10 @@ const ManageDeals = () => {
                           />
                         )}
                       </Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Ends: {new Date(deal.dealEndsAt).toLocaleString()}
-                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+  {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
+</Typography>
+
                     </Grid>
                   </Grid>
                 </Box>
@@ -906,14 +954,28 @@ const ManageDeals = () => {
                   <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
                     <Visibility sx={{ mr: 1 }} fontSize="small" /> View
                   </MenuItem>
-                  <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
-                    <Switch
-                      checked={deal.status === 'active'}
-                      size="small"
-                      sx={{ mr: 1 }}
-                    />
-                    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </MenuItem>
+                  {deal.bulkAction ? (
+  <MenuItem disabled>
+  <Chip 
+      label={deal.bulkStatus} 
+      color={deal.bulkStatus === "approved" ? "success" : "error"} 
+      variant="outlined" 
+    />
+  </MenuItem>
+) : (
+  <MenuItem onClick={() => { 
+    handleToggleChange(deal._id, deal.status); 
+    handleMenuClose(deal._id); 
+  }}>
+    <Switch
+      checked={deal.status === 'active'}
+      size="small"
+      sx={{ mr: 1 }}
+    />
+    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+  </MenuItem>
+)}
+
                 </Menu>
               </Box>
             </Paper>
@@ -999,7 +1061,10 @@ const ManageDeals = () => {
                   </TableCell>
 
 
-                  <TableCell>{new Date(deal.dealEndsAt).toLocaleString().split(',')[0]}</TableCell>
+                  <TableCell>
+  {deal.bulkAction ? "Expired" : new Date(deal.dealEndsAt).toLocaleDateString()}
+</TableCell>
+
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
                       <MoreVert />
@@ -1020,14 +1085,28 @@ const ManageDeals = () => {
                       <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
                         <Visibility sx={{ mr: 1 }} fontSize="small" /> View
                       </MenuItem>
-                      <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
-                        <Switch
-                          checked={deal.status === 'active'}
-                          size="small"
-                          sx={{ mr: 1 }}
-                        />
-                        {deal.status === 'active' ? 'Deactivate' : 'Activate'}
-                      </MenuItem>
+                      {deal.bulkAction ? (
+  <MenuItem disabled>
+  <Chip 
+      label={deal.bulkStatus} 
+      color={deal.bulkStatus === "approved" ? "success" : "error"} 
+      variant="outlined" 
+    />
+  </MenuItem>
+) : (
+  <MenuItem onClick={() => { 
+    handleToggleChange(deal._id, deal.status); 
+    handleMenuClose(deal._id); 
+  }}>
+    <Switch
+      checked={deal.status === 'active'}
+      size="small"
+      sx={{ mr: 1 }}
+    />
+    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+  </MenuItem>
+)}
+
                     </Menu>
                   </TableCell>
 
