@@ -96,7 +96,7 @@ const DistributerDashboard = () => {
                 e.target.style.color = '#007bff';
               }}
             >
-              View Offers
+              Advertisements
             </Button>
             <NotificationIcon />
             <Logout />

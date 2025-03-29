@@ -1161,7 +1161,24 @@ const AllDealsAdmin = () => {
             {confirmDialog.content}
           </Typography>
         </DialogContent>
-
+        <DialogActions>
+          <Button
+            onClick={handleConfirmDialogClose}
+            color="inherit"
+            disabled={actionInProgress}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmAction}
+            color="primary"
+            variant="contained"
+            disabled={actionInProgress}
+            startIcon={actionInProgress ? <CircularProgress size={20} /> : null}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

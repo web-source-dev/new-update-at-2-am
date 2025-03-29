@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { PhotoCamera, Visibility, VisibilityOff } from '@mui/icons-material';
+import { PhotoCamera, Visibility, VisibilityOff} from '@mui/icons-material';
 import Toast from '../../../Components/Toast/Toast';
 import { styled } from '@mui/material/styles';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -83,7 +83,9 @@ const MemberSettings = ({ userId }) => {
     address: '',
     businessName: '',
     contactPerson: '',
-    logo:''
+    logo:'',
+    additionalEmails: [],
+    additionalPhoneNumbers: []
   });
   const [passwordValues, setPasswordValues] = useState({
     oldPassword: '',
@@ -115,6 +117,8 @@ const MemberSettings = ({ userId }) => {
         businessName: response.data.businessName || '',
         contactPerson: response.data.contactPerson || '',
         logo: response.data.logo || '',
+        additionalEmails: response.data.additionalEmails || [],
+        additionalPhoneNumbers: response.data.additionalPhoneNumbers || []
       });
       setLoading(false);
     } catch (error) {
@@ -128,6 +132,26 @@ const MemberSettings = ({ userId }) => {
     }
   };
 
+  const handleAddEmail = () => {
+    const newEmails = [...formik.values.additionalEmails, { email: '', label: '' }];
+    formik.setFieldValue('additionalEmails', newEmails);
+  };
+
+  const handleRemoveEmail = (index) => {
+    const newEmails = formik.values.additionalEmails.filter((_, i) => i !== index);
+    formik.setFieldValue('additionalEmails', newEmails);
+  };
+
+  const handleAddPhone = () => {
+    const newPhones = [...formik.values.additionalPhoneNumbers, { number: '', label: '' }];
+    formik.setFieldValue('additionalPhoneNumbers', newPhones);
+  };
+
+  const handleRemovePhone = (index) => {
+    const newPhones = formik.values.additionalPhoneNumbers.filter((_, i) => i !== index);
+    formik.setFieldValue('additionalPhoneNumbers', newPhones);
+  };
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: initialValues,
@@ -138,6 +162,18 @@ const MemberSettings = ({ userId }) => {
       address: Yup.string(),
       businessName: Yup.string(),
       contactPerson: Yup.string(),
+      additionalEmails: Yup.array().of(
+        Yup.object().shape({
+          email: Yup.string().email('Invalid email address'),
+          label: Yup.string()
+        })
+      ),
+      additionalPhoneNumbers: Yup.array().of(
+        Yup.object().shape({
+          number: Yup.string(),
+          label: Yup.string()
+        })
+      )
     }),
     onSubmit: async (values) => {
       try {
@@ -174,6 +210,7 @@ const MemberSettings = ({ userId }) => {
             // Send the URL to your backend
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/member/user/${userId}/avatar`, { avatar: imageUrl });
             setAvatar(imageUrl); // Update the avatar state
+            fetchUserData(); // Fetch user data again to update the avatar
             setSnackbar({
                 open: true,
                 message: 'Profile picture updated successfully',
@@ -359,6 +396,90 @@ const MemberSettings = ({ userId }) => {
                         error={formik.touched.contactPerson && Boolean(formik.errors.contactPerson)}
                         helperText={formik.touched.contactPerson && formik.errors.contactPerson}
                       />
+                    </Grid>
+                    
+                    {/* Additional Emails Section */}
+                    <Grid item xs={12}>
+                      <Typography variant="h6" gutterBottom>
+                        Additional Emails
+                      </Typography>
+                      {formik.values.additionalEmails.map((emailItem, index) => (
+                        <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                          <TextField
+                            fullWidth
+                            name={`additionalEmails.${index}.email`}
+                            label="Email"
+                            value={emailItem.email}
+                            onChange={formik.handleChange}
+                            error={formik.touched.additionalEmails?.[index]?.email && Boolean(formik.errors.additionalEmails?.[index]?.email)}
+                            helperText={formik.touched.additionalEmails?.[index]?.email && formik.errors.additionalEmails?.[index]?.email}
+                          />
+                          <TextField
+                            fullWidth
+                            name={`additionalEmails.${index}.label`}
+                            label="Label"
+                            value={emailItem.label}
+                            onChange={formik.handleChange}
+                          />
+                          <IconButton onClick={() => handleRemoveEmail(index)}sx={{
+                            fontSize: '1.5rem',
+                            borderRadius:'50%',
+                            width:'54px',
+                            height:'54px',
+                            backgroundColor:'rgb(239, 68, 68)',
+                            color:'white'
+                          }}>
+                           X
+                          </IconButton>
+                        </Box>
+                      ))}
+                      <Button
+                        variant="outlined"
+                        onClick={handleAddEmail}
+                      >
+                        Add Email
+                      </Button>
+                    </Grid>
+
+                    {/* Additional Phone Numbers Section */}
+                    <Grid item xs={12}>
+                      <Typography variant="h6" gutterBottom>
+                        Additional Phone Numbers
+                      </Typography>
+                      {formik.values.additionalPhoneNumbers.map((phoneItem, index) => (
+                        <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                          <TextField
+                            fullWidth
+                            name={`additionalPhoneNumbers.${index}.number`}
+                            label="Phone Number"
+                            value={phoneItem.number}
+                            onChange={formik.handleChange}
+                          />
+                          <TextField
+                            fullWidth
+                            name={`additionalPhoneNumbers.${index}.label`}
+                            label="Label"
+                            value={phoneItem.label}
+                            onChange={formik.handleChange}
+                          />
+                          <IconButton onClick={() => handleRemovePhone(index)} sx={{
+                            fontSize: '1.5rem',
+                            borderRadius:'50%',
+                            width:'54px',
+                            height:'54px',
+                            backgroundColor:'rgb(239, 68, 68)',
+                            color:'white'
+                          }}>
+                            X
+                          </IconButton>
+                        </Box>
+                      ))}
+                      <Button
+                        variant="outlined"
+                        onClick={handleAddPhone}
+                      >
+                        Add Phone Number
+                      </Button>
                     </Grid>
                     <Grid item xs={12}>
                       <StyledButton color="primary" variant="contained" type="submit">

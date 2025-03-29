@@ -44,6 +44,7 @@ const DealsManagment = () => {
     const fetchDeals = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetchAll`);
+        console.log(response.data)
         setDeals(response.data);
         const uniqueCategories = [...new Set(response.data.map(deal => deal.category))];
         setCategories(uniqueCategories);
@@ -69,17 +70,25 @@ const DealsManagment = () => {
 
   const handleDelete = async (dealId) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/deals/delete/${dealId}`);
+      const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/deals/delete/${dealId}`);
+          if (response.data.success) {
       setDeals(deals.filter(deal => deal._id !== dealId));
       setToast({
         open: true,
-        message: 'Deal deleted successfully',
+        message: response.data.message,
         severity: 'success'
       });
+    } else {
+      setToast({
+        open: true,
+        message: response.data.message,
+        severity: 'error'
+      });
+    }
     } catch (error) {
       setToast({
         open: true,
-        message: 'Error deleting deal',
+        message: error.response?.data?.message || 'Error deleting deal',
         severity: 'error'
       });
       console.error('Error deleting deal:', error);
@@ -631,11 +640,19 @@ const DealsManagment = () => {
                     </Button>
                   </Tooltip>
                   <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
-                    <Switch
-                      checked={deal.status === 'active'}
-                      onChange={() => handleToggleChange(deal._id, deal.status)}
-                      color="primary"
-                    />
+                  {!deal.bulkAction && (
+                          <>
+                            <Switch checked={deal.status === 'active'} size="small" sx={{ mr: 1 }} />
+                            {deal.status === 'active' ? '' : ''}
+                          </>
+                        )}
+                  </Tooltip>
+                  <Tooltip title='Delete'>
+                  {!deal.bulkAction && (
+                           <Button variant="contained" color="error" size="small" onClick={() => handleDelete(deal._id)}>
+                              <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
+                            </Button>
+                        )}
                   </Tooltip>
                 </CardActions>
               </Card>
@@ -647,7 +664,7 @@ const DealsManagment = () => {
       {layout === 'list' && (
         <Box>
           {paginatedDeals.map((deal) => (
-            <Paper key={deal._id} sx={{ mb: 1, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e0e0e0', borderRadius: 2, bgcolor:'#f9f9f9a2', transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}>
+            <Paper key={deal._id} sx={{ mb: 1, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: '#f9f9f9a2', transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <CardMedia
                   component="img"
@@ -669,32 +686,32 @@ const DealsManagment = () => {
                   <Typography variant="body2" color="text.secondary">
                     Min Qty: {deal.minQtyForDiscount} | Members: {deal.totalCommitments}
                   </Typography>
-                  
+
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '250px', gap: 1 }}>
                 <Typography variant="body2" color="text.secondary">
                   Deal Progress
                 </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
-                      sx={{ height: 6, borderRadius: 2, width: '90%' }}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
-                        <CheckCircleIcon
-                          sx={{
-                            color: 'success.main'
-                          }}
-                        />
-                      )}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.error">
-                    Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                    sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                      <CheckCircleIcon
+                        sx={{
+                          color: 'success.main'
+                        }}
+                      />
+                    )}
                   </Typography>
+                </Box>
+                <Typography variant="body2" color="text.error">
+                  Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
@@ -714,13 +731,18 @@ const DealsManagment = () => {
                     <Visibility sx={{ mr: 1 }} fontSize="small" /> View
                   </MenuItem>
                   <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
-                    <Switch
-                      checked={deal.status === 'active'}
-                      size="small"
-                      sx={{ mr: 1 }}
-                    />
-                    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                  {!deal.bulkAction && (
+                          <>
+                            <Switch checked={deal.status === 'active'} size="small" sx={{ mr: 1 }} />
+                            {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                          </>
+                        )}
                   </MenuItem>
+                  {!deal.bulkAction && (
+                           <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
+                              <Delete sx={{ mr: 1 }} fontSize="small" /> Delete
+                            </MenuItem>
+                        )}
                 </Menu>
               </Box>
             </Paper>
@@ -742,7 +764,7 @@ const DealsManagment = () => {
             </TableHead>
             <TableBody>
               {paginatedDeals.map((deal, index) => (
-                <TableRow key={deal._id} sx={{ backgroundColor:'f9f9f9', height: '60px' }}>
+                <TableRow key={deal._id} sx={{ backgroundColor: 'f9f9f9', height: '60px' }}>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <CardMedia
                       component="img"
@@ -761,7 +783,7 @@ const DealsManagment = () => {
                         value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
                         sx={{ height: 6, borderRadius: 2, width: '90%' }}
                       />
-                      <Typography variant="body2" color="text.secondary"> 
+                      <Typography variant="body2" color="text.secondary">
                         {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
                           <CheckCircleIcon
                             sx={{
@@ -791,13 +813,18 @@ const DealsManagment = () => {
                         <Visibility sx={{ mr: 1 }} fontSize="small" /> View
                       </MenuItem>
                       <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
-                        <Switch
-                          checked={deal.status === 'active'}
-                          size="small"
-                          sx={{ mr: 1 }}
-                        />
-                        {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                        {!deal.bulkAction && (
+                          <>
+                            <Switch checked={deal.status === 'active'} size="small" sx={{ mr: 1 }} />
+                            {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                          </>
+                        )}
                       </MenuItem>
+                      {!deal.bulkAction && (
+                      <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
+                    <Delete sx={{ mr: 1 }} fontSize="small" /> Delete
+                  </MenuItem>
+                      )}
                     </Menu>
                   </TableCell>
                 </TableRow>

@@ -184,7 +184,7 @@ const DefualtPage = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ mb: 5 }}>
           <StatCard
-            title="Total Sales"
+            title="Total $ Commitments"
             value={formatCurrency(stats?.totalSales || 0)}
             icon={<TrendingUp sx={{ fontSize: 40 }} />}
             color={CARD_COLORS.sales}
@@ -216,7 +216,7 @@ const DefualtPage = () => {
           <StyledCard>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ color: '#2C3E50' }}>
-                Sales Trend
+                Commitments Trend
               </Typography>
               <Box height={300} mb={5}>
                 <ResponsiveContainer width="100%" height="100%">

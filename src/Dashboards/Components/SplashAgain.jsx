@@ -67,8 +67,13 @@ const SplashAgain = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 4 }}>Splash Content</Typography>
+      <Typography variant="h4" sx={{ mb: 4 }}>Advertisements</Typography>
       <Grid container spacing={3}>
+        {splashContents.length === 0 && (
+          <Grid item xs={12}>
+            <Typography>No Ads available.</Typography>
+          </Grid>
+        )}
         {splashContents.map(content => (
           <Grid item xs={12} md={6} lg={4} key={content._id}>
             <Card elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

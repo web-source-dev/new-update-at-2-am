@@ -85,7 +85,7 @@ const MemberDashboard = () => {
     },
   }}
 >
-  View Offers
+Advertisements
 </Button>
 
 <Button 

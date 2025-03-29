@@ -143,6 +143,7 @@ const ViewSingleDeal = () => {
         }
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch-single/deal/${dealId}`);
         setDeal(response.data);
+        console.log(response.data)
         
         // Check if deal is in favorites
         if (user_id) {
@@ -734,7 +735,7 @@ const ViewSingleDeal = () => {
               }}
             >
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Description
+                Special Content
               </Typography>
               <Typography 
                 variant="body1" 
@@ -748,6 +749,32 @@ const ViewSingleDeal = () => {
                 {deal?.description}
               </Typography>
             </Paper>
+            {deal.singleStoreDeals && (
+            
+            <Paper
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                bgcolor: 'background.paper',
+                boxShadow: 1
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Single Store Deals
+              </Typography>
+              <Typography 
+                variant="body1" 
+                color="text.secondary"
+                sx={{
+                  lineHeight: 1.6,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  whiteSpace: 'pre-line' // Preserve line breaks in description
+                }}
+              >
+                {deal?.singleStoreDeals}
+              </Typography>
+            </Paper>
+            )}
 
             {/* Deal Info Card */}
             <Paper 

@@ -57,6 +57,8 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     originalCost: '',
     discountPrice: '',
     minQtyForDiscount: '',
+    dealStartAt: '',
+    singleStoreDeals: '',
     images: [],
   });
   const [toast, setToast] = useState({
@@ -72,7 +74,9 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
       setFormData({
         ...initialData,
         dealEndsAt: initialData.dealEndsAt ? new Date(initialData.dealEndsAt).toISOString().slice(0, 16) : '',
+        dealStartAt: initialData.dealStartAt? new Date(initialData.dealStartAt).toISOString().slice(0, 16) : '',
       });
+
     }
   }, [initialData]);
 
@@ -220,7 +224,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
             <Grid item xs={12}>
               <TextField
-                label="Description"
+                label="Special Comment"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -272,6 +276,21 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
             <Grid item xs={12} sm={6} md={4}>
               <TextField
+                label="Deal Starts At"
+                name="dealStartAt"
+                type="datetime-local"
+                value={formData.dealStartAt}
+                onChange={handleChange}
+                fullWidth
+                required
+                size="small"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
                 label="Deal Ends At"
                 name="dealEndsAt"
                 type="datetime-local"
@@ -283,6 +302,18 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                 InputLabelProps={{
                   shrink: true,
                 }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Single Store Deals"
+                name="singleStoreDeals"
+                value={formData.singleStoreDeals}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={3}
+                size="small"
               />
             </Grid>
 

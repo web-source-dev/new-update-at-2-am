@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Paper, Box, Button, IconButton, InputLabel, Skeleton, MenuItem, Card, CardContent, CardMedia, CardActions, Tooltip, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Menu, MenuItem as DropdownMenuItem, Badge, Collapse, Chip, Divider, InputAdornment, TablePagination, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import { Edit, Delete, Search, Clear, Visibility, ViewModule, ViewList, ViewComfy, Add, GetApp, FilterAlt, ExpandLess, ExpandMore, ContentCopy, MoreVert } from '@mui/icons-material';
+import { Edit, Delete, Search, Clear, Visibility, ViewModule, ViewList, ViewComfy, Add, GetApp, FilterAlt, ExpandLess, ExpandMore, ContentCopy, MoreVert, DeleteOutline } from '@mui/icons-material';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Toast from '../../../Components/Toast/Toast';
@@ -139,15 +139,27 @@ const ManageDeals = () => {
       `Are you sure you want to delete the deal "${deal.name}"? This action cannot be undone.`,
       async () => {
         try {
-          await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/deals/delete/${dealId}`);
-          setDeals(deals.filter(deal => deal._id !== dealId));
+          const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/deals/delete/${dealId}`);
+          if (response.data.success) {
+            setDeals(deals.filter(deal => deal._id !== dealId));
+            setToast({
+              open: true,
+              message: response.data.message,
+              severity: 'success'
+            });
+          } else {
+            setToast({
+              open: true,
+              message: response.data.message,
+              severity: 'error'
+            });
+          }
+        } catch (error) {
           setToast({
             open: true,
-            message: 'Deal deleted successfully',
-            severity: 'success'
+            message: error.response?.data?.message || 'Error deleting deal',
+            severity: 'error'
           });
-        } catch (error) {
-          throw error;
         }
       },
       dealId,
@@ -818,6 +830,17 @@ const ManageDeals = () => {
       />
     </Tooltip>
   )}
+    {!deal.bulkAction && (
+    <Tooltip title='Delete'>
+      <Button
+        color="error"
+        onClick={() => handleDelete(deal._id)}
+        variant="outlined"
+      >
+        <DeleteOutline />
+      </Button>
+    </Tooltip>
+  )}
                 </CardActions>
               </Card>
             </Grid>
@@ -962,6 +985,7 @@ const ManageDeals = () => {
       variant="outlined" 
     />
   </MenuItem>
+  
 ) : (
   <MenuItem onClick={() => { 
     handleToggleChange(deal._id, deal.status); 
@@ -973,6 +997,11 @@ const ManageDeals = () => {
       sx={{ mr: 1 }}
     />
     {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+  </MenuItem>
+)}
+{!deal.bulkAction && (
+  <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
+    <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
   </MenuItem>
 )}
 
@@ -1104,6 +1133,12 @@ const ManageDeals = () => {
       sx={{ mr: 1 }}
     />
     {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+  </MenuItem>
+)}
+
+{!deal.bulkAction && (
+  <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
+    <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
   </MenuItem>
 )}
 

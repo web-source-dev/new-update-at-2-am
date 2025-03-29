@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, json, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Button, Container, Typography, Paper, Grid, CircularProgress, Tabs, Tab, Box, Avatar, Card, CardContent, CardActions, Divider, TablePagination, Pagination, Skeleton } from '@mui/material';
+import { Button, Container, Typography, Paper, Grid, Stack,Chip, Tabs, Tab, Box, Avatar, Card, CardContent, CardActions, Divider, TablePagination, Pagination, Skeleton } from '@mui/material';
 import { Person, Block, LockOpen, ArrowBack, Login } from '@mui/icons-material';
+import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
 import Toast from '../../../Components/Toast/Toast'; // Import Toast component
 import AnnouncementToast from '../../../Components/Toast/announcmentToast';
 import ManageDeals from '../../DistributerDashboard/DistributerPages/ManageDeals';
-import Commitments from '../../DashBoardComponents/Commitment';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import MemberSettings from '../../../Dashboards/ProcurementDashboard/memberPages/MemberSettings';
 
@@ -194,26 +195,76 @@ const ProfileManagement = () => {
         </CardContent>
         <Divider />
         <Tabs
-  value={tabIndex}
-  onChange={(e, newValue) => setTabIndex(newValue)}
-  sx={{ mb: 2, width: '100%' }}
-  variant="scrollable"
-  scrollButtons="auto"
->
-  <Tab label="Profile" />
-  <Tab label="Activity Logs" />
-  <Tab label="Settings" />
-  {commitmentRole !== 'member' && <Tab label="Deals Management" />}
-</Tabs>
+          value={tabIndex}
+          onChange={(e, newValue) => setTabIndex(newValue)}
+          sx={{ mb: 2, width: '100%' }}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="Profile" />
+          <Tab label="Activity Logs" />
+          <Tab label="Settings" />
+          {commitmentRole !== 'member' && <Tab label="Deals Management" />}
+        </Tabs>
 
         <Box hidden={tabIndex !== 0} sx={{ p: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}><Typography variant="body1"><strong>Business:</strong> {user.businessName || 'N/A'}</Typography></Grid>
-            <Grid item xs={12} sm={6}><Typography variant="body1"><strong>Role:</strong> {user.role || 'N/A'}</Typography></Grid>
-            <Grid item xs={12} sm={6}><Typography variant="body1"><strong>Contact:</strong> {user.contactPerson || 'N/A'}</Typography></Grid>
-            <Grid item xs={12} sm={6}><Typography variant="body1"><strong>Phone:</strong> {user.phone || 'N/A'}</Typography></Grid>
-            <Grid item xs={12} sm={6}><Typography variant="body1"><strong>Address:</strong> {user.address || 'N/A'}</Typography></Grid>
-          </Grid>
+              <Grid container spacing={2}>
+                {[
+                  { label: "Business", value: user.businessName },
+                  { label: "Role", value: user.role },
+                  { label: "Contact", value: user.contactPerson },
+                  { label: "Phone", value: user.phone },
+                  { label: "Address", value: user.address },
+                ].map((item, index) => (
+                  <Grid item xs={12} sm={6} key={index}>
+                    <Typography variant="body1">
+                      <strong>{item.label}:</strong> {item.value || "N/A"}
+                    </Typography>
+                  </Grid>
+                ))}
+    <>
+      {user.additionalEmails?.length > 0 && (
+        <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Additional Emails
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {user.additionalEmails.map((email, index) => (
+                <Chip
+                  key={index}
+                  icon={<EmailIcon />}
+                  label={`${email.label}: ${email.email}`}
+                  variant="outlined"
+                  color="primary"
+                  sx={{ fontSize: 14 }}
+                />
+              ))}
+            </Stack>
+        </Grid>
+      )}
+
+      {user.additionalPhoneNumbers?.length > 0 && (
+        <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Additional Phone Numbers
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {user.additionalPhoneNumbers.map((phone, index) => (
+                <Chip
+                  key={index}
+                  icon={<PhoneIcon />}
+                  label={`${phone.label}: ${phone.number}`}
+                  variant="outlined"
+                  color="secondary"
+                  sx={{ fontSize: 14 }}
+                />
+              ))}
+            </Stack>
+        </Grid>
+      )}
+    </>
+
+              </Grid>
         </Box>
         <Box hidden={tabIndex !== 1} sx={{ p: 2 }}>
           {logs.length > 0 ? (
@@ -227,9 +278,9 @@ const ProfileManagement = () => {
                   </Typography>
                 </Paper>
               ))}
-              <Box sx={{ 
-                mt: 3, 
-                display: 'flex', 
+              <Box sx={{
+                mt: 3,
+                display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: 2,
@@ -282,25 +333,25 @@ const ProfileManagement = () => {
           <MemberSettings userId={userId} /> {/* Call UserSettings component */}
         </Box>
         {userRole !== 'member' && (
-        <Box hidden={tabIndex !== 3} sx={{ p: 2 }}> {/* New Settings Tab Content */}
-          <ManageDeals userId={userId} /> {/* Call UserSettings component */}
-        </Box>
+          <Box hidden={tabIndex !== 3} sx={{ p: 2 }}> {/* New Settings Tab Content */}
+            <ManageDeals userId={userId} /> {/* Call UserSettings component */}
+          </Box>
         )}
         <CardActions sx={{ position: 'absolute', top: '1rem', right: '1rem' }}>
           {localStorage.getItem('user') ? (
             ''
-          ):(
+          ) : (
             <>
               {userRole === 'admin' && (
                 <>
                   {user.isBlocked ? (
-                <Button startIcon={<LockOpen />} color="secondary" onClick={handleUnblockUser}>Unblock</Button>
-              ) : (
-                <Button startIcon={<Block />} color="error" onClick={handleBlockUser}>Block</Button>
+                    <Button startIcon={<LockOpen />} color="secondary" onClick={handleUnblockUser}>Unblock</Button>
+                  ) : (
+                    <Button startIcon={<Block />} color="error" onClick={handleBlockUser}>Block</Button>
+                  )}
+                  <Button startIcon={<Login />} onClick={handleLoginAsUser}>Login as User</Button>
+                </>
               )}
-                <Button startIcon={<Login />} onClick={handleLoginAsUser}>Login as User</Button>
-            </>
-          )}
             </>
           )}
         </CardActions>
