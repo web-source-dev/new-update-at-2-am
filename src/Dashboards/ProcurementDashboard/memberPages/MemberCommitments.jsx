@@ -24,7 +24,8 @@ import {
   Snackbar,
   TextField,
   Grid,
-  InputAdornment
+  InputAdornment,
+  Menu, MenuItem
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -38,6 +39,9 @@ import {
   Search as SearchIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const MemberCommitments = ({ userId }) => {
   const [commitments, setCommitments] = useState([]);
@@ -208,6 +212,58 @@ const MemberCommitments = ({ userId }) => {
       />
     );
   };
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleDownload = (format) => {
+    const filteredData = filteredCommitments.map(commitment => ({
+      'Deal Name': commitment.dealId.name,
+      'Quantity': commitment.quantity,
+      'Total Price': `$${commitment.totalPrice}`,
+      'Status': commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1),
+      'Distributor Response': commitment.distributorResponse || '-',
+      'Date': new Date(commitment.createdAt).toLocaleDateString(),
+    }));
+
+    if (format === 'csv') {
+      const headers = Object.keys(filteredData[0]);
+      const csvContent = [
+        headers.join(','),
+        ...filteredData.map(row => headers.map(header =>
+          typeof row[header] === 'string' && row[header].includes(',')
+            ? `"${row[header]}"`
+            : row[header]
+        ).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      saveAs(blob, 'commitments.csv');
+    } else if (format === 'pdf') {
+      const doc = new jsPDF();
+      doc.text('Commitments Report', 14, 15);
+
+      doc.autoTable({
+        head: [Object.keys(filteredData[0])],
+        body: filteredData.map(row => Object.values(row)),
+        startY: 20,
+        margin: { top: 15 },
+        styles: { overflow: 'linebreak' },
+        columnStyles: {
+          'Deal Name': { cellWidth: 40 },
+          'Distributor Response': { cellWidth: 40 },
+        },
+      });
+
+      doc.save('commitments.pdf');
+    }
+  };
 
   if (loading) {
     return (
@@ -299,6 +355,20 @@ const MemberCommitments = ({ userId }) => {
           </Grid>
         </Grid>
       </Paper>
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, mr: 2 }}>
+      <Button variant="outlined" color="primary" onClick={handleClick}>
+        Download
+      </Button>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuItem onClick={() => { handleDownload('csv'); handleClose(); }}>
+          Download CSV
+        </MenuItem>
+        <MenuItem onClick={() => { handleDownload('pdf'); handleClose(); }}>
+          Download PDF
+        </MenuItem>
+      </Menu>
+    </Box>
 
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableContainer>

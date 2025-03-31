@@ -53,12 +53,10 @@ const MemberOverview = ({ userId }) => {
   const [stats, setStats] = useState({
     totalCommitments: 0,
     totalSpent: 0,
-    favoriteDeals: 0,
     activeCommitments: 0,
     totalApproved: 0,
     totalDeclined: 0,
     totalCancelled: 0,
-    totalFavorites: 0,
     recentActivity: [],
     loading: true,
   });
@@ -125,14 +123,6 @@ const MemberOverview = ({ userId }) => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Favorite Deals"
-            value={stats.favoriteDeals}
-            icon={FavoriteIcon}
-            color="#d32f2f"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
             title="Active Commitments"
             value={stats.activeCommitments}
             icon={TimelineIcon}
@@ -145,30 +135,6 @@ const MemberOverview = ({ userId }) => {
             value={stats.totalApproved}
             icon={ShoppingCartIcon}
             color="#4caf50"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Total Declined"
-            value={stats.totalDeclined}
-            icon={ThumbDownIcon}
-            color="#f44336"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Total Cancelled"
-            value={stats.totalCancelled}
-            icon={CancelIcon}
-            color="#ff9800"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Total Favorites"
-            value={stats.totalFavorites}
-            icon={FavoriteIcon}
-            color="#d32f2f"
           />
         </Grid>
       </Grid>

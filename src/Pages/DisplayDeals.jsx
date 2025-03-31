@@ -30,6 +30,7 @@ import {
   FormControlLabel,
   Switch,
   Tooltip,
+  Divider,
 } from "@mui/material";
 import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, Search, ProductionQuantityLimits, PowerOffOutlined, Person } from "@mui/icons-material";
 import axios from "axios";
@@ -533,10 +534,11 @@ const DisplayDeals = () => {
     setFilter({
       searchQuery: '',
       category: '',
-      priceRange: [0, 1000],
-      minQuantity: [0, 500],
+      priceRange: [0, 1000000],
+      minQuantity: [0, 5000000],
       favoritesOnly: false,
-      committedOnly: false
+      committedOnly: false,
+      Distributor: ''
     });
   };
 
@@ -638,7 +640,7 @@ const DisplayDeals = () => {
                   },
                 }}
               >
-                View Offers
+                Advertisements
               </Button>
 
               {isMobile && (
@@ -789,7 +791,7 @@ const DisplayDeals = () => {
                     </Box>
                   </Box>
 
-                  <Box>
+                  <Box mb={20}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Distributor
                     </Typography>
@@ -807,7 +809,8 @@ const DisplayDeals = () => {
                       </Select>
                     </FormControl>
                   </Box>
-
+                  <Divider sx={{marginTop:'50px'}} />
+{/* 
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Price Range: ${filter.priceRange[0]} - ${filter.priceRange[1]}
@@ -886,7 +889,7 @@ const DisplayDeals = () => {
                         }
                       />
                     </Stack>
-                  </Box>
+                  </Box> */}
 
                   {Object.values(filter).some(value =>
                     value !== '' &&
@@ -1248,7 +1251,7 @@ const DisplayDeals = () => {
                                 gap: 1,
                                 mb: 1.5
                               }}>
-                                {userFavorites.includes(deal._id) && (
+                                {/* {userFavorites.includes(deal._id) && (
                                   <Chip
                                     icon={<Favorite fontSize="small" />}
                                     label="Favorite"
@@ -1257,7 +1260,7 @@ const DisplayDeals = () => {
                                     variant="outlined"
                                     sx={{ borderRadius: 1 }}
                                   />
-                                )}
+                                )} */}
                                 {userCommitments.includes(deal._id) && (
                                   <Chip
                                   
@@ -1332,7 +1335,7 @@ const DisplayDeals = () => {
                                   <Visibility sx={{ fontSize: '1.25rem' }} />
                                 )}
                               </IconButton>
-                              <IconButton
+                              {/* <IconButton
                                 size="small"
                                 onClick={() => toggleFavorite(deal._id)}
                                 disabled={isFavoriteLoading}
@@ -1351,7 +1354,7 @@ const DisplayDeals = () => {
                                     <Favorite sx={{ fontSize: '1.25rem' }} /> :
                                     <FavoriteBorder sx={{ fontSize: '1.25rem' }} />
                                 )}
-                              </IconButton>
+                              </IconButton> */}
                             </Box>
                           </Box>
                         </CardContent>

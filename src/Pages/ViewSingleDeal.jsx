@@ -749,32 +749,31 @@ const ViewSingleDeal = () => {
                 {deal?.description}
               </Typography>
             </Paper>
-            {deal.singleStoreDeals && (
-            
-            <Paper
-              sx={{
-                p: { xs: 2, sm: 3 },
-                borderRadius: 3,
-                bgcolor: 'background.paper',
-                boxShadow: 1
-              }}
-            >
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Single Store Deals
-              </Typography>
-              <Typography 
-                variant="body1" 
-                color="text.secondary"
-                sx={{
-                  lineHeight: 1.6,
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  whiteSpace: 'pre-line' // Preserve line breaks in description
-                }}
-              >
-                {deal?.singleStoreDeals}
-              </Typography>
-            </Paper>
-            )}
+            {deal?.singleStoreDeals && (
+  <Paper
+    sx={{
+      p: { xs: 2, sm: 3 },
+      borderRadius: 3,
+      bgcolor: 'background.paper',
+      boxShadow: 1
+    }}
+  >
+    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+      Single Store Deals
+    </Typography>
+    <Typography 
+      variant="body1" 
+      color="text.secondary"
+      sx={{
+        lineHeight: 1.6,
+        fontSize: { xs: '0.875rem', sm: '1rem' },
+        whiteSpace: 'pre-line' // Preserve line breaks in description
+      }}
+    >
+      {deal.singleStoreDeals}
+    </Typography>
+  </Paper>
+)}
 
             {/* Deal Info Card */}
             <Paper 
@@ -993,7 +992,7 @@ const ViewSingleDeal = () => {
               >
                 {userCommitment ? 'Edit Commitment' : 'Make Commitment'}
               </Button>
-              <IconButton
+              {/* <IconButton
                 color="error"
                 onClick={toggleFavorite}
                 disabled={isFavoriteLoading}
@@ -1014,7 +1013,7 @@ const ViewSingleDeal = () => {
                 ) : (
                   isFavorite ? <Favorite /> : <FavoriteBorder />
                 )}
-              </IconButton>
+              </IconButton> */}
             </Box>
           </Box>
         </Grid>

@@ -7,7 +7,7 @@ import ProfileManagement from '../AdminDashBoard/AdminPages/ProfileManagement';
 import AnnouncementToast from '../../Components/Toast/announcmentToast';
 import MemberOverview from './memberPages/MemberOverview';
 import MemberCommitments from './memberPages/MemberCommitments';
-import MemberFavorites from './memberPages/MemberFavorites';
+// import MemberFavorites from './memberPages/MemberFavorites';
 import MemberAnalytics from './memberPages/MemberAnalytics';
 import MemberSettings from './memberPages/MemberSettings';
 import NotificationIcon from '../../Components/Notification/NotificationIcon';
@@ -47,7 +47,6 @@ const MemberDashboard = () => {
   const links = [
     { path: 'overview', label: 'Overview' },
     { path: 'commitments', label: 'My Commitments' },
-    { path: 'favorites', label: 'Favorite Deals' },
     { path: 'analytics', label: 'Analytics' },
     { path: `profile/${userId}`, label: 'Profile' },
     { path: 'detailed-analytics', label: 'Detailed Analytics' },
@@ -125,10 +124,10 @@ Advertisements
               <AnnouncementToast event="commitments" />
               <MemberCommitments userId={userId} />
             </>} />
-            <Route path="favorites" element={<>
+            {/* <Route path="favorites" element={<>
               <AnnouncementToast event="favorites" />
               <MemberFavorites userId={userId} />
-            </>} />
+            </>} /> */}
             <Route path="analytics" element={<>
               <AnnouncementToast event="analytics" />
               <MemberAnalytics userId={userId} />
