@@ -365,44 +365,6 @@ const AllDealsAdmin = () => {
     });
   };
 
-  const handleDialogAction = async (action) => {
-    if (selectedCommitments.length === 0 || actionInProgress) return;
-
-    const actionText = action === 'approve' ? 'approve' : 'decline';
-    handleConfirmDialogOpen(
-      `Confirm ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
-      `Are you sure you want to ${actionText} ${selectedCommitments.length} selected commitment(s)?`,
-      async () => {
-        try {
-          setActionInProgress(true);
-          setSelectedActionType(action);
-          const status = action === 'approve' ? 'approved' : 'declined';
-          const response = action === 'approve' ? 'Approved by admin' : 'Declined by admin';
-
-          await Promise.all(selectedCommitments.map(commitmentId => 
-            axios.post(`${process.env.REACT_APP_BACKEND_URL}/deals/allDeals/update-commitment-status`, {
-              commitmentId,
-              status,
-              distributorResponse: response,
-              adminAction: true,
-              distributorId: selectedDeal.distributor._id
-            })
-          ));
-
-          await fetchDeals();
-          setOpenDialog(false);
-          setSelectedCommitments([]);
-          setSelectAll(false);
-        } catch (err) {
-          console.error(`Error processing selected commitments:`, err);
-        } finally {
-          setActionInProgress(false);
-          setSelectedActionType(null);
-        }
-      },
-      'commitment-action'
-    );
-  };
 
   const handleDownloadClick = (event) => {
     setDownloadAnchorEl(event.currentTarget);
@@ -416,15 +378,29 @@ const AllDealsAdmin = () => {
     if (exportLoading) return;
     setExportLoading(true);
     try {
-      const filteredData = deals.map(deal => ({
-        'Deal Name': deal.name,
-        'Distributor': deal.distributor ? (deal.distributor.businessName || deal.distributor.name) : 'Unknown',
-        'Category': deal.category,
-        'Total Commitments': deal.totalCommitments,
-        'Minimum Quantity': deal.minimumQuantity,
-        'Quantity Committed': deal.totalQuantity,
-        'Total Amount': `$${deal.totalAmount.toFixed(2)}`,
-      }));
+      const filteredData = deals.map(deal => {
+        // Get size info if available
+        const sizeInfo = deal.sizes && deal.sizes.length > 0 
+          ? deal.sizes.map(s => `${s.size}: $${s.discountPrice}`).join(', ')
+          : 'N/A';
+        
+        // Get discount tier info if available
+        const discountInfo = deal.discountTiers && deal.discountTiers.length > 0
+          ? deal.discountTiers.map(dt => `${dt.tierDiscount}% at ${dt.tierQuantity}+ units`).join(', ')
+          : 'N/A';
+
+        return {
+          'Deal Name': deal.name,
+          'Distributor': deal.distributor ? (deal.distributor.businessName || deal.distributor.name) : 'Unknown',
+          'Category': deal.category,
+          'Size Options': sizeInfo,
+          'Discount Tiers': discountInfo,
+          'Total Commitments': deal.totalCommitments,
+          'Minimum Quantity': deal.minimumQuantity,
+          'Quantity Committed': deal.totalQuantity,
+          'Total Amount': `$${deal.totalAmount.toFixed(2)}`,
+        };
+      });
 
       if (format === 'csv') {
         await exportToCSV(filteredData);
@@ -862,6 +838,17 @@ const AllDealsAdmin = () => {
                 </StyledTableCell>
                 <StyledTableCell sx={{ maxWidth: { xs: '100px', sm: 'none' } }}>
                   <Typography noWrap>{deal.name}</Typography>
+                  <Tooltip title={deal.sizes && deal.sizes.length > 0 
+                    ? deal.sizes.map(s => `${s.size}: $${s.discountPrice}`).join(', ')
+                    : 'No sizes available'
+                  }>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {deal.sizes && deal.sizes.length > 0 
+                        ? `${deal.sizes.length} size option${deal.sizes.length > 1 ? 's' : ''}`
+                        : 'No size options'
+                      }
+                    </Typography>
+                  </Tooltip>
                 </StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                   {deal.distributor ? (deal.distributor.businessName || deal.distributor.name) : 'Unknown'}
@@ -1038,7 +1025,9 @@ const AllDealsAdmin = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Member</TableCell>
-                    <TableCell>Commitments</TableCell>
+                    <TableCell>Size Details</TableCell>
+                    <TableCell>Total Quantity</TableCell>
+                    <TableCell>Discount Tier</TableCell>
                     <TableCell>Total Price</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Date</TableCell>
@@ -1047,9 +1036,35 @@ const AllDealsAdmin = () => {
                 <TableBody>
                   {selectedDeal.detailedCommitments.map((commitment) => (
                     <TableRow key={commitment._id}>
-                    
                       <TableCell>{commitment.userId.businessName || commitment.userId.name}</TableCell>
-                      <TableCell>{commitment.quantity}</TableCell>
+                      <TableCell>
+                        {commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
+                          <Box>
+                            {commitment.sizeCommitments.map((sizeCommit, idx) => (
+                              <Typography variant="body2" key={idx} sx={{ mb: 0.5 }}>
+                                {sizeCommit.size}: {sizeCommit.quantity} × ${sizeCommit.pricePerUnit.toFixed(2)}
+                              </Typography>
+                            ))}
+                          </Box>
+                        ) : (
+                          "N/A"
+                        )}
+                      </TableCell>
+                      <TableCell>{commitment.quantity || 
+                        (commitment.sizeCommitments ? 
+                          commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 
+                          0)
+                      }</TableCell>
+                      <TableCell>
+                        {commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
+                          <Chip 
+                            label={`${commitment.appliedDiscountTier.tierDiscount}% off at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
+                            color="primary" 
+                            size="small"
+                            variant="outlined"
+                          />
+                        ) : "No discount applied"}
+                      </TableCell>
                       <TableCell>${commitment.totalPrice.toFixed(2)}</TableCell>
                       <TableCell>
                         <Box
@@ -1083,7 +1098,12 @@ const AllDealsAdmin = () => {
         // Export only the commitments from the current dialog
         const csvData = selectedDeal.detailedCommitments.map(commitment => ({
           'Member Name': commitment.userId.businessName || commitment.userId.name,
-          'Quantity': commitment.quantity,
+          'Size Details': commitment.sizeCommitments ? 
+            commitment.sizeCommitments.map(sc => `${sc.size}: ${sc.quantity}`).join(', ') : 'N/A',
+          'Total Quantity': commitment.sizeCommitments ? 
+            commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 0,
+          'Discount Applied': commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierDiscount ? 
+            `${commitment.appliedDiscountTier.tierDiscount}%` : 'None',
           'Total Price': `$${commitment.totalPrice.toFixed(2)}`,
           'Status': commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1),
           'Date': format(new Date(commitment.createdAt), 'PP')

@@ -103,6 +103,24 @@ const DealAnalytics = () => {
     }
   };
 
+  // Add function to format size information
+  const formatSizes = (sizes) => {
+    if (!sizes || sizes.length === 0) return 'N/A';
+    
+    return sizes.map(size => 
+      `${size.size}: $${size.discountPrice}`
+    ).join(', ');
+  };
+
+  // Add function to format discount tiers
+  const formatDiscountTiers = (tiers) => {
+    if (!tiers || tiers.length === 0) return 'No discount tiers';
+    
+    return tiers.map(tier => 
+      `${tier.tierDiscount}% off at ${tier.tierQuantity}+ units`
+    ).join(', ');
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -141,13 +159,12 @@ const DealAnalytics = () => {
     <Box p={3}>
       {/* Header with Deal Progress */}
       <Box display="flex" alignItems="center" mb={3} justifyContent="space-between">
-
         <IconButton onClick={() => navigate(-1)}>
           <ArrowBack />
         </IconButton>
-            <IconButton onClick={fetchAnalytics}>
-              <Refresh />
-            </IconButton>
+        <IconButton onClick={fetchAnalytics}>
+          <Refresh />
+        </IconButton>
       </Box>
 
       {/* Key Metrics Grid */}
@@ -179,14 +196,27 @@ const DealAnalytics = () => {
                   <Box>
                     <Typography variant="subtitle2">Pricing</Typography>
                     <Box mt={1} display="flex" flexDirection="column" gap={0.5}>
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography variant="body2">Original Cost:</Typography>
-                        <Typography variant="body1">{formatCurrency(dealInfo.originalCost)}</Typography>
-                      </Box>
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography variant="body2">Discount Price:</Typography>
-                        <Typography variant="body1">{formatCurrency(dealInfo.discountPrice)}</Typography>
-                      </Box>
+                      {dealInfo.sizes && dealInfo.sizes.length > 0 ? (
+                        // Show all sizes if available
+                        dealInfo.sizes.map((size, index) => (
+                          <Box key={index} display="flex" justifyContent="space-between">
+                            <Typography variant="body2">{size.size}:</Typography>
+                            <Typography variant="body1">{formatCurrency(size.discountPrice)}</Typography>
+                          </Box>
+                        ))
+                      ) : (
+                        // Original pricing if no sizes
+                        <>
+                          <Box display="flex" justifyContent="space-between">
+                            <Typography variant="body2">Original Cost:</Typography>
+                            <Typography variant="body1">{formatCurrency(dealInfo.originalCost)}</Typography>
+                          </Box>
+                          <Box display="flex" justifyContent="space-between">
+                            <Typography variant="body2">Discount Price:</Typography>
+                            <Typography variant="body1">{formatCurrency(dealInfo.discountPrice)}</Typography>
+                          </Box>
+                        </>
+                      )}
                       <Box display="flex" justifyContent="space-between">
                         <Typography variant="body2">Min Quantity:</Typography>
                         <Typography variant="body1">{formatNumber(dealInfo.minQtyForDiscount)}</Typography>
@@ -202,7 +232,23 @@ const DealAnalytics = () => {
                         <Typography variant="body2">Total Commitments:</Typography>
                         <Typography variant="body1">{formatNumber(safeAccess(overview, 'totalQuantity'))}</Typography>
                       </Box>
-                    
+                      {dealInfo.discountTiers && dealInfo.discountTiers.length > 0 && (
+                        <Box mt={1}>
+                          <Typography variant="body2">Discount Tiers:</Typography>
+                          <Box mt={0.5}>
+                            {dealInfo.discountTiers.map((tier, index) => (
+                              <Chip
+                                key={index}
+                                size="small"
+                                label={`${tier.tierDiscount}% off at ${tier.tierQuantity}+ units`}
+                                color="primary"
+                                variant="outlined"
+                                sx={{ mr: 1, mb: 1 }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
                     </Box>
                   </Box>
                 </Grid>
@@ -210,19 +256,19 @@ const DealAnalytics = () => {
               <Box mt={2}>
                 <Typography variant="body2" mb={0.5}>Deal Progress</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, mt: 2, gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={Math.min(100, ((formatNumber(safeAccess(overview, 'totalQuantity')) || 0) / formatNumber(dealInfo.minQtyForDiscount)) * 100)}
-                          sx={{ height: 6, borderRadius: 2, width: '100%' }}
-                        />
-                            {((formatNumber(safeAccess(overview, 'totalQuantity')) || 0) / formatNumber(dealInfo.minQtyForDiscount)) * 100 >= 100 && (
-                          <CheckCircle
-                            sx={{
-                              color: 'success.main'
-                            }}
-                          />
-                        )}
-                      </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.min(100, ((safeAccess(overview, 'totalQuantity', 0) || 0) / (dealInfo.minQtyForDiscount || 1)) * 100)}
+                    sx={{ height: 6, borderRadius: 2, width: '100%' }}
+                  />
+                  {((safeAccess(overview, 'totalQuantity', 0) || 0) / (dealInfo.minQtyForDiscount || 1)) * 100 >= 100 && (
+                    <CheckCircle
+                      sx={{
+                        color: 'success.main'
+                      }}
+                    />
+                  )}
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -322,6 +368,7 @@ const DealAnalytics = () => {
                       <TableCell>Member</TableCell>
                       <TableCell align="right">Quantity</TableCell>
                       <TableCell align="right">Price</TableCell>
+                      <TableCell align="right">Sizes</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -340,6 +387,21 @@ const DealAnalytics = () => {
                         </TableCell>
                         <TableCell align="right">{formatNumber(member.totalQuantity)}</TableCell>
                         <TableCell align="right">{formatCurrency(member.totalValue)}</TableCell>
+                        <TableCell align="right">
+                          {member.sizeBreakdown ? (
+                            <Tooltip title={
+                              <Box>
+                                {Object.entries(member.sizeBreakdown).map(([size, quantity], i) => (
+                                  <Typography key={i} variant="body2">
+                                    {size}: {quantity}
+                                  </Typography>
+                                ))}
+                              </Box>
+                            }>
+                              <Typography variant="body2">{Object.keys(member.sizeBreakdown).length} size(s)</Typography>
+                            </Tooltip>
+                          ) : "N/A"}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

@@ -824,57 +824,56 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
                 <StyledTableCell>
-  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
-</StyledTableCell>
-<StyledTableCell>
-  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
-</StyledTableCell>
-<StyledTableCell>
-  <Box sx={{display:'flex',gap:2}}>
-{deal.bulkAction ? (
- <Chip 
-      label={deal.bulkStatus} 
-      color={deal.bulkStatus === "approved" ? "success" : "error"} 
-      variant="outlined" 
-    />
-) : (
-                  <Box 
-                    display="flex" 
-                    gap={1}
-                    sx={{
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      '.MuiButton-root': {
-                        minWidth: { xs: '70px', sm: 'auto' },
-                        padding: { xs: '4px 8px', sm: '6px 16px' },
-                      }
-                    }}
-                  >
-                    {/* Show buttons on larger screens */}
-                    <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleBulkAction(deal._id, 'approve')}
-                        disabled={actionInProgress || deal.pendingCommitments === 0}
+                  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
+                </StyledTableCell>
+                <StyledTableCell>
+                  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
+                </StyledTableCell>
+                <StyledTableCell>
+                  <Box sx={{display:'flex',gap:2}}>
+                    {deal.bulkAction ? (
+                      <Chip 
+                        label={deal.bulkStatus} 
+                        color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                        variant="outlined" 
+                      />
+                    ) : (
+                      <Box 
+                        display="flex" 
+                        gap={1}
+                        sx={{
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          '.MuiButton-root': {
+                            minWidth: { xs: '70px', sm: 'auto' },
+                            padding: { xs: '4px 8px', sm: '6px 16px' },
+                          }
+                        }}
                       >
-                        Approve
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleBulkAction(deal._id, 'decline')}
-                        disabled={actionInProgress || deal.pendingCommitments === 0}
-                      >
-                        Decline
-                      </Button>
-                    </Box>
-                 
-                  </Box>
-)}
-                   {/* Show only menu on mobile */}
-                   <IconButton
+                        {/* Show buttons on larger screens */}
+                        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleBulkAction(deal._id, 'approve')}
+                            disabled={actionInProgress || deal.pendingCommitments === 0}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleBulkAction(deal._id, 'decline')}
+                            disabled={actionInProgress || deal.pendingCommitments === 0}
+                          >
+                            Decline
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
+                    {/* Show only menu on mobile */}
+                    <IconButton
                       size="small"
                       onClick={(event) => handleMenuClick(event, deal)}
                       sx={{ 
@@ -892,9 +891,8 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                     >
                       <MoreVertIcon />
                     </IconButton>
-                    </Box>
+                  </Box>
                 </StyledTableCell>
-
               </TableRow>
             ))}
           </TableBody>
@@ -935,7 +933,9 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                 <TableHead>
                   <TableRow>
                     <TableCell>Member</TableCell>
-                    <TableCell>Commitments</TableCell>
+                    <TableCell>Size Details</TableCell>
+                    <TableCell>Total Quantity</TableCell>
+                    <TableCell>Discount Tier</TableCell>
                     <TableCell>Total Price</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Date</TableCell>
@@ -944,17 +944,43 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                 <TableBody>
                   {selectedDeal.detailedCommitments.map((commitment) => (
                     <TableRow key={commitment._id}>
-                    
                       <TableCell>{commitment.userId.businessName || commitment.userId.name}</TableCell>
-                      <TableCell>{commitment.quantity}</TableCell>
+                      <TableCell>
+                        {commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
+                          <Box>
+                            {commitment.sizeCommitments.map((sizeCommit, idx) => (
+                              <Typography variant="body2" key={idx} sx={{ mb: 0.5 }}>
+                                {sizeCommit.size}: {sizeCommit.quantity} × ${sizeCommit.pricePerUnit.toFixed(2)}
+                              </Typography>
+                            ))}
+                          </Box>
+                        ) : (
+                          "N/A"
+                        )}
+                      </TableCell>
+                      <TableCell>{commitment.quantity || 
+                        (commitment.sizeCommitments ? 
+                          commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 
+                          0)
+                      }</TableCell>
+                      <TableCell>
+                        {commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
+                          <Chip 
+                            label={`${commitment.appliedDiscountTier.tierDiscount}% off at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
+                            color="primary" 
+                            size="small"
+                            variant="outlined"
+                          />
+                        ) : "No discount applied"}
+                      </TableCell>
                       <TableCell>${commitment.totalPrice.toFixed(2)}</TableCell>
                       <TableCell>
                         <Box
                           component="span"
                           sx={{
                             color: commitment.status === 'approved' ? 'success.main' :
-                                  commitment.status === 'declined' ? 'error.main' :
-                                  'warning.main'
+                                commitment.status === 'declined' ? 'error.main' :
+                                'warning.main'
                           }}
                         >
                           {commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1)}
@@ -980,7 +1006,12 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
         // Export only the commitments from the current dialog
         const csvData = selectedDeal.detailedCommitments.map(commitment => ({
           'Member Name': commitment.userId.businessName || commitment.userId.name,
-          'Quantity': commitment.quantity,
+          'Size Details': commitment.sizeCommitments ? 
+            commitment.sizeCommitments.map(sc => `${sc.size}: ${sc.quantity}`).join(', ') : 'N/A',
+          'Total Quantity': commitment.sizeCommitments ? 
+            commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 0,
+          'Discount Applied': commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierDiscount ? 
+            `${commitment.appliedDiscountTier.tierDiscount}%` : 'None',
           'Total Price': `$${commitment.totalPrice.toFixed(2)}`,
           'Status': commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1),
           'Date': format(new Date(commitment.createdAt), 'PP')

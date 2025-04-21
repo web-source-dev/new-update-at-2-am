@@ -31,16 +31,20 @@ const ManageDeals = () => {
     dealName: '',
     actionType: ''
   });
+  const [debugDialog, setDebugDialog] = useState({
+    open: false,
+    data: null
+  });
 
   const location = useLocation();
   const [filter, setFilter] = useState({
     category: '',
-    status: 'active',
+    status: '',
     minPrice: '',
     maxPrice: '',
     search: '',
     sortBy: '',
-    month: new Date().getMonth() + 1, // Add month filter with current month as default
+    month: new Date().getMonth() + 1, // Initialize with current month
   });
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -68,14 +72,51 @@ const ManageDeals = () => {
   useEffect(() => {
     const fetchDeals = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch/${userId}`, {
           params: {
             ...filter,
             month: filter.month
           }
         });
-        const dealsData = response.data.deals || response.data;
-        setDeals(Array.isArray(dealsData) ? dealsData : []);
+        console.log('API Response:', response.data);
+        
+        // Store raw response for debugging
+        setDebugDialog(prev => ({ ...prev, data: response.data }));
+        
+        // Get categories from response if available
+        if (response.data && response.data.categories) {
+          setCategories(response.data.categories);
+        }
+        
+        // Check the structure of the response
+        if (response.data && response.data.deals) {
+          // If response has a 'deals' property, use it
+          console.log(`Found ${response.data.deals.length} deals out of ${response.data.totalDeals} total`);
+          
+          // Debug commitments data
+          if (response.data.deals.length > 0) {
+            response.data.deals.forEach(deal => {
+              console.log(`Deal "${deal.name}" has ${deal.commitments ? deal.commitments.length : 0} commitments`);
+              
+              // Log first commitment details if available
+              if (deal.commitments && deal.commitments.length > 0) {
+                console.log('Sample commitment data:', deal.commitments[0]);
+              }
+            });
+          }
+          
+          setDeals(response.data.deals);
+        } else if (Array.isArray(response.data)) {
+          // If response is an array, use it directly
+          console.log(`Found ${response.data.length} deals in array format`);
+          setDeals(response.data);
+        } else {
+          // Fallback for unexpected response format
+          console.warn('Unexpected response format:', response.data);
+          setDeals([]);
+        }
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching deals:', error);
         setToast({
@@ -83,6 +124,7 @@ const ManageDeals = () => {
           message: 'Error refreshing deals list',
           severity: 'error'
         });
+        setLoading(false);
       }
     };
 
@@ -199,7 +241,7 @@ const ManageDeals = () => {
   };
 
   const handleClearFilters = () => {
-    setFilter({ category: '', status: '', minPrice: '', maxPrice: '', search: '', sortBy: '' });
+    setFilter({ category: '', status: '', minPrice: '', maxPrice: '', search: '', sortBy: '', month: new Date().getMonth() + 1 });
   };
 
   const handleCloseToast = () => {
@@ -234,20 +276,44 @@ const ManageDeals = () => {
   };
 
   const handleDownload = (format) => {
-    const filteredData = deals.map(deal => ({
-      'Name': deal.name,
-      'Description': deal.description,
-      'Size': deal.size,
-      'Original Cost': deal.originalCost,
-      'Discount Price': deal.discountPrice,
-      'Min Qty for Discount': deal.minQtyForDiscount,
-      'Category': deal.category,
-      'Status': deal.status,
-      'Total Sold': deal.totalSold,
-      'Total Revenue': deal.totalRevenue,
-      'Views': deal.views,
-      'Impressions': deal.impressions
-    }));
+    const filteredData = deals.map(deal => {
+      // Get price info considering new sizes structure
+      const priceInfo = deal.sizes && deal.sizes.length > 0 
+        ? {
+            'Original Cost': `${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}`,
+            'Discount Price': `${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}`
+          }
+        : {
+            'Original Cost': deal.avgOriginalCost?.toFixed(2) || deal.originalCost,
+            'Discount Price': deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice
+          };
+      
+      // Get sizes as comma-separated list
+      const sizes = deal.sizes && deal.sizes.length > 0
+        ? deal.sizes.map(s => s.size).join(', ')
+        : 'Standard';
+        
+      // Get discount tiers as comma-separated list
+      const discountTiers = deal.discountTiers && deal.discountTiers.length > 0
+        ? deal.discountTiers.map(t => `${t.tierQuantity}+ = ${t.tierDiscount}%`).join(', ')
+        : 'None';
+        
+      return {
+        'Name': deal.name,
+        'Description': deal.description,
+        'Sizes': sizes,
+        'Original Cost': priceInfo['Original Cost'],
+        'Discount Price': priceInfo['Discount Price'],
+        'Discount Tiers': discountTiers,
+        'Min Qty for Discount': deal.minQtyForDiscount,
+        'Category': deal.category,
+        'Status': deal.status,
+        'Total Sold': deal.totalSold,
+        'Total Revenue': deal.totalRevenue,
+        'Views': deal.views,
+        'Impressions': deal.impressions
+      };
+    });
 
     if (format === 'csv') {
       const headers = Object.keys(filteredData[0]);
@@ -462,6 +528,7 @@ const ManageDeals = () => {
                       onChange={(e) => setFilter({ ...filter, month: e.target.value })}
                       label="Month"
                     >
+                      <MenuItem value=""><em>All Months</em></MenuItem>
                       <MenuItem value={1}>January</MenuItem>
                       <MenuItem value={2}>February</MenuItem>
                       <MenuItem value={3}>March</MenuItem>
@@ -617,6 +684,16 @@ const ManageDeals = () => {
     );
   };
 
+  // Add function to open debug dialog
+  const handleOpenDebugDialog = () => {
+    setDebugDialog(prev => ({ ...prev, open: true }));
+  };
+
+  // Add function to close debug dialog
+  const handleCloseDebugDialog = () => {
+    setDebugDialog(prev => ({ ...prev, open: false }));
+  };
+
   if (loading) {
     return layout === 'grid' ? (
       <Container>
@@ -631,7 +708,7 @@ const ManageDeals = () => {
   }
 
   return (
-    <Container>
+    <Container maxWidth="xl">
       <Box sx={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -671,277 +748,212 @@ const ManageDeals = () => {
               </IconButton>
             </Tooltip>
           )}
+          {/* Admin debug button */}
+          {localStorage.getItem('user_role') === 'admin' && (
+            <Tooltip title="Debug Data">
+              <IconButton color="default" onClick={handleOpenDebugDialog}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                  <path d="M12 16v.01"/>
+                  <path d="M12 8v4"/>
+                </svg>
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       </Box>
 
       <FiltersContent />
 
-      {layout === 'grid' && (
-        <Grid container spacing={3}>
-          {currentDeals.map((deal) => (
-            <Grid item xs={12} sm={6} md={4} key={deal._id}>
-              <Card sx={{
-                borderRadius: 3,
-                boxShadow: 4,
-                overflow: "hidden",
-                position: 'relative',
-                '&:hover': {
-                  boxShadow: 6,
-                  transform: 'translateY(-4px)',
-                  transition: 'all 0.3s ease-in-out'
-                }
-              }}>
-                <Box sx={{ position: 'relative' }}>
-                  <CardMedia
-                    component="img"
-                    height="180"
-                    image={deal.images[0] || "https://via.placeholder.com/300"}
-                    alt={deal.name}
-                    sx={{ objectFit: "cover" }}
-                  />
-                  <Box sx={{
-                    position: 'absolute',
-                    top: 10,
-                    left: 10,
-                    display: 'flex',
-                    gap: 1,
-                    flexWrap: 'wrap'
-                  }}>
-                    {deal.name.toLowerCase().includes('(copy)') && (
-                      <Chip
-                        label="Duplicate"
-                        color="info"
-                        size="small"
-                        sx={{
-                          backgroundColor: 'rgba(33, 150, 243, 0.9)',
-                          color: 'white',
-                          fontWeight: 'bold'
-                        }}
-                      />
-                    )}
-                    <Chip
-                      label={deal.status}
-                      color={deal.status === 'active' ? 'success' : 'default'}
-                      size="small"
-                      sx={{
-                        backgroundColor: deal.status === 'active' ? 'rgba(46, 125, 50, 0.9)' : 'rgba(97, 97, 97, 0.9)',
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}
-                    />
-                  </Box>
-                </Box>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
-                      {deal.name}
-                    </Typography>
-                    <Chip
-                      label={deal.category}
-                      color="primary"
-                      size="small"
-                      sx={{
-                        fontWeight: 'bold'
-                      }}
-                    />
-                  </Box>
-                  <Divider sx={{ my: 2 }} />
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Price: <span style={{ textDecoration: 'line-through' }}>${deal.originalCost}</span> / ${deal.discountPrice}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Views: {deal.views}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Min Qty for Deal: {deal.minQtyForDiscount}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Members: {deal.commitments.length}
-                      </Typography>
-
-                    </Grid>
-                  </Grid>
-           <Typography variant="body2" color="text.secondary">
-                        Deal Progress : {deal.totalCommitmentQuantity} / {deal.minQtyForDiscount}
-                      </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, mt: 2, gap: 1 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
-                      sx={{ height: 6, borderRadius: 2, width: '90%' }}
-                    />
-
-                    {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
-                      <CheckCircleIcon
-                        sx={{
-                          color: 'success.main'
-                        }}
-                      />
-                    )}
-                  </Box>
-
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-  {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
-</Typography>
-
-                </CardContent>
-                <Divider />
-                <CardActions sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                  padding: 2
-                }}>
-                  {(location.pathname.includes("distributor")) && (
-                    <>
-                      <Tooltip title="Edit">
-                        <IconButton color="primary" onClick={() => handleEdit(deal)}>
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Duplicate">
-                        <IconButton color="info" onClick={() => handleDuplicate(deal)}>
-                          <ContentCopy />
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                  )}
-                  <Tooltip title="View">
-                    <IconButton color="info" onClick={() => handleView(deal._id)}>
-                      <Visibility />
-                    </IconButton>
-                  </Tooltip>
-                  {deal.bulkAction ? (
-   <Chip 
-   label={deal.bulkStatus} 
-   color={deal.bulkStatus === "approved" ? "success" : "error"} 
-   variant="outlined" 
- />
-  ) : (
-    <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
-      <Switch
-        checked={deal.status === 'active'}
-        onChange={() => handleToggleChange(deal._id, deal.status)}
-        color="primary"
-      />
-    </Tooltip>
-  )}
-    {!deal.bulkAction && (
-    <Tooltip title='Delete'>
-      <Button
-        color="error"
-        onClick={() => handleDelete(deal._id)}
-        variant="outlined"
-      >
-        <DeleteOutline />
-      </Button>
-    </Tooltip>
-  )}
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
-      {layout === 'list' && (
-        <Box>
-          {currentDeals.map((deal) => (
-            <Paper
-              key={deal._id}
-              sx={{
-                mb: 2,
-                p: 2,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderRadius: 2,
-                '&:hover': {
-                  boxShadow: 3,
-                  transform: 'translateY(-2px)',
-                  transition: 'all 0.3s ease-in-out'
-                }
-              }}
+      {loading ? (
+        <Box sx={{ width: '100%', mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            Loading deals...
+          </Typography>
+          <LinearProgress sx={{ width: '50%' }} />
+        </Box>
+      ) : deals.length === 0 ? (
+        <Paper sx={{ p: 4, mt: 4, mb: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No deals found
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {filter.status || filter.category || filter.search || filter.minPrice || filter.maxPrice 
+              ? "Try adjusting your filters to see more results"
+              : "Start by creating your first deal"}
+          </Typography>
+          {(location.pathname.includes("distributor")) && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              startIcon={<Add />} 
+              sx={{ mt: 2 }}
+              onClick={() => navigate('/dashboard/distributor/deal/create')}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                <Box sx={{ position: 'relative', minWidth: 80 }}>
-                  <CardMedia
-                    component="img"
-                    height="80"
-                    image={deal.images[0] || "https://via.placeholder.com/300"}
-                    alt={deal.name}
-                    sx={{
-                      objectFit: "cover",
-                      width: 80,
-                      mr: 2,
-                      borderRadius: 1
-                    }}
-                  />
-                  <Box sx={{
-                    position: 'absolute',
-                    top: -8,
-                    right: -8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.5
+              Create New Deal
+            </Button>
+          )}
+        </Paper>
+      ) : (
+        <>
+          {layout === 'grid' && (
+            <Grid container spacing={3}>
+              {currentDeals.map((deal) => (
+                <Grid item xs={12} sm={6} md={4} key={deal._id}>
+                  <Card sx={{
+                    borderRadius: 3,
+                    boxShadow: 4,
+                    overflow: "hidden",
+                    position: 'relative',
+                    '&:hover': {
+                      boxShadow: 6,
+                      transform: 'translateY(-4px)',
+                      transition: 'all 0.3s ease-in-out'
+                    }
                   }}>
-                    {deal.name.toLowerCase().includes('(copy)') && (
-                      <Chip
-                        label="Duplicate"
-                        color="info"
-                        size="small"
-                        sx={{
-                          backgroundColor: 'rgba(33, 150, 243, 0.9)',
-                          color: 'white',
-                          fontWeight: 'bold',
-                          transform: 'scale(0.8)'
-                        }}
+                    <Box sx={{ position: 'relative' }}>
+                      <CardMedia
+                        component="img"
+                        height="180"
+                        image={deal.images[0] || "https://via.placeholder.com/300"}
+                        alt={deal.name}
+                        sx={{ objectFit: "cover" }}
                       />
-                    )}
-                    <Chip
-                      label={deal.status}
-                      color={deal.status === 'active' ? 'success' : 'default'}
-                      size="small"
-                      sx={{
-                        backgroundColor: deal.status === 'active' ? 'rgba(46, 125, 50, 0.9)' : 'rgba(97, 97, 97, 0.9)',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        transform: 'scale(0.8)'
-                      }}
-                    />
-                  </Box>
-                </Box>
-                <Box sx={{ ml: 3, flex: 1 }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {deal.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Category: {deal.category}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Price: <span style={{ textDecoration: 'line-through' }}>${deal.originalCost}</span> / ${deal.discountPrice}
-                      </Typography>
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 10,
+                        left: 10,
+                        display: 'flex',
+                        gap: 1,
+                        flexWrap: 'wrap'
+                      }}>
+                        {deal.name.toLowerCase().includes('(copy)') && (
+                          <Chip
+                            label="Duplicate"
+                            color="info"
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(33, 150, 243, 0.9)',
+                              color: 'white',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                        )}
+                        <Chip
+                          label={deal.status}
+                          color={deal.status === 'active' ? 'success' : 'default'}
+                          size="small"
+                          sx={{
+                            backgroundColor: deal.status === 'active' ? 'rgba(46, 125, 50, 0.9)' : 'rgba(97, 97, 97, 0.9)',
+                            color: 'white',
+                            fontWeight: 'bold'
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                        <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
+                          {deal.name}
+                        </Typography>
+                        <Chip
+                          label={deal.category}
+                          color="primary"
+                          size="small"
+                          sx={{
+                            fontWeight: 'bold'
+                          }}
+                        />
+                      </Box>
+                      <Divider sx={{ my: 2 }} />
+
+                      {/* Sizes Section */}
+                      {deal.sizes && deal.sizes.length > 0 && (
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                            Available Sizes:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {deal.sizes.map((sizeItem, idx) => (
+                              <Chip 
+                                key={idx} 
+                                label={sizeItem.size} 
+                                size="small" 
+                                variant="outlined" 
+                                sx={{ borderColor: 'primary.light' }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          {deal.sizes && deal.sizes.length > 0 ? (
+                            <Typography variant="body2" color="text.secondary">
+                              Price Range: <br />
+                              <span style={{ textDecoration: 'line-through' }}>
+                                ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                              </span><br />
+                              <span style={{ color: 'green', fontWeight: 'bold' }}>
+                                ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                              </span>
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              Price: <span style={{ textDecoration: 'line-through' }}>${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}</span> / ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" color="text.secondary">
+                            Views: {deal.views}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="body2" color="text.secondary">
+                            Min Qty for Deal: {deal.minQtyForDiscount}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Members: {deal.totalCommitmentCount || 0}
+                            {deal.pendingCommitmentCount > 0 && (
+                              <Chip 
+                                size="small"
+                                label={`${deal.pendingCommitmentCount} pending`}
+                                color="warning"
+                                variant="outlined"
+                                sx={{ ml: 1, fontSize: '0.7rem' }}
+                              />
+                            )}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+
+                      {/* Discount Tiers Section */}
+                      {deal.discountTiers && deal.discountTiers.length > 0 && (
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                          <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                            Volume Discounts:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            {deal.discountTiers.map((tier, idx) => (
+                              <Typography key={idx} variant="body2" color="text.secondary">
+                                {tier.tierQuantity}+ units: {tier.tierDiscount}% off
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
 
                       <Typography variant="body2" color="text.secondary">
-                        Min Qty for Deal: {deal.minQtyForDiscount}
+                        Deal Progress : {deal.totalCommittedQuantity || 0} / {deal.minQtyForDiscount}
                       </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Deal Progress : {deal.totalCommitmentQuantity} / {deal.minQtyForDiscount}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', width: '70%', mb: 2, mt: 2, gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, mt: 2, gap: 1 }}>
                         <LinearProgress
                           variant="determinate"
-                          value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                          value={Math.min(100, (((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) || 0)}
                           sx={{ height: 6, borderRadius: 2, width: '90%' }}
                         />
-                        {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+
+                        {(((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) >= 100 && (
                           <CheckCircleIcon
                             sx={{
                               color: 'success.main'
@@ -949,152 +961,228 @@ const ManageDeals = () => {
                           />
                         )}
                       </Box>
+
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-  {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
-</Typography>
+                        {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
+                      </Typography>
 
-                    </Grid>
-                  </Grid>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
-                  <MoreVert />
-                </IconButton>
-                <Menu
-                  anchorEl={anchorElMap[deal._id]}
-                  open={Boolean(anchorElMap[deal._id])}
-                  onClose={() => handleMenuClose(deal._id)}
-                >
-                  {location.pathname.includes("distributor") && [
-                    <MenuItem key="edit" onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
-                      <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
-                    </MenuItem>,
-                    <MenuItem key="duplicate" onClick={() => { handleDuplicate(deal); handleMenuClose(deal._id); }}>
-                      <ContentCopy sx={{ mr: 1 }} fontSize="small" /> Duplicate
-                    </MenuItem>
-                  ]}
-                  <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
-                    <Visibility sx={{ mr: 1 }} fontSize="small" /> View
-                  </MenuItem>
-                  {deal.bulkAction ? (
-  <MenuItem disabled>
-  <Chip 
-      label={deal.bulkStatus} 
-      color={deal.bulkStatus === "approved" ? "success" : "error"} 
-      variant="outlined" 
-    />
-  </MenuItem>
-  
-) : (
-  <MenuItem onClick={() => { 
-    handleToggleChange(deal._id, deal.status); 
-    handleMenuClose(deal._id); 
-  }}>
-    <Switch
-      checked={deal.status === 'active'}
-      size="small"
-      sx={{ mr: 1 }}
-    />
-    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
-  </MenuItem>
-)}
-{!deal.bulkAction && (
-  <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
-    <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
-  </MenuItem>
-)}
-
-                </Menu>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      )}
-      {layout === 'table' && (
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
-                <TableCell>Image</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Min Qty for Deal</TableCell>
-                <TableCell>Deal Progress</TableCell>
-                <TableCell>Ends</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+                    </CardContent>
+                    <Divider />
+                    <CardActions sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      padding: 2
+                    }}>
+                      {(location.pathname.includes("distributor")) && (
+                        <>
+                          <Tooltip title="Edit">
+                            <IconButton color="primary" onClick={() => handleEdit(deal)}>
+                              <Edit />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Duplicate">
+                            <IconButton color="info" onClick={() => handleDuplicate(deal)}>
+                              <ContentCopy />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
+                      <Tooltip title="View">
+                        <IconButton color="info" onClick={() => handleView(deal._id)}>
+                          <Visibility />
+                        </IconButton>
+                      </Tooltip>
+                      {deal.bulkAction ? (
+                        <Chip 
+                          label={deal.bulkStatus} 
+                          color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                          variant="outlined" 
+                        />
+                      ) : (
+                        <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
+                          <Switch
+                            checked={deal.status === 'active'}
+                            onChange={() => handleToggleChange(deal._id, deal.status)}
+                            color="primary"
+                          />
+                        </Tooltip>
+                      )}
+                      {!deal.bulkAction && (
+                        <Tooltip title='Delete'>
+                          <Button
+                            color="error"
+                            onClick={() => handleDelete(deal._id)}
+                            variant="outlined"
+                          >
+                            <DeleteOutline />
+                          </Button>
+                        </Tooltip>
+                      )}
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+          {layout === 'list' && (
+            <Box>
               {currentDeals.map((deal) => (
-                <TableRow
+                <Paper
                   key={deal._id}
                   sx={{
+                    mb: 2,
+                    p: 2,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderRadius: 2,
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                      transition: 'background-color 0.3s ease-in-out'
+                      boxShadow: 3,
+                      transform: 'translateY(-2px)',
+                      transition: 'all 0.3s ease-in-out'
                     }
                   }}
                 >
-                  <TableCell>
-                    <Box sx={{ position: 'relative' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <Box sx={{ position: 'relative', minWidth: 80 }}>
                       <CardMedia
                         component="img"
-                        height="60"
+                        height="80"
                         image={deal.images[0] || "https://via.placeholder.com/300"}
                         alt={deal.name}
                         sx={{
                           objectFit: "cover",
-                          width: 60,
+                          width: 80,
+                          mr: 2,
                           borderRadius: 1
                         }}
                       />
-                      {deal.name.toLowerCase().includes('(copy)') && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5
+                      }}>
+                        {deal.name.toLowerCase().includes('(copy)') && (
+                          <Chip
+                            label="Duplicate"
+                            color="info"
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(33, 150, 243, 0.9)',
+                              color: 'white',
+                              fontWeight: 'bold',
+                              transform: 'scale(0.8)'
+                            }}
+                          />
+                        )}
                         <Chip
-                          label="Duplicate"
-                          color="info"
+                          label={deal.status}
+                          color={deal.status === 'active' ? 'success' : 'default'}
                           size="small"
                           sx={{
-                            position: 'absolute',
-                            top: -8,
-                            right: -8,
-                            backgroundColor: 'rgba(33, 150, 243, 0.9)',
+                            backgroundColor: deal.status === 'active' ? 'rgba(46, 125, 50, 0.9)' : 'rgba(97, 97, 97, 0.9)',
                             color: 'white',
                             fontWeight: 'bold',
                             transform: 'scale(0.8)'
                           }}
                         />
-                      )}
+                      </Box>
                     </Box>
-                  </TableCell>
-                  <TableCell>{deal.name}</TableCell>
-                  <TableCell>{deal.category}</TableCell>
-                  <TableCell> <span style={{ textDecoration: 'line-through' }}>${deal.originalCost}</span> / ${deal.discountPrice}</TableCell>
-                  <TableCell>{deal.minQtyForDiscount}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '70%', mb: 2, mt: 2, gap: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
-                        sx={{ height: 6, borderRadius: 2, width: '90%' }}
-                      />
-                      {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
-                        <CheckCircleIcon
-                          sx={{
-                            color: 'success.main'
-                          }}
-                        />
-                      )}
+                    <Box sx={{ ml: 3, flex: 1 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="h6" fontWeight="bold">
+                            {deal.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Category: {deal.category}
+                          </Typography>
+                          
+                          {/* Display Sizes */}
+                          {deal.sizes && deal.sizes.length > 0 && (
+                            <Box sx={{ display: 'flex', gap: 1, mt: 1, mb: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                              <Typography variant="body2" color="text.secondary">
+                                Sizes: 
+                              </Typography>
+                              {deal.sizes.map((sizeItem, idx) => (
+                                <Chip 
+                                  key={idx} 
+                                  label={sizeItem.size} 
+                                  size="small" 
+                                  variant="outlined" 
+                                  sx={{ borderColor: 'primary.light' }}
+                                />
+                              ))}
+                            </Box>
+                          )}
+                          
+                          {/* Display Price */}
+                          {deal.sizes && deal.sizes.length > 0 ? (
+                            <Typography variant="body2" color="text.secondary">
+                              Price Range: 
+                              <span style={{ textDecoration: 'line-through', color: '#f44336', marginLeft: '4px' }}>
+                                ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                              </span> | 
+                              <span style={{ color: 'green', fontWeight: 'bold', marginLeft: '4px' }}>
+                                ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                              </span>
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              Price: <span style={{ textDecoration: 'line-through' }}>${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}</span> / ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                            </Typography>
+                          )}
+
+                          <Typography variant="body2" color="text.secondary">
+                            Min Qty for Deal: {deal.minQtyForDiscount}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          {/* Discount Tiers Section */}
+                          {deal.discountTiers && deal.discountTiers.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                                Volume Discounts:
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                {deal.discountTiers.map((tier, idx) => (
+                                  <Typography key={idx} variant="body2" color="text.secondary">
+                                    {tier.tierQuantity}+ units: {tier.tierDiscount}% off
+                                  </Typography>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                          
+                          <Typography variant="body2" color="text.secondary">
+                            Deal Progress : {deal.totalCommittedQuantity || 0} / {deal.minQtyForDiscount}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', width: '70%', mb: 2, mt: 2, gap: 1 }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={Math.min(100, (((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) || 0)}
+                              sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                            />
+                            {(((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) >= 100 && (
+                              <CheckCircleIcon
+                                sx={{
+                                  color: 'success.main'
+                                }}
+                              />
+                            )}
+                          </Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Box>
-                  </TableCell>
-
-
-                  <TableCell>
-  {deal.bulkAction ? "Expired" : new Date(deal.dealEndsAt).toLocaleDateString()}
-</TableCell>
-
-                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
                       <MoreVert />
                     </IconButton>
@@ -1115,54 +1203,272 @@ const ManageDeals = () => {
                         <Visibility sx={{ mr: 1 }} fontSize="small" /> View
                       </MenuItem>
                       {deal.bulkAction ? (
-  <MenuItem disabled>
-  <Chip 
-      label={deal.bulkStatus} 
-      color={deal.bulkStatus === "approved" ? "success" : "error"} 
-      variant="outlined" 
-    />
-  </MenuItem>
-) : (
-  <MenuItem onClick={() => { 
-    handleToggleChange(deal._id, deal.status); 
-    handleMenuClose(deal._id); 
-  }}>
-    <Switch
-      checked={deal.status === 'active'}
-      size="small"
-      sx={{ mr: 1 }}
-    />
-    {deal.status === 'active' ? 'Deactivate' : 'Activate'}
-  </MenuItem>
-)}
-
-{!deal.bulkAction && (
-  <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
-    <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
-  </MenuItem>
-)}
-
+                        <MenuItem disabled>
+                          <Chip 
+                            label={deal.bulkStatus} 
+                            color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                            variant="outlined" 
+                          />
+                        </MenuItem>
+                      ) : (
+                        <MenuItem onClick={() => { 
+                          handleToggleChange(deal._id, deal.status); 
+                          handleMenuClose(deal._id); 
+                        }}>
+                          <Switch
+                            checked={deal.status === 'active'}
+                            size="small"
+                            sx={{ mr: 1 }}
+                          />
+                          {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                        </MenuItem>
+                      )}
+                      {!deal.bulkAction && (
+                        <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
+                          <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
+                        </MenuItem>
+                      )}
                     </Menu>
-                  </TableCell>
-
-
-                </TableRow>
+                  </Box>
+                </Paper>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+            </Box>
+          )}
+          {layout === 'table' && (
+            <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
+                    <TableCell>Image</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell>Sizes</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Min Qty for Deal</TableCell>
+                    <TableCell>Deal Progress</TableCell>
+                    <TableCell>Ends</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {currentDeals.map((deal) => (
+                    <TableRow
+                      key={deal._id}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                          transition: 'background-color 0.3s ease-in-out'
+                        }
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ position: 'relative' }}>
+                          <CardMedia
+                            component="img"
+                            height="60"
+                            image={deal.images[0] || "https://via.placeholder.com/300"}
+                            alt={deal.name}
+                            sx={{
+                              objectFit: "cover",
+                              width: 60,
+                              borderRadius: 1
+                            }}
+                          />
+                          {deal.name.toLowerCase().includes('(copy)') && (
+                            <Chip
+                              label="Duplicate"
+                              color="info"
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                right: -8,
+                                backgroundColor: 'rgba(33, 150, 243, 0.9)',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                transform: 'scale(0.8)'
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{deal.name}</TableCell>
+                      <TableCell>{deal.category}</TableCell>
+                      <TableCell>
+                        {deal.sizes && deal.sizes.length > 0 ? (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {deal.sizes.map((sizeItem, idx) => (
+                              <Chip 
+                                key={idx} 
+                                label={sizeItem.size} 
+                                size="small" 
+                                sx={{ fontSize: '0.7rem' }}
+                              />
+                            ))}
+                          </Box>
+                        ) : (
+                          "Standard"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {deal.sizes && deal.sizes.length > 0 ? (
+                          <Box>
+                            <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through' }}>
+                              ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                            </Typography>
+                            <Typography variant="body2" color="success.main" sx={{ fontWeight: 'bold' }}>
+                              ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <>
+                            <span style={{ textDecoration: 'line-through' }}>${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}</span> / 
+                            ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                          </>
+                        )}
+                      </TableCell>
+                      <TableCell>{deal.minQtyForDiscount}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', width: '70%', mb: 2, mt: 2, gap: 1 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={Math.min(100, (((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) || 0)}
+                            sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                          />
+                          {(((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) >= 100 && (
+                            <CheckCircleIcon
+                              sx={{
+                                color: 'success.main'
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </TableCell>
+
+                      <TableCell>
+                        {deal.bulkAction ? "Expired" : new Date(deal.dealEndsAt).toLocaleDateString()}
+                      </TableCell>
+
+                      <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
+                        <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
+                          <MoreVert />
+                        </IconButton>
+                        <Menu
+                          anchorEl={anchorElMap[deal._id]}
+                          open={Boolean(anchorElMap[deal._id])}
+                          onClose={() => handleMenuClose(deal._id)}
+                        >
+                          {location.pathname.includes("distributor") && [
+                            <MenuItem key="edit" onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
+                              <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                            </MenuItem>,
+                            <MenuItem key="duplicate" onClick={() => { handleDuplicate(deal); handleMenuClose(deal._id); }}>
+                              <ContentCopy sx={{ mr: 1 }} fontSize="small" /> Duplicate
+                            </MenuItem>
+                          ]}
+                          <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
+                            <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                          </MenuItem>
+                          {deal.bulkAction ? (
+                            <MenuItem disabled>
+                              <Chip 
+                                label={deal.bulkStatus} 
+                                color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                                variant="outlined" 
+                              />
+                            </MenuItem>
+                          ) : (
+                            <MenuItem onClick={() => { 
+                              handleToggleChange(deal._id, deal.status); 
+                              handleMenuClose(deal._id); 
+                            }}>
+                              <Switch
+                                checked={deal.status === 'active'}
+                                size="small"
+                                sx={{ mr: 1 }}
+                              />
+                              {deal.status === 'active' ? 'Deactivate' : 'Activate'}
+                            </MenuItem>
+                          )}
+
+                          {!deal.bulkAction && (
+                            <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
+                              <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
+                            </MenuItem>
+                          )}
+                        </Menu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </>
+      )}
+      
+      {/* Only show pagination if we have deals */}
+      {!loading && deals.length > 0 && (
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredDeals.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       )}
 
-      {/* Pagination Component */}
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={filteredDeals.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      {/* Add Debug Dialog */}
+      <Dialog
+        open={debugDialog.open}
+        onClose={handleCloseDebugDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>API Response Debug Data</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              This data shows the raw response from the API. Use it to troubleshoot issues with the deals display.
+            </Typography>
+          </Box>
+          <Paper sx={{ p: 2, maxHeight: '400px', overflow: 'auto' }}>
+            <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+              {JSON.stringify(debugDialog.data, null, 2)}
+            </pre>
+          </Paper>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDebugDialog} color="primary">
+            Close
+          </Button>
+          <Button
+            onClick={() => {
+              // Create a Blob with the data
+              const blob = new Blob([JSON.stringify(debugDialog.data, null, 2)], {
+                type: 'application/json'
+              });
+              // Create a URL for the Blob
+              const url = URL.createObjectURL(blob);
+              // Create a temporary anchor element
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'deals-debug-data.json';
+              // Trigger the download
+              document.body.appendChild(a);
+              a.click();
+              // Clean up
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }}
+            color="primary"
+          >
+            Download JSON
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Add Confirmation Dialog */}
       <Dialog

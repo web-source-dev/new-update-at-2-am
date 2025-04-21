@@ -1,0 +1,427 @@
+import React, { useState, useEffect } from "react";
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Grid, 
+  Divider,
+  CircularProgress,
+  Container,
+  useTheme
+} from "@mui/material";
+import MediaLibrary from "./MediaLibrary";
+import MediaToolbar from "./MediaToolbar";
+import FolderTree from "./FolderTree";
+import MediaUploader from "./MediaUploader";
+import MediaDetails from "./MediaDetails";
+import api from "../../services/api";
+import { useSnackbar } from "notistack";
+
+const MediaManager = ({
+  selectorMode = false,
+  onMediaSelect = null,
+  initialFolder = "root",
+  onFolderChange = null
+}) => {
+  const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
+  
+  // State management
+  const [loading, setLoading] = useState(false);
+  const [mediaItems, setMediaItems] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [selectedFolder, setSelectedFolder] = useState(initialFolder);
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0
+  });
+  const [stats, setStats] = useState({
+    total: 0,
+    images: 0,
+    videos: 0,
+    documents: 0,
+    others: 0,
+    folders: 0
+  });
+  // Force refresh counter
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  const user_id = localStorage.getItem("user_id");
+
+  // Use the initialFolder value when it changes
+  useEffect(() => {
+    setSelectedFolder(initialFolder);
+  }, [initialFolder]);
+
+  // Notify parent component when folder changes
+  const handleFolderSelect = (folderId) => {
+    setSelectedFolder(folderId);
+    if (onFolderChange) {
+      onFolderChange(folderId);
+    }
+  };
+
+  // Fetch media items
+  const fetchMedia = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: pagination.currentPage,
+        limit: 20,
+        folder: selectedFolder,
+        sortBy,
+        sortOrder
+      };
+      
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+      
+      if (filterType !== "all") {
+        params.type = filterType;
+      }
+      
+      console.log("Fetching media with params:", params); // Debug log
+      
+      const response = await api.get(`/media-manager/media/${user_id}`, { params });
+      
+      console.log("Media fetched:", response.data.media); // Debug log
+      setMediaItems(response.data.media);
+      setPagination({
+        currentPage: response.data.currentPage,
+        totalPages: response.data.totalPages,
+        totalItems: response.data.totalItems
+      });
+      
+    } catch (error) {
+      console.error("Error fetching media:", error);
+      enqueueSnackbar("Failed to load media items", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch folders
+  const fetchFolders = async () => {
+    try {
+      // Remove any query params to get ALL folders regardless of parent
+      const response = await api.get(`/media-manager/folders/${user_id}`);
+      setFolders(response.data);
+    } catch (error) {
+      console.error("Error fetching folders:", error);
+      enqueueSnackbar("Failed to load folders", { variant: "error" });
+    }
+  };
+
+  // Fetch stats
+  const fetchStats = async () => {
+    try {
+      const response = await api.get(`/media-manager/stats/${user_id}`);
+      setStats(response.data);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  // Initial data loading
+  useEffect(() => {
+    fetchFolders();
+    fetchStats();
+  }, [refreshCounter]); // Add refresh counter dependency to ensure folders refresh
+
+  // Fetch media when parameters change
+  useEffect(() => {
+    fetchMedia();
+  }, [
+    selectedFolder,
+    pagination.currentPage,
+    sortBy,
+    sortOrder,
+    searchQuery,
+    filterType,
+    refreshCounter // Add refresh counter as dependency
+  ]);
+
+  // Handle media upload
+  const handleMediaUpload = async (mediaItems) => {
+    try {
+      // If mediaItems is an array and contains at least one item with a folderId
+      if (Array.isArray(mediaItems) && mediaItems.length > 0 && mediaItems[0].folderId) {
+        // Set selected folder to match the folder where media was uploaded
+        const targetFolder = mediaItems[0].folderId;
+        if (targetFolder !== selectedFolder) {
+          setSelectedFolder(targetFolder);
+        }
+      }
+      
+      // Increment refresh counter to trigger re-fetch
+      setRefreshCounter(prev => prev + 1);
+      
+      // Also fetch stats
+      await fetchStats();
+      
+      enqueueSnackbar("Media uploaded successfully", { variant: "success" });
+    } catch (error) {
+      console.error("Error handling media upload:", error);
+      // Force refresh anyway
+      setRefreshCounter(prev => prev + 1);
+    }
+  };
+
+  // Handle media deletion
+  const handleMediaDelete = async (mediaId) => {
+    try {
+      await api.delete(`/media-manager/media/${mediaId}/${user_id}`);
+      setSelectedMedia(null);
+      // Trigger a refresh
+      setRefreshCounter(prev => prev + 1);
+      await fetchStats();
+      enqueueSnackbar("Media deleted successfully", { variant: "success" });
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      enqueueSnackbar("Failed to delete media", { variant: "error" });
+    }
+  };
+
+  // Handle folder renaming
+  const handleRenameFolder = async (folderId, newName) => {
+    try {
+      if (!folderId || !newName || !newName.trim()) {
+        throw new Error('Invalid folder ID or name');
+      }
+      
+      console.log(`Renaming folder ${folderId} to "${newName}"`);
+      
+      const response = await api.put(`/media-manager/folders/${folderId}/${user_id}`, {
+        name: newName.trim()
+      });
+      
+      console.log("Rename folder response:", response.data);
+      
+      // Refresh folders and UI
+      await fetchFolders();
+      setRefreshCounter(prev => prev + 1);
+      
+      enqueueSnackbar("Folder renamed successfully", { variant: "success" });
+      return response.data;
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+      enqueueSnackbar(error.message || "Failed to rename folder", { variant: "error" });
+      throw error;
+    }
+  };
+
+  // Handle folder creation
+  const handleCreateFolder = async (folderName, parentId = selectedFolder) => {
+    try {
+      // Special case: If folder name is empty, just refresh folders and return null
+      // This is used by the rename and delete functions to trigger a refresh
+      if (!folderName || folderName.trim() === "") {
+        console.log("Empty folder name provided - refreshing folders without creating");
+        // Increment refresh counter to trigger re-fetch
+        setRefreshCounter(prev => prev + 1);
+        return null;
+      }
+      
+      console.log(`Creating folder "${folderName}" with parent ${parentId}`);
+      
+      const response = await api.post(`/media-manager/folders/${user_id}`, {
+        name: folderName,
+        parentId: parentId
+      });
+      
+      // Increment refresh counter to trigger re-fetch of both media and folders
+      setRefreshCounter(prev => prev + 1);
+      
+      enqueueSnackbar("Folder created successfully", { variant: "success" });
+      
+      // Return the created folder data
+      return response.data;
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      enqueueSnackbar("Failed to create folder", { variant: "error" });
+      throw error; // Re-throw to handle in the calling component
+    }
+  };
+
+  // Handle folder deletion
+  const handleDeleteFolder = async (folderId) => {
+    try {
+      console.log(`Deleting folder ${folderId}`);
+      
+      if (!folderId) {
+        throw new Error('Invalid folder ID');
+      }
+      
+      // First, find all child folders to handle properly
+      const childFolders = folders.filter(f => f.parentId === folderId);
+      if (childFolders.length > 0) {
+        console.log(`Folder has ${childFolders.length} child folders that will be moved`);
+      }
+      
+      // Make API call to delete the folder
+      const response = await api.delete(`/media-manager/folders/${folderId}/${user_id}`);
+      console.log("Delete folder response:", response.data);
+      
+      // If we were in the deleted folder, go to root
+      if (selectedFolder === folderId) {
+        console.log("Currently selected folder was deleted, switching to root");
+        setSelectedFolder("root");
+      }
+      
+      // Force a refresh to update the UI
+      console.log("Triggering refresh after folder deletion");
+      await fetchFolders(); // Immediately fetch folders
+      setRefreshCounter(prev => prev + 1); // Also increment refresh counter
+      await fetchStats(); // Update stats
+      
+      enqueueSnackbar("Folder deleted successfully", { variant: "success" });
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      enqueueSnackbar(error.message || "Failed to delete folder", { variant: "error" });
+      throw error; // Re-throw to handle in the calling component
+    }
+  };
+
+  // Handle pagination change
+  const handlePageChange = (event, page) => {
+    setPagination({
+      ...pagination,
+      currentPage: page
+    });
+  };
+
+  // Update this handler to support external selection callback
+  const handleMediaSelection = (media) => {
+    setSelectedMedia(media);
+    
+    // If in selector mode, also call the external callback
+    if (selectorMode && onMediaSelect) {
+      onMediaSelect(media);
+    }
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ mt: selectorMode ? 0 : 3, mb: selectorMode ? 0 : 6, height: selectorMode ? '100%' : 'auto' }}>
+      {!selectorMode && (
+        <Typography variant="h4" gutterBottom>
+          Media Manager
+        </Typography>
+      )}
+      
+      <Paper 
+        elevation={selectorMode ? 0 : 3} 
+        sx={{ 
+          p: 0, 
+          overflow: 'hidden', 
+          borderRadius: selectorMode ? 0 : 2,
+          height: selectorMode ? '100%' : 'calc(100vh - 180px)', 
+          display: 'flex', 
+          flexDirection: 'column',
+          border: selectorMode ? 'none' : undefined
+        }}
+      >
+        <MediaToolbar 
+          onSearch={setSearchQuery}
+          searchValue={searchQuery}
+          onFilterChange={setFilterType}
+          filterValue={filterType}
+          onSortChange={setSortBy}
+          sortValue={sortBy}
+          onSortOrderChange={setSortOrder}
+          sortOrderValue={sortOrder}
+          onViewModeChange={setViewMode}
+          viewModeValue={viewMode}
+          onUploadClick={() => setUploadDialogOpen(true)}
+          onCreateFolder={handleCreateFolder}
+          stats={stats}
+          selectorMode={selectorMode}
+        />
+        
+        <Divider />
+        
+        <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+          {/* Left Sidebar - Folder Navigation */}
+          <Box sx={{ 
+            width: 240, 
+            borderRight: `1px solid ${theme.palette.divider}`,
+            p: 1,
+            overflow: 'auto'
+          }}>
+            <FolderTree 
+              folders={folders}
+              selectedFolder={selectedFolder}
+              onFolderSelect={handleFolderSelect}
+              onDeleteFolder={handleDeleteFolder}
+              onCreateFolder={handleCreateFolder}
+              onRenameFolder={handleRenameFolder}
+            />
+          </Box>
+          
+          {/* Main Content Area */}
+          <Box sx={{ 
+            flexGrow: 1, 
+            p: 2,
+            width: '80%',
+            overflow: 'auto',
+            display: 'flex'
+          }}>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <MediaLibrary 
+                mediaItems={mediaItems}
+                viewMode={viewMode}
+                onMediaSelect={handleMediaSelection}
+                selectedMedia={selectedMedia}
+                onMediaDelete={handleMediaDelete}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                selectorMode={selectorMode}
+              />
+            )}
+          </Box>
+          
+          {/* Right Sidebar - Media Details */}
+          {selectedMedia && !selectorMode && (
+            <Box sx={{ 
+              width: 300, 
+              borderLeft: `1px solid ${theme.palette.divider}`,
+              p: 2,
+              overflow: 'auto'
+            }}>
+              <MediaDetails 
+                media={selectedMedia}
+                onClose={() => setSelectedMedia(null)}
+                onDelete={() => handleMediaDelete(selectedMedia._id)}
+                folders={folders}
+                onUpdate={() => setRefreshCounter(prev => prev + 1)} // Use the refresh counter here too
+              />
+            </Box>
+          )}
+        </Box>
+      </Paper>
+
+      {/* Upload Dialog */}
+      <MediaUploader
+        open={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        onUploadComplete={handleMediaUpload}
+        currentFolder={selectedFolder}
+        folders={folders}
+      />
+    </Container>
+  );
+};
+
+export default MediaManager; 

@@ -11,13 +11,20 @@ import {
   Button, Box, Tooltip, Menu, Card, CardMedia, CardContent, CardActions, Paper, TableContainer,
   Table, TableHead, TableRow, TableCell, TableBody, Switch, Pagination, TablePagination, Badge, Collapse
 } from '@mui/material';
-import { Search, Clear, Add, GetApp, ViewModule, ViewList, ViewComfy, Edit, Visibility, Delete, FilterAlt, ExpandLess, ExpandMore, MoreVert } from '@mui/icons-material';
+import { Search, Clear, Add, GetApp, ViewModule, ViewList, ViewComfy, Edit, Visibility, Delete, FilterAlt, ExpandLess, ExpandMore, MoreVert, PlayArrow } from '@mui/icons-material';
 import Toast from '../../../Components/Toast/Toast';
 import { FilterTextField, FilterSelect, FilterFormControl } from '../../DashBoardComponents/FilterStyles';
 import { Chip, Divider } from '@mui/material';
 import { InputAdornment } from '@mui/material';
 import { LinearProgress } from '@mui/material';
 import { GridCardsSkeleton, TableSkeleton } from '../../../Components/Skeletons/LoadingSkeletons';
+
+// Helper function to determine if the media is a video
+const isVideoUrl = (url) => {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+};
 
 const DealsManagment = () => {
   const [deals, setDeals] = useState([]);
@@ -521,13 +528,48 @@ const DealsManagment = () => {
                 },
                 bgcolor: '#ffffff'
               }}>
-                {/* Product Image */}
-                <CardMedia
-                  component="img"
-                  image={deal.images[0] || "https://via.placeholder.com/300"}
-                  alt={deal.name}
-                  sx={{ width: '100%', height: 180, objectFit: "cover", borderRadius: '10px 10px 0 0' }}
-                />
+                {/* Product Image or Video */}
+                {deal.images && deal.images.length > 0 && (
+                  <Box sx={{ position: 'relative', height: 180 }}>
+                    {isVideoUrl(deal.images[0]) ? (
+                      <Box
+                        component="video"
+                        src={deal.images[0]}
+                        autoPlay
+                        muted
+                        loop
+                        sx={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover', 
+                          borderRadius: '10px 10px 0 0' 
+                        }}
+                      />
+                    ) : (
+                      <CardMedia
+                        component="img"
+                        image={deal.images[0] || "https://via.placeholder.com/300"}
+                        alt={deal.name}
+                        sx={{ width: '100%', height: 180, objectFit: "cover", borderRadius: '10px 10px 0 0' }}
+                      />
+                    )}
+                    {isVideoUrl(deal.images[0]) && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 8,
+                          right: 8,
+                          bgcolor: 'rgba(0,0,0,0.6)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          p: 0.5,
+                        }}
+                      >
+                        <PlayArrow fontSize="small" />
+                      </Box>
+                    )}
+                  </Box>
+                )}
 
                 <CardContent sx={{ p: 3, bgcolor: 'linear-gradient(135deg, #eef2ff 0%, #d9e2ff 100%)' }}>
                   {/* Distributor Section */}
@@ -576,18 +618,73 @@ const DealsManagment = () => {
                     {deal.description}
                   </Typography>
 
+                  {/* Sizes Section */}
+                  {deal.sizes && deal.sizes.length > 0 ? (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                        Available Sizes:
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {deal.sizes.map((sizeItem, idx) => (
+                          <Chip 
+                            key={idx} 
+                            label={sizeItem.size} 
+                            size="small" 
+                            variant="outlined" 
+                            sx={{ borderColor: 'primary.main' }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  ) : null}
+
                   {/* Pricing Section */}
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through', fontSize: 14, mr: 1 }}>
-                      ${deal.originalCost}
-                    </Typography>
-                    <Typography variant="body2" color="green" fontWeight="bold" sx={{ fontSize: 16 }}>
-                      ${deal.discountPrice}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: 14, ml: 1, bgcolor: 'green', color: 'white', px: 1, borderRadius: 1 }}>
-                      -{Math.round(((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}%
-                    </Typography>
+                    {deal.sizes && deal.sizes.length > 0 ? (
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" fontWeight="bold">
+                          Price Range:
+                        </Typography>
+                        <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through', fontSize: 14, mr: 1 }}>
+                          ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                        </Typography>
+                        <Typography variant="body2" color="green" fontWeight="bold" sx={{ fontSize: 16 }}>
+                          ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontSize: 14, ml: 1, bgcolor: 'green', color: 'white', px: 1, borderRadius: 1, display: 'inline-block', mt: 1 }}>
+                          Up to {Math.round(Math.max(...deal.sizes.map(s => ((s.originalCost - s.discountPrice) / s.originalCost) * 100)))}% off
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through', fontSize: 14, mr: 1 }}>
+                          ${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}
+                        </Typography>
+                        <Typography variant="body2" color="green" fontWeight="bold" sx={{ fontSize: 16 }}>
+                          ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontSize: 14, ml: 1, bgcolor: 'green', color: 'white', px: 1, borderRadius: 1, display: 'inline-block', mt: 1 }}>
+                          -{Math.round(((deal.avgOriginalCost - deal.avgDiscountPrice) / deal.avgOriginalCost) * 100 || ((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}%
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
+
+                  {/* Discount Tiers Section */}
+                  {deal.discountTiers && deal.discountTiers.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                        Volume Discounts:
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {deal.discountTiers.map((tier, idx) => (
+                          <Typography key={idx} variant="body2" color="text.secondary">
+                            {tier.tierQuantity}+ units: {tier.tierDiscount}% off
+                          </Typography>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
 
                   {/* Extra Deal Info */}
                   <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2 }}>
@@ -606,11 +703,11 @@ const DealsManagment = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, gap: 1 }}>
                     <LinearProgress
                       variant="determinate"
-                      value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                      value={Math.min(100, ((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100)}
                       sx={{ height: 6, borderRadius: 2, width: '90%' }}
                     />
 
-                    {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                    {((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
                       <CheckCircleIcon
                         sx={{
                           color: 'success.main'
@@ -680,9 +777,37 @@ const DealsManagment = () => {
                   <Typography variant="body2" color="text.secondary">
                     {deal.category}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Original Price: ${deal.originalCost} | Discounted Price: ${deal.discountPrice}
-                  </Typography>
+                  {deal.sizes && deal.sizes.length > 0 ? (
+                    <Box sx={{ display: 'flex', gap: 1, mt: 1, mb: 1, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Sizes: 
+                      </Typography>
+                      {deal.sizes.map((sizeItem, idx) => (
+                        <Chip 
+                          key={idx} 
+                          label={sizeItem.size} 
+                          size="small" 
+                          variant="outlined" 
+                          sx={{ borderColor: 'primary.light' }}
+                        />
+                      ))}
+                    </Box>
+                  ) : null}
+                  {deal.sizes && deal.sizes.length > 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      Price Range: 
+                      <span style={{ textDecoration: 'line-through', color: '#f44336', marginLeft: '4px' }}>
+                        ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                      </span> | 
+                      <span style={{ color: 'green', fontWeight: 'bold', marginLeft: '4px' }}>
+                        ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                      </span>
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Original Price: ${deal.avgOriginalCost?.toFixed(2) || deal.originalCost} | Discounted Price: ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                    </Typography>
+                  )}
                   <Typography variant="body2" color="text.secondary">
                     Min Qty: {deal.minQtyForDiscount} | Members: {deal.totalCommitments}
                   </Typography>
@@ -696,11 +821,11 @@ const DealsManagment = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
                   <LinearProgress
                     variant="determinate"
-                    value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                    value={Math.min(100, ((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100)}
                     sx={{ height: 6, borderRadius: 2, width: '90%' }}
                   />
                   <Typography variant="body2" color="text.secondary">
-                    {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                    {((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
                       <CheckCircleIcon
                         sx={{
                           color: 'success.main'
@@ -756,6 +881,7 @@ const DealsManagment = () => {
               <TableRow bgcolor="info.main">
                 <TableCell sx={{ color: '#fff' }}><strong>Image</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Name</strong></TableCell>
+                <TableCell sx={{ color: '#fff' }}><strong>Sizes</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Price</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Deal Progress</strong></TableCell>
                 <TableCell sx={{ color: '#fff' }}><strong>Ends At</strong></TableCell>
@@ -775,16 +901,48 @@ const DealsManagment = () => {
                     />
                   </TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{deal.name}</TableCell>
-                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}> <span style={{ textDecoration: 'line-through' }}>${deal.originalCost}</span> / ${deal.discountPrice}</TableCell>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
+                    {deal.sizes && deal.sizes.length > 0 ? (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {deal.sizes.map((sizeItem, idx) => (
+                          <Chip 
+                            key={idx} 
+                            label={sizeItem.size} 
+                            size="small" 
+                            sx={{ fontSize: '0.7rem' }}
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      "Standard"
+                    )}
+                  </TableCell>
+                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}> 
+                    {deal.sizes && deal.sizes.length > 0 ? (
+                      <Box>
+                        <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through' }}>
+                          ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                        </Typography>
+                        <Typography variant="body2" color="success.main" sx={{ fontWeight: 'bold' }}>
+                          ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <>
+                        <span style={{ textDecoration: 'line-through' }}>${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}</span> / 
+                        ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                      </>
+                    )}
+                  </TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
                       <LinearProgress
                         variant="determinate"
-                        value={Math.min(100, ((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                        value={Math.min(100, ((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100)}
                         sx={{ height: 6, borderRadius: 2, width: '90%' }}
                       />
                       <Typography variant="body2" color="text.secondary">
-                        {((deal.totalCommitmentQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
+                        {((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
                           <CheckCircleIcon
                             sx={{
                               color: 'success.main'

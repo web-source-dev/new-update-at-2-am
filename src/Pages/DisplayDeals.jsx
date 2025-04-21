@@ -7,7 +7,6 @@ import {
   CardContent,
   CardMedia,
   Button,
-  IconButton,
   CircularProgress,
   Alert,
   Dialog,
@@ -16,7 +15,6 @@ import {
   DialogActions,
   TextField,
   Box,
-  Slider,
   useTheme,
   useMediaQuery,
   Avatar,
@@ -27,65 +25,33 @@ import {
   InputAdornment,
   Stack,
   ButtonGroup,
-  FormControlLabel,
-  Switch,
-  Tooltip,
   Divider,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Skeleton,
 } from "@mui/material";
-import { Favorite, ShoppingCart, FavoriteBorder, Visibility, FilterList, ExpandLess, ExpandMore, Clear, Search, ProductionQuantityLimits, PowerOffOutlined, Person } from "@mui/icons-material";
+import { FilterList, ExpandLess, ExpandMore, Clear, Search, TrendingUp, PlayArrow } from "@mui/icons-material";
 import axios from "axios";
-import { styled } from '@mui/material/styles';
 import Toast from '../Components/Toast/Toast';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import InfoIcon from '@mui/icons-material/Info';
 import {
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
 } from "@mui/material";
 import DisplaySplashContent from "../Components/SplashPage/DisplaySplashContent";
 
-
-const StyledSlider = styled(Slider)(({ theme }) => ({
-  height: 8,
-  '& .MuiSlider-track': {
-    border: 'none',
-    borderRadius: 4,
-  },
-  '& .MuiSlider-thumb': {
-    height: 24,
-    width: 24,
-    backgroundColor: '#fff',
-    border: '2px solid currentColor',
-    '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
-      boxShadow: 'inherit',
-    },
-    '&:before': {
-      display: 'none',
-    },
-  },
-  '& .MuiSlider-valueLabel': {
-    lineHeight: 1.2,
-    fontSize: 12,
-    background: 'unset',
-    padding: 0,
-    width: 32,
-    height: 32,
-    borderRadius: '50% 50% 50% 0',
-    backgroundColor: theme.palette.primary.main,
-    transformOrigin: 'bottom left',
-    transform: 'translate(50%, -100%) rotate(-45deg) scale(0)',
-    '&:before': { display: 'none' },
-    '&.MuiSlider-valueLabelOpen': {
-      transform: 'translate(50%, -100%) rotate(-45deg) scale(1)',
-    },
-    '& > *': {
-      transform: 'rotate(45deg)',
-    },
-  },
-}));
+// Helper function to determine if the media is a video
+const isVideoUrl = (url) => {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+};
 
 const DisplayDeals = () => {
   const [deals, setDeals] = useState([]);
@@ -93,7 +59,10 @@ const DisplayDeals = () => {
   const [error, setError] = useState(null);
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [getDealOpen, setGetDealOpen] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedSizes, setSelectedSizes] = useState({});
+  const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalSavings, setTotalSavings] = useState(0);
   const [userFavorites, setUserFavorites] = useState([]);
   const [filteredDeals, setFilteredDeals] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -106,6 +75,7 @@ const DisplayDeals = () => {
     severity: 'success'
   });
   const [splashContent, setSplashContent] = useState([]);
+  const [activeTier, setActiveTier] = useState(null);
 
   useEffect(() => {
     const fetchSplashContent = async () => {
@@ -259,10 +229,18 @@ const DisplayDeals = () => {
       }
 
       // Apply price range filter
-      filtered = filtered.filter(deal =>
-        deal.discountPrice >= filter.priceRange[0] &&
-        deal.discountPrice <= filter.priceRange[1]
-      );
+      filtered = filtered.filter(deal => {
+        // Check if deal has sizes array
+        if (deal.sizes && deal.sizes.length > 0) {
+          // Use the lowest price from available sizes
+          const lowestPrice = Math.min(...deal.sizes.map(size => size.discountPrice));
+          return lowestPrice >= filter.priceRange[0] && lowestPrice <= filter.priceRange[1];
+        } else {
+          // Fallback to legacy fields
+          const price = deal.discountPrice || deal.avgDiscountPrice || 0;
+          return price >= filter.priceRange[0] && price <= filter.priceRange[1];
+        }
+      });
 
       // Apply min quantity filter
       filtered = filtered.filter(deal =>
@@ -319,7 +297,6 @@ const DisplayDeals = () => {
       setIsViewLoading(false);
     }
   };
-  const handleCloseView = () => setSelectedDeal(null);
 
   const handleOpenGetDeal = async (deal) => {
     if (!user_id) {
@@ -348,10 +325,19 @@ const DisplayDeals = () => {
 
     setSelectedDeal(deal);
 
+    // Initialize selected sizes with 0 quantity for each available size
+    if (deal && deal.sizes) {
+      const initialSizes = {};
+      deal.sizes.forEach(size => {
+        initialSizes[size.size] = 0;
+      });
+      setSelectedSizes(initialSizes);
+    }
+
     // Check if user already has a commitment for this deal
     if (userCommitments.includes(deal._id)) {
       try {
-        // Fetch the user's existing commitments to get the quantity
+        // Fetch the user's existing commitments to get the quantities
         const commitmentsResponse = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/deals/commit/fetch/${user_id}`
         );
@@ -361,16 +347,17 @@ const DisplayDeals = () => {
           commitment => commitment.dealId._id === deal._id
         );
 
-        // Pre-populate the quantity field with the existing commitment quantity
-        if (existingCommitment) {
-          setQuantity(existingCommitment.quantity);
+        // Pre-populate the quantities based on existing size commitments
+        if (existingCommitment && existingCommitment.sizeCommitments) {
+          const userSizes = {};
+          existingCommitment.sizeCommitments.forEach(sc => {
+            userSizes[sc.size] = sc.quantity;
+          });
+          setSelectedSizes(userSizes);
         }
       } catch (error) {
         console.error("Error fetching existing commitment:", error);
       }
-    } else {
-      // Reset quantity to 1 for new commitments
-      setQuantity(1);
     }
 
     setGetDealOpen(true);
@@ -378,10 +365,189 @@ const DisplayDeals = () => {
 
   const handleCloseGetDeal = () => {
     setGetDealOpen(false);
-    setQuantity(1);
+    setSelectedDeal(null);
+    setSelectedSizes({});
+    setTotalQuantity(0);
+    setTotalPrice(0);
+    setTotalSavings(0);
+    setActiveTier(null);
   };
 
-  // Function to refresh user data (favorites and commitments)
+  const handleSizeQuantityChange = (size, quantity) => {
+    setSelectedSizes(prev => ({
+      ...prev,
+      [size]: Math.max(0, parseInt(quantity) || 0)
+    }));
+  };
+
+  const handleCommitDeal = async () => {
+    if (!selectedDeal || isCommitting) return;
+    
+    // Validate that at least one size has a quantity greater than 0
+    const hasQuantity = Object.values(selectedSizes).some(qty => qty > 0);
+    if (!hasQuantity) {
+      setToast({
+        open: true,
+        message: 'Please select a quantity for at least one size',
+        severity: 'error'
+      });
+      return;
+    }
+    
+    // Prepare size commitments data
+    const sizeCommitments = [];
+    let totalCommitPrice = 0;
+    
+    Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
+      if (quantity > 0) {
+        const sizeData = selectedDeal.sizes.find(s => s.size === sizeName);
+        if (sizeData) {
+          const pricePerUnit = sizeData.discountPrice;
+          const sizeTotal = pricePerUnit * quantity;
+          totalCommitPrice += sizeTotal;
+          
+          sizeCommitments.push({
+            size: sizeName,
+            quantity,
+            pricePerUnit,
+            totalPrice: sizeTotal
+          });
+        }
+      }
+    });
+    
+    // Apply any applicable discount tier
+    let finalTotalPrice = totalCommitPrice;
+    let appliedDiscountTier = null;
+    
+    if (activeTier) {
+      const discountMultiplier = 1 - (activeTier.tierDiscount / 100);
+      finalTotalPrice = totalCommitPrice * discountMultiplier;
+      appliedDiscountTier = {
+        tierQuantity: activeTier.tierQuantity,
+        tierDiscount: activeTier.tierDiscount
+      };
+    }
+
+    try {
+      setIsCommitting(true);
+      const commitmentData = {
+        dealId: selectedDeal._id,
+        userId: user_id,
+        sizeCommitments,
+        totalPrice: finalTotalPrice,
+      };
+      
+      if (appliedDiscountTier) {
+        commitmentData.appliedDiscountTier = appliedDiscountTier;
+      }
+      
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${selectedDeal._id}`,
+        commitmentData
+      );
+
+      setToast({
+        open: true,
+        message: "Deal commitment submitted successfully!",
+        severity: 'success'
+      });
+      
+      await refreshUserData();
+      await fetchDeals();
+      handleCloseGetDeal();
+    } catch (error) {
+      setToast({
+        open: true,
+        message: error.response?.data?.message || "Error submitting deal commitment",
+        severity: 'error'
+      });
+    } finally {
+      setIsCommitting(false);
+    }
+  };
+
+  const handleFilterChange = (name, value) => {
+    setFilter(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilter({
+      searchQuery: '',
+      category: '',
+      priceRange: [0, 1000000],
+      minQuantity: [0, 5000000],
+      favoritesOnly: false,
+      committedOnly: false,
+      Distributor: ''
+    });
+  };
+
+  const handleToastClose = () => {
+    setToast({ ...toast, open: false });
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedDeals = filteredDeals.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  // Calculate totals whenever selectedSizes or selectedDeal changes
+  useEffect(() => {
+    if (!selectedDeal) return;
+    
+    // Calculate total quantity across all sizes
+    let newTotalQuantity = 0;
+    let newTotalPrice = 0;
+    let newTotalSavings = 0;
+    
+    // Calculate totals based on selected sizes
+    Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
+      if (quantity > 0) {
+        const sizeData = selectedDeal.sizes.find(s => s.size === sizeName);
+        if (sizeData) {
+          newTotalQuantity += quantity;
+          newTotalPrice += quantity * sizeData.discountPrice;
+          newTotalSavings += quantity * (sizeData.originalCost - sizeData.discountPrice);
+        }
+      }
+    });
+    
+    setTotalQuantity(newTotalQuantity);
+    setTotalPrice(newTotalPrice);
+    setTotalSavings(newTotalSavings);
+    
+    // Determine if any discount tier applies
+    if (selectedDeal.discountTiers && selectedDeal.discountTiers.length > 0) {
+      // Sort tiers by quantity (highest first) to find the highest applicable tier
+      const sortedTiers = [...selectedDeal.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
+      const applicableTier = sortedTiers.find(tier => newTotalQuantity >= tier.tierQuantity);
+      
+      // If a tier applies, adjust the price with the tier discount
+      if (applicableTier) {
+        setActiveTier(applicableTier);
+        // Discount is applied to the final price
+        const discountMultiplier = 1 - (applicableTier.tierDiscount / 100);
+        setTotalPrice(newTotalPrice * discountMultiplier);
+        setTotalSavings(newTotalSavings + (newTotalPrice * (applicableTier.tierDiscount / 100)));
+      } else {
+        setActiveTier(null);
+      }
+    }
+  }, [selectedDeal, selectedSizes]);
+
   const refreshUserData = async () => {
     const user_id = localStorage.getItem('user_id');
     if (!user_id) return;
@@ -457,108 +623,363 @@ const DisplayDeals = () => {
     }
   };
 
-  const handleCommitDeal = async () => {
-    if (!user_id) {
-      setToast({
-        open: true,
-        message: 'Please login to commit a deal',
-        severity: 'error'
-      });
-      setTimeout(() =>
-        setRedirectLoading(true), 2000);
-      const currentPath = window.location.pathname;
-      localStorage.setItem('redirectPath', currentPath);
-      setTimeout(() => window.location.href = '/login', 3000);
-      return;
+  const renderDeals = () => {
+    if (loading) {
+      return Array.from({ length: 8 }).map((_, index) => (
+        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+          <Card sx={{ height: '100%', borderRadius: 2 }}>
+            <Skeleton variant="rectangular" height={200} />
+            <CardContent>
+              <Skeleton variant="text" width="80%" />
+              <Skeleton variant="text" width="60%" />
+              <Skeleton variant="text" width="40%" />
+            </CardContent>
+          </Card>
+        </Grid>
+      ));
     }
 
-    const user_role = localStorage.getItem('user_role');
-    if (user_role !== 'member') {
-      setToast({
-        open: true,
-        message: 'Only Co-op members can commit to deals',
-        severity: 'warning'
-      });
-      return;
-    }
-
-    if (!checkAuth() || !selectedDeal || isCommitting) return;
-
-    const totalPrice = quantity * selectedDeal.discountPrice;
-
-    try {
-      setIsCommitting(true);
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${selectedDeal._id}`,
-        {
-          dealId: selectedDeal._id,
-          userId: user_id,
-          quantity,
-          totalPrice,
-        }
+    if (!filteredDeals.length) {
+      return (
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="h6" color="text.secondary">
+              No deals found matching your criteria.
+            </Typography>
+            <Button 
+              variant="text" 
+              color="primary" 
+              onClick={clearFilters}
+              sx={{ mt: 1 }}
+            >
+              Clear Filters
+            </Button>
+          </Paper>
+        </Grid>
       );
-
-      // Refresh user data to update commitments
-      await refreshUserData();
-
-      setToast({
-        open: true,
-        message: "Deal commitment submitted successfully!",
-        severity: 'success'
-      });
-      handleCloseGetDeal();
-
-      // Refresh deals list after commitment
-      const dealsResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetchAll/buy`);
-      setDeals(dealsResponse.data);
-      setFilteredDeals(dealsResponse.data);
-    } catch (error) {
-      setToast({
-        open: true,
-        message: error.response?.data?.message || "Error submitting deal commitment",
-        severity: 'error'
-      });
-    } finally {
-      setIsCommitting(false);
     }
-  };
 
-  const handleFilterChange = (name, value) => {
-    setFilter(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const clearFilters = () => {
-    setFilter({
-      searchQuery: '',
-      category: '',
-      priceRange: [0, 1000000],
-      minQuantity: [0, 5000000],
-      favoritesOnly: false,
-      committedOnly: false,
-      Distributor: ''
+    return filteredDeals.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((deal) => {
+      // Check if user has committed to this deal
+      const isCommitted = userCommitments.includes(deal._id);
+      
+      // Check if the deal has the sizes array, if not use legacy fields
+      const hasSizes = deal.sizes && deal.sizes.length > 0;
+      
+      // Calculate the best savings percentage across all sizes or use legacy fields
+      let bestSavingsPercent = '0';
+      let lowestPrice = 0;
+      
+      if (hasSizes) {
+        const savingsPercentages = deal.sizes.map(size => 
+          ((size.originalCost - size.discountPrice) / size.originalCost) * 100
+        );
+        bestSavingsPercent = Math.max(...savingsPercentages).toFixed(0);
+        
+        // Get lowest price from available sizes
+        lowestPrice = Math.min(...deal.sizes.map(size => size.discountPrice));
+      } else {
+        // Fallback to legacy fields
+        bestSavingsPercent = deal.avgSavingsPercentage || '0';
+        lowestPrice = deal.discountPrice || deal.avgDiscountPrice || 0;
+      }
+      
+      return (
+        <Grid item xs={12} sm={6} md={4} lg={3} key={deal._id}>
+          <Card 
+            sx={{
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              transition: 'transform 0.3s, box-shadow 0.3s',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: 6
+              },
+              position: 'relative',
+              borderRadius: 2,
+              overflow: 'hidden'
+            }}
+          >
+            {bestSavingsPercent > 0 && (
+              <Box 
+                sx={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                  bgcolor: 'error.main',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  py: 0.5,
+                  px: 1.5,
+                  borderRadius: 1,
+                  zIndex: 1,
+                  boxShadow: 2,
+                  transform: 'rotate(0deg)',
+                }}
+              >
+                SAVE {bestSavingsPercent}%
+              </Box>
+            )}
+            
+            {deal.images && deal.images.length > 0 && (
+              <Box sx={{ position: 'relative', height: 200, bgcolor: 'grey.50' }}>
+                {isVideoUrl(deal.images[0]) ? (
+                  <Box
+                    component="video"
+                    src={deal.images[0]}
+                    autoPlay
+                    muted
+                    loop
+                    sx={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'contain',
+                      p: 2
+                    }}
+                  />
+                ) : (
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={deal.images[0]}
+                    alt={deal.name}
+                    sx={{ objectFit: 'contain', bgcolor: 'grey.50', p: 2 }}
+                  />
+                )}
+                {isVideoUrl(deal.images[0]) && (
+                  <Box 
+                    sx={{
+                      position: 'absolute',
+                      bottom: 5,
+                      right: 5,
+                      bgcolor: 'rgba(0,0,0,0.6)',
+                      color: 'white',
+                      borderRadius: '50%',
+                      p: 0.5,
+                    }}
+                  >
+                    <PlayArrow fontSize="small" />
+                  </Box>
+                )}
+              </Box>
+            )}
+            
+            <CardContent sx={{ flexGrow: 1, p: 2, pt: 1 }}>
+              <Typography 
+                variant="h6" 
+                component="div"
+                gutterBottom
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  height: '2.5rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                }}
+              >
+                {deal.name}
+              </Typography>
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
+                <Box>
+                  <Typography 
+                    variant="body1" 
+                    color="primary.main" 
+                    component="span"
+                    sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}
+                  >
+                    ${lowestPrice.toFixed(2)}
+                  </Typography>
+                  {hasSizes && deal.sizes.length > 1 && (
+                    <Typography 
+                      variant="body2" 
+                      component="span" 
+                      sx={{ ml: 0.5, color: 'text.secondary' }}
+                    >
+                      and up
+                    </Typography>
+                  )}
+                </Box>
+                <Chip 
+                  size="small" 
+                  label={deal.category} 
+                  color="primary" 
+                  variant="outlined"
+                  sx={{ borderRadius: 1 }}
+                />
+              </Box>
+              
+              {/* Size options */}
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{
+                  mb: 1,
+                  height: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5
+                }}
+              >
+                <Box component="span" sx={{ fontWeight: 'medium' }}>Sizes:</Box>
+                {hasSizes ? (
+                  <Box component="span" sx={{ 
+                    display: 'inline-flex',
+                    flexWrap: 'nowrap',
+                    overflow: 'hidden'
+                  }}>
+                    {deal.sizes.map((size, idx) => (
+                      <Box 
+                        key={idx} 
+                        component="span" 
+                        sx={{ 
+                          px: 0.5,
+                          mr: 0.5,
+                          fontSize: '0.7rem',
+                          bgcolor: 'grey.100',
+                          borderRadius: 0.5,
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {size.size}
+                      </Box>
+                    )).slice(0, 3)}
+                    {deal.sizes.length > 3 && <Box component="span">...</Box>}
+                  </Box>
+                ) : (
+                  <Box component="span">Standard size</Box>
+                )}
+              </Typography>
+              
+              {/* Distributor info */}
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Avatar 
+                  src={deal.distributor?.logo} 
+                  alt={deal.distributor?.businessName}
+                  sx={{ width: 24, height: 24, mr: 1 }}
+                />
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {deal.distributor?.businessName || deal.distributor?.name}
+                </Typography>
+              </Box>
+              
+              {/* Progress and stats */}
+              {deal.minQtyForDiscount > 0 && (
+                <Box sx={{ mb: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      {deal.totalCommittedQuantity || 0} of {deal.minQtyForDiscount} committed
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" fontWeight="bold">
+                      {Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}%
+                    </Typography>
+                  </Box>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: 'grey.100', borderRadius: 5, overflow: 'hidden' }}>
+                    <Box 
+                      sx={{ 
+                        height: '100%', 
+                        width: `${Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}%`,
+                        bgcolor: (deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? 'success.main' : 'primary.main',
+                        transition: 'width 0.5s ease-in-out'
+                      }} 
+                    />
+                  </Box>
+                </Box>
+              )}
+              
+              {/* Discount tiers badge if available */}
+              {deal.discountTiers && deal.discountTiers.length > 0 && (
+                <Box sx={{ 
+                  mb: 1, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 0.5,
+                  bgcolor: 'info.light',
+                  borderRadius: 1,
+                  px: 1,
+                  py: 0.3
+                }}>
+                  <Typography variant="caption" color="info.dark" sx={{ fontWeight: 'medium' }}>
+                    Volume Discount: Up to {Math.max(...deal.discountTiers.map(tier => tier.tierDiscount))}% off
+                  </Typography>
+                </Box>
+              )}
+              
+              {/* Deal status info */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Chip 
+                    size="small" 
+                    label={`Min: ${deal.minQtyForDiscount}`}
+                    color="info"
+                    variant="outlined"
+                    sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
+                  />
+                  <Chip 
+                    size="small" 
+                    label={`Left: ${Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))}`}
+                    color="warning"
+                    variant="outlined"
+                    sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
+                  />
+                </Box>
+                
+                {isCommitted ? (
+                  <Chip 
+                    size="small" 
+                    label="Committed"
+                    color="success"
+                    sx={{ borderRadius: 1 }}
+                  />
+                ) : (
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ fontSize: '0.75rem' }}
+                  >
+                    Ends: {new Date(deal.dealEndsAt).toLocaleDateString()}
+                  </Typography>
+                )}
+              </Box>
+            </CardContent>
+            
+            <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="small"
+                onClick={() => handleOpenView(deal)}
+                sx={{ borderRadius: 1 }}
+              >
+                View Deal
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                size="small"
+                onClick={() => handleOpenGetDeal(deal)}
+                sx={{ borderRadius: 1 }}
+              >
+                {isCommitted ? 'Edit' : 'Commit'}
+              </Button>
+            </Box>
+          </Card>
+        </Grid>
+      );
     });
   };
-
-  const handleToastClose = () => {
-    setToast({ ...toast, open: false });
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const paginatedDeals = filteredDeals.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   if (redirectLoading) {
     return <Box sx={{
@@ -810,86 +1231,6 @@ const DisplayDeals = () => {
                     </FormControl>
                   </Box>
                   <Divider sx={{marginTop:'50px'}} />
-{/* 
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Price Range: ${filter.priceRange[0]} - ${filter.priceRange[1]}
-                    </Typography>
-                    <StyledSlider
-                      value={filter.priceRange}
-                      onChange={(e, newValue) => handleFilterChange('priceRange', newValue)}
-                      min={0}
-                      max={1000}
-                      valueLabelDisplay="auto"
-                      sx={{
-                        color: 'primary.main',
-                        '& .MuiSlider-thumb': {
-                          '&:hover, &.Mui-focusVisible': {
-                            boxShadow: '0 0 0 8px rgba(25, 118, 210, 0.16)'
-                          }
-                        }
-                      }}
-                    />
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Minimum Quantity: {filter.minQuantity[0]} - {filter.minQuantity[1]} units
-                    </Typography>
-                    <StyledSlider
-                      value={filter.minQuantity}
-                      onChange={(e, newValue) => handleFilterChange('minQuantity', newValue)}
-                      min={1}
-                      max={100}
-                      valueLabelDisplay="auto"
-                      sx={{
-                        color: 'primary.main',
-                        '& .MuiSlider-thumb': {
-                          '&:hover, &.Mui-focusVisible': {
-                            boxShadow: '0 0 0 8px rgba(25, 118, 210, 0.16)'
-                          }
-                        }
-                      }}
-                    />
-                  </Box>
-
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      My Deals
-                    </Typography>
-                    <Stack direction="column" spacing={1}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={filter.favoritesOnly}
-                            onChange={(e) => handleFilterChange('favoritesOnly', e.target.checked)}
-                            color="primary"
-                          />
-                        }
-                        label={
-                          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Favorite fontSize="small" color={filter.favoritesOnly ? "error" : "action"} />
-                            Favorites Only
-                          </Typography>
-                        }
-                      />
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={filter.committedOnly}
-                            onChange={(e) => handleFilterChange('committedOnly', e.target.checked)}
-                            color="primary"
-                          />
-                        }
-                        label={
-                          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <ShoppingCart fontSize="small" color={filter.committedOnly ? "primary" : "action"} />
-                            Committed Only
-                          </Typography>
-                        }
-                      />
-                    </Stack>
-                  </Box> */}
 
                   {Object.values(filter).some(value =>
                     value !== '' &&
@@ -952,415 +1293,7 @@ const DisplayDeals = () => {
                     }
                   }}
                 >
-                  {paginatedDeals.map((deal) => (
-                    <Grid item key={deal._id}>
-                      <Card
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          borderRadius: 4,
-                          overflow: 'hidden',
-                          transition: "all 0.3s ease",
-                          bgcolor: 'white',
-                          position: 'relative',
-                          "&:hover": {
-                            transform: 'translateY(-8px)',
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.12)'
-                          },
-                        }}
-                      >
-                        {/* Discount Badge */}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 16,
-                            right: 16,
-                            bgcolor: 'error.main',
-                            color: 'white',
-                            px: 2,
-                            py: 0.5,
-                            borderRadius: 2,
-                            fontWeight: 600,
-                            fontSize: '0.875rem',
-                            zIndex: 1,
-                            boxShadow: 2
-                          }}
-                        >
-                          Save {Math.round(((deal.originalCost - deal.discountPrice) / deal.originalCost) * 100)}%
-                        </Box>
-
-                        {/* Image Section */}
-                        <Box
-                          sx={{
-                            position: 'relative',
-                            width: '100%',
-                            pt: '60%'
-                          }}
-                        >
-                          <CardMedia
-                            component="img"
-                            image={deal.images[0]}
-                            alt={deal.name}
-                            sx={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                          />
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-                              p: 1.5,
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              flexWrap: 'wrap',
-                              gap: 1
-                            }}
-                          >
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <Chip
-                                label={deal.category}
-                                size="small"
-                                sx={{
-                                  bgcolor: 'rgba(255,255,255,0.9)',
-                                  color: 'text.primary',
-                                  fontWeight: 500,
-                                  fontSize: '0.75rem',
-                                  height: '24px'
-                                }}
-                              />
-                              <Chip
-                                label={deal.totalCommitments || 0} // Ensure only text inside label
-                                icon={<Person />} // Use icon prop to display the user profile icon
-                                size="small"
-                                sx={{
-                                  bgcolor: 'rgba(255,255,255,0.9)',
-                                  color: 'success.main',
-                                  fontWeight: 500,
-                                  fontSize: '0.75rem',
-                                  height: '24px'
-                                }}
-                              />;
-                            </Box>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: 'white',
-                                bgcolor: 'rgba(0,0,0,0.5)',
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                fontWeight: 500,
-                                fontSize: '0.75rem'
-                              }}
-                            >
-                              Ends {new Date(deal.dealEndsAt).toLocaleDateString()}
-                            </Typography>
-                          </Box>
-                        </Box>
-
-                        {/* Content Section */}
-                        <CardContent
-                          sx={{
-                            p: 2,
-                            '&:last-child': { pb: 2 }
-                          }}
-                        >
-                          <Box sx={{ mb: 1.5 }}>
-                            {/* Title and Price Row */}
-                            <Box sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'flex-start',
-                              gap: 1,
-                              mb: 1
-                            }}>
-                              <Typography
-                                variant="subtitle1"
-                                sx={{
-                                  fontWeight: 600,
-                                  fontSize: '1rem',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                  lineHeight: 1.2,
-                                  flex: 1
-                                }}
-                              >
-                                {deal.name}
-                              </Typography>
-                              <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
-                              }}>
-                                <Typography
-                                  variant="subtitle1"
-                                  color="primary"
-                                  fontWeight="bold"
-                                >
-                                  ${deal.discountPrice}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ textDecoration: 'line-through' }}
-                                >
-                                  ${deal.originalCost}
-                                </Typography>
-                              </Box>
-                            </Box>
-
-                            {/* Distributor Info */}
-                            <Box sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              mb: 1.5,
-                              p: 1,
-                              bgcolor: 'grey.200',
-                              borderRadius: 1
-                            }}>
-                              <Avatar
-                                src={deal.distributor?.logo}
-                                alt={deal.distributor?.businessName || deal.distributor?.name}
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  bgcolor: 'primary.main',
-                                  mr: 1,
-                                  borderRadius: '50%',
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                }}
-                              >
-                                {(deal.distributor?.businessName || deal.distributor?.name)?.charAt(0) || 'D'}
-                              </Avatar>
-                              <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                                <Typography
-                                  variant="caption"
-                                  color="text.primary"
-                                  sx={{
-                                    display: 'block',
-                                    fontWeight: 500,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
-                                  }}
-                                >
-                                  {deal.distributor?.businessName || 'Unknown Business'}
-                                </Typography>
-                                {deal.distributor?.name && (
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                      display: 'block',
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      fontSize: '0.7rem'
-                                    }}
-                                  >
-                                    {deal.distributor.name}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-
-                            {/* Quick Stats */}
-                            <Box sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'start',
-                              gap: 1,
-                              p: 1,
-                              bgcolor: 'grey.50',
-                              borderRadius: 1,
-                              mb: 1.5
-                            }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Visibility sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-                                <Typography variant="caption" color="text.secondary">
-                                  {deal.views || 0}
-                                </Typography>
-                              </Box>
-
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <ProductionQuantityLimits sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-                                <Typography variant="caption" color="text.secondary">
-                                  Min Qty: {deal.minQtyForDiscount || 0}
-                                </Typography>
-                              </Box>
-
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography variant="caption" color="success.main">
-                                  {deal.minQtyForDiscount - deal.totalCommitmentQuantity || 0} remaining
-                                  {deal.minQtyForDiscount - deal.totalCommitmentQuantity === 0 && (
-                                    <Tooltip
-                                      title={
-                                        <Typography sx={{ fontSize: "16px", color: "white" }}>
-                                          You can commit more, but this one has completed its requirements
-                                        </Typography>
-                                      }
-                                      placement="top"
-                                      arrow
-                                      PopperProps={{
-                                        modifiers: [
-                                          {
-                                            name: "preventOverflow",
-                                            options: {
-                                              boundary: "window",
-                                            },
-                                          },
-                                        ],
-                                      }}
-                                      sx={{
-                                        '& .MuiTooltip-tooltip': {
-                                          backgroundColor: "#333",
-                                          color: "white",
-                                          fontSize: "16px", // Increase font size
-                                          padding: "10px",
-                                          borderRadius: "8px",
-                                          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
-                                        },
-                                      }}
-                                    >
-                                      <InfoIcon fontSize="small" sx={{ verticalAlign: "middle", color: "info.main" }} />
-                                    </Tooltip>
-                                  )}
-                                </Typography>
-                              </Box>
-                            </Box>
-
-                            {/* Status Indicators */}
-                            {(userFavorites.includes(deal._id) || userCommitments.includes(deal._id)) && (
-                              <Box sx={{
-                                display: 'flex',
-                                gap: 1,
-                                mb: 1.5
-                              }}>
-                                {/* {userFavorites.includes(deal._id) && (
-                                  <Chip
-                                    icon={<Favorite fontSize="small" />}
-                                    label="Favorite"
-                                    size="small"
-                                    color="error"
-                                    variant="outlined"
-                                    sx={{ borderRadius: 1 }}
-                                  />
-                                )} */}
-                                {userCommitments.includes(deal._id) && (
-                                  <Chip
-                                  
-                                    label="Committed"
-                                    size="small"
-                                    color="success"
-                                    variant="outlined"
-                                    sx={{ borderRadius: 1 }}
-                                  />
-                                )}
-                              </Box>
-                            )}
-
-                            {/* Description Preview */}
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                                lineHeight: 1.3,
-                                mb: 1.5,
-                                fontSize: '0.75rem'
-                              }}
-                            >
-                              {deal.description}
-                            </Typography>
-
-                            {/* Action Buttons */}
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                fullWidth
-                                onClick={() => handleOpenGetDeal(deal)}
-                                disabled={isCommitting}
-                                sx={{
-                                  borderRadius: 1,
-                                  py: 0.5,
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                  background: userCommitments.includes(deal._id) ? 'linear-gradient(45deg,rgb(17, 128, 26) 30%,rgba(6, 78, 18, 0.68) 90%)' : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                                  boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
-                                  '&:hover': {
-                                  background: userCommitments.includes(deal._id) ? 'linear-gradient(45deg,rgb(48, 158, 15) 30%,rgb(14, 133, 33) 90%)' : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)'
-                                  }
-                                }}
-                              >
-                                {isCommitting ? (
-                                  <CircularProgress size={24} color="inherit" />
-                                ) : (
-                                  userCommitments.includes(deal._id) ? 'Edit Commitment' : 'Make Commitment'
-                                )}
-                              </Button>
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenView(deal)}
-                                disabled={isViewLoading}
-                                sx={{
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                  borderRadius: 1,
-                                  p: 0.5
-                                }}
-                              >
-                                {isViewLoading ? (
-                                  <CircularProgress size={20} />
-                                ) : (
-                                  <Visibility sx={{ fontSize: '1.25rem' }} />
-                                )}
-                              </IconButton>
-                              {/* <IconButton
-                                size="small"
-                                onClick={() => toggleFavorite(deal._id)}
-                                disabled={isFavoriteLoading}
-                                sx={{
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                  borderRadius: 1,
-                                  p: 0.5,
-                                  color: userFavorites.includes(deal._id) ? 'error.main' : 'inherit'
-                                }}
-                              >
-                                {isFavoriteLoading ? (
-                                  <CircularProgress size={20} />
-                                ) : (
-                                  userFavorites.includes(deal._id) ?
-                                    <Favorite sx={{ fontSize: '1.25rem' }} /> :
-                                    <FavoriteBorder sx={{ fontSize: '1.25rem' }} />
-                                )}
-                              </IconButton> */}
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
+                  {renderDeals()}
                 </Grid>
               ) : deals.length > 0 ? (
                 <Box
@@ -1453,164 +1386,232 @@ const DisplayDeals = () => {
           </Box>
         </Container>
 
-        {/* Dialogs */}
+        {/* Deal Commitment Dialog */}
         <Dialog
           open={getDealOpen}
           onClose={handleCloseGetDeal}
-          maxWidth="sm"
           fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 4,
-              bgcolor: 'background.paper'
-            }
-          }}
+          maxWidth="md"
         >
-          <DialogTitle>
+          <DialogTitle sx={{ pb: 1 }}>
+            {selectedDeal && (
             <Typography variant="h6" fontWeight="bold">
-              Get Deal: {selectedDeal?.name}
+                {userCommitments.includes(selectedDeal._id) ? 'Edit Commitment' : 'Make Commitment'}: {selectedDeal.name}
             </Typography>
+            )}
           </DialogTitle>
-          <DialogContent dividers>
-            <Stack spacing={3} sx={{ pt: 2 }}>
-              <Box sx={{
+          <DialogContent sx={{ pt: '16px !important' }}>
+            {selectedDeal && (
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={8}>
+                  <Typography variant="h6" gutterBottom>
+                    Size & Quantity Selection
+                  </Typography>
+                  
+                  {/* Size selection with quantity inputs */}
+                  <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: 'grey.50' }}>
+                          <TableCell>Size</TableCell>
+                          <TableCell align="right">Unit Price</TableCell>
+                          <TableCell align="right">Quantity</TableCell>
+                          <TableCell align="right">Subtotal</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedDeal.sizes.map((size, index) => {
+                          const quantity = selectedSizes[size.size] || 0;
+                          const subtotal = quantity * size.discountPrice;
+                          return (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <Typography variant="body1" fontWeight="medium">
+                                  {size.size}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body1" color="primary">
+                                  ${size.discountPrice.toFixed(2)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <TextField
+                                  type="number"
+                                  variant="outlined"
+                                  size="small"
+                                  value={quantity}
+                                  onChange={(e) => handleSizeQuantityChange(size.size, e.target.value)}
+                                  inputProps={{ min: 0, style: { textAlign: 'center' } }}
+                                  sx={{ width: 80 }}
+                                />
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body1" fontWeight="medium">
+                                  ${subtotal.toFixed(2)}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        <TableRow sx={{ bgcolor: 'grey.50' }}>
+                          <TableCell colSpan={2}>
+                            <Typography variant="body1" fontWeight="bold">
+                              Total
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight="bold">
+                              {totalQuantity}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight="bold">
+                              ${totalPrice.toFixed(2)}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  
+                  {/* Discount tiers */}
+                  {selectedDeal.discountTiers && selectedDeal.discountTiers.length > 0 && (
+                    <>
+                      <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
+                        Volume Discount Tiers
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {selectedDeal.discountTiers.map((tier, index) => (
+                          <Paper
+                            key={index}
+                            variant="outlined"
+                            sx={{
+                              p: 1.5,
+                              borderRadius: 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 2,
-                p: 2,
-                bgcolor: 'primary.lighter',
-                borderRadius: 3
-              }}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <Avatar
-                    src={selectedDeal?.images[0]}
-                    alt={selectedDeal?.name}
-                    variant="rounded"
-                    sx={{ width: 80, height: 80 }}
-                  />
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                      {selectedDeal?.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedDeal?.distributor?.businessName || 'Unknown Business'}
+                              bgcolor: activeTier === tier ? 'success.light' : 'background.paper',
+                              color: activeTier === tier ? 'white' : 'inherit',
+                              borderColor: activeTier === tier ? 'success.main' : 'divider'
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <TrendingUp color={activeTier === tier ? "inherit" : "primary"} fontSize="small" />
+                              <Typography variant="body1">
+                                {tier.tierDiscount}% discount at {tier.tierQuantity}+ units
                     </Typography>
                   </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'left', flexDirection: 'column' }}>
-                  <Chip label={`Min Qty: ${selectedDeal?.minQtyForDiscount || 0}`} color="primary" />
+                            {activeTier === tier && (
                   <Chip
-                    label={`Remaining Quantity: ${selectedDeal?.minQtyForDiscount && selectedDeal?.totalCommitmentQuantity !== undefined
-                        ? selectedDeal.minQtyForDiscount - selectedDeal.totalCommitmentQuantity
-                        : "N/A"
-                      }`}
+                                label="Applied" 
                     color="success"
-                  />
+                                size="small"
+                                sx={{ 
+                                  bgcolor: 'white', 
+                                  color: 'success.dark', 
+                                  fontWeight: 'bold' 
+                                }}
+                              />
+                            )}
+                          </Paper>
+                        ))}
                 </Box>
+                    </>
+                  )}
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <Paper sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: 2, mb: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Order Summary
+                  </Typography>
+                    
+                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body1">Items Subtotal:</Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        ${(totalPrice + totalSavings).toFixed(2)}
+                  </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body1">Total Savings:</Typography>
+                      <Typography variant="body1" fontWeight="medium" color="success.light">
+                        -${totalSavings.toFixed(2)}
+                  </Typography>
+                    </Box>
+                    
+                    {activeTier && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body1">Volume Discount:</Typography>
+                        <Typography variant="body1" fontWeight="medium" color="success.light">
+                          {activeTier.tierDiscount}% off
+                  </Typography>
               </Box>
-
-              <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: 2
-              }}>
-                <Paper sx={{ p: 2, borderRadius: 3, bgcolor: 'grey.50' }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Original Price
-                  </Typography>
-                  <Typography variant="h6" sx={{ textDecoration: 'line-through', opacity: 0.7 }}>
-                    ${selectedDeal?.originalCost}
-                  </Typography>
-                </Paper>
-
-                <Paper sx={{ p: 2, borderRadius: 3, bgcolor: 'primary.lighter' }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Discount Price
-                  </Typography>
-                  <Typography variant="h6" color="primary.main" fontWeight="bold">
-                    ${selectedDeal?.discountPrice}
-                  </Typography>
-                </Paper>
-              </Box>
-
-              <TextField
-                label="Quantity"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3
-                  }
-                }}
-              />
-
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  bgcolor: 'primary.lighter'
-                }}
-              >
-                <Box sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 2
-                }}>
-                  <Typography variant="subtitle1">Subtotal:</Typography>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    ${(quantity * (selectedDeal?.discountPrice || 0)).toFixed(2)}
-                  </Typography>
-                </Box>
-                <Box sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  color: 'success.main'
-                }}>
-                  <Typography variant="subtitle1">You Save:</Typography>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    ${(quantity * ((selectedDeal?.originalCost || 0) - (selectedDeal?.discountPrice || 0))).toFixed(2)}
+                    )}
+                    
+                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="h6">Total Price:</Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        ${totalPrice.toFixed(2)}
                   </Typography>
                 </Box>
               </Paper>
-            </Stack>
+                  
+                  <Alert 
+                    severity="info" 
+                    sx={{ mb: 2 }}
+                  >
+                    <Typography variant="body2">
+                      Your commitment will be sent to the distributor. If approved, you'll be notified to complete the purchase.
+                    </Typography>
+                  </Alert>
+                  
+                  {selectedDeal?.minQtyForDiscount && (
+                    <Alert 
+                      severity="warning"
+                      sx={{ mb: 2 }}
+                    >
+                      <Typography variant="body2">
+                        This deal requires a minimum of {selectedDeal.minQtyForDiscount} units from all members combined.
+                      </Typography>
+                    </Alert>
+                  )}
+                </Grid>
+              </Grid>
+            )}
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>
             <Button
               onClick={handleCloseGetDeal}
-              variant="outlined"
+              color="secondary"
               disabled={isCommitting}
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none'
-              }}
+              sx={{ borderRadius: 2 }}
             >
               Cancel
             </Button>
             <Button
               variant="contained"
+              color={selectedDeal && userCommitments.includes(selectedDeal._id) ? "warning" : "primary"}
               onClick={handleCommitDeal}
-              disabled={isCommitting}
+              disabled={isCommitting || totalQuantity === 0}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
-                px: 3,
-                background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-                boxShadow: '0 3px 12px rgba(25, 118, 210, 0.3)',
+                background: selectedDeal && userCommitments.includes(selectedDeal._id) ? 'linear-gradient(45deg, #FF9800 30%, #FFC107 90%)' : undefined,
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
-                  boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)'
+                  background: selectedDeal && userCommitments.includes(selectedDeal._id) ? 'linear-gradient(45deg, #F57C00 30%, #FF9800 90%)' : undefined
                 }
               }}
             >
               {isCommitting ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                'Confirm Commitment'
+                selectedDeal && userCommitments.includes(selectedDeal._id) ? 'Update Commitment' : 'Confirm Commitment'
               )}
             </Button>
           </DialogActions>

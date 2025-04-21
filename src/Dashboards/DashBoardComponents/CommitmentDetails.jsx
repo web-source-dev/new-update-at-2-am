@@ -19,6 +19,12 @@ import {
     useMediaQuery,
     Paper,
     Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from '@mui/material';
 import {
     Timeline,
@@ -39,7 +45,9 @@ import {
     Email,
     ContentCopy,
     CheckCircle,
-    Category
+    Category,
+    Discount,
+    CompareArrows
 } from '@mui/icons-material';
 import CommitmentChat from './CommitmentChat';
 
@@ -164,6 +172,16 @@ const CommitmentDetails = () => {
             boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)',
         },
     };
+
+    // Calculate totals from size commitments
+    const calculateTotalFromSizeCommitments = (sizeCommitments) => {
+        if (!sizeCommitments || !Array.isArray(sizeCommitments)) return 0;
+        return sizeCommitments.reduce((total, item) => total + item.quantity, 0);
+    };
+
+    const originalTotalQuantity = calculateTotalFromSizeCommitments(commitment.sizeCommitments);
+    const modifiedTotalQuantity = commitment.modifiedSizeCommitments ? 
+        calculateTotalFromSizeCommitments(commitment.modifiedSizeCommitments) : 0;
 
     return (
         <Fade in={true}>
@@ -294,102 +312,129 @@ const CommitmentDetails = () => {
                                 </CardContent>
                             </Card>
 
-                            <Grid container spacing={3}>
-                                {/* Commitment Details Card */}
-                                <Grid item xs={12} md={6}>
-                                    <Card elevation={0} sx={cardStyle}>
-                                        <CardContent sx={{ p: 3 }}>
-                                            <Typography variant="h6" gutterBottom sx={{ 
-                                                color: 'primary.main',
-                                                fontWeight: 600,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 1,
-                                                mb: 2
+                            {/* Discount Tier Information (if applied) */}
+                            {commitment.appliedDiscountTier && (
+                                <Card elevation={0} sx={{
+                                    ...cardStyle,
+                                    bgcolor: 'rgba(76, 175, 80, 0.04)'
+                                }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Box display="flex" alignItems="center" mb={2}>
+                                            <Box sx={{
+                                                mr: 2,
+                                                p: 1,
+                                                borderRadius: 2,
+                                                bgcolor: 'rgba(76, 175, 80, 0.12)'
                                             }}>
-                                                <Info fontSize="small" />
-                                                Commitment Details
-                                            </Typography>
-                                            <Divider sx={{ 
-                                                mb: 3,
-                                                opacity: 0.1
-                                            }} />
-                                            
-                                            <Box display="flex" flexDirection="column" gap={3}>
-                                                <Box display="flex" alignItems="center">
-                                                    <Box sx={{
-                                                        mr: 2,
-                                                        p: 1,
-                                                        borderRadius: 2,
-                                                        bgcolor: 'rgba(25, 118, 210, 0.08)'
-                                                    }}>
-                                                        <ShoppingCart sx={{ color: 'primary.main' }} />
-                                                    </Box>
-                                                    <Box>
-                                                        <Typography variant="body1" fontWeight="500">
-                                                            Quantity: {commitment.modifiedQuantity || commitment.quantity}
-                                                        </Typography>
-                                                        {commitment.modifiedQuantity && (
-                                                            <Typography variant="caption" color="text.secondary" sx={{ 
-                                                                display: 'block',
-                                                                textDecoration: 'line-through',
-                                                                opacity: 0.7
-                                                            }}>
-                                                                Original: {commitment.quantity}
-                                                            </Typography>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-
-                                                <Box display="flex" alignItems="center">
-                                                    <Box sx={{
-                                                        mr: 2,
-                                                        p: 1,
-                                                        borderRadius: 2,
-                                                        bgcolor: 'rgba(25, 118, 210, 0.08)'
-                                                    }}>
-                                                        <AttachMoney sx={{ color: 'primary.main' }} />
-                                                    </Box>
-                                                    <Box>
-                                                        <Typography variant="body1" fontWeight="500">
-                                                            Total Price: ${commitment.modifiedTotalPrice || commitment.totalPrice}
-                                                        </Typography>
-                                                        {commitment.modifiedTotalPrice && (
-                                                            <Typography variant="caption" color="text.secondary" sx={{ 
-                                                                display: 'block',
-                                                                textDecoration: 'line-through',
-                                                                opacity: 0.7
-                                                            }}>
-                                                                Original: ${commitment.totalPrice}
-                                                            </Typography>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-
-                                                <Box display="flex" alignItems="center">
-                                                    <Box sx={{
-                                                        mr: 2,
-                                                        p: 1,
-                                                        borderRadius: 2,
-                                                        bgcolor: 'rgba(25, 118, 210, 0.08)'
-                                                    }}>
-                                                        <CalendarToday sx={{ color: 'primary.main' }} />
-                                                    </Box>
-                                                    <Typography variant="body1" fontWeight="500">
-                                                        {new Date(commitment.createdAt).toLocaleDateString(undefined, {
-                                                            year: 'numeric',
-                                                            month: 'long',
-                                                            day: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
-                                                    </Typography>
-                                                </Box>
+                                                <Discount sx={{ color: 'success.main' }} />
                                             </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                                            <Typography variant="h6" color="success.main" fontWeight="600">
+                                                Applied Discount Tier
+                                            </Typography>
+                                        </Box>
+                                        <Divider sx={{ mb: 3, opacity: 0.1 }} />
+                                        <Box sx={{ ml: 4 }}>
+                                            <Typography variant="body1" color="text.primary">
+                                                <strong>{commitment.appliedDiscountTier.tierDiscount}%</strong> discount applied
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Tier activated at {commitment.appliedDiscountTier.tierQuantity}+ units
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            )}
 
+                            {/* Commitment Size Details */}
+                            <Card elevation={0} sx={cardStyle}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Typography variant="h6" gutterBottom sx={{ 
+                                        color: 'primary.main',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        mb: 2
+                                    }}>
+                                        <ShoppingCart fontSize="small" />
+                                        Size Commitments
+                                    </Typography>
+                                    <Divider sx={{ mb: 3, opacity: 0.1 }} />
+                                    
+                                    {/* Original Commitments */}
+                                    <Typography variant="subtitle1" fontWeight="500" sx={{ mb: 2 }}>
+                                        Original Commitments
+                                    </Typography>
+                                    <TableContainer component={Paper} sx={{ mb: 3, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
+                                        <Table size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>Size</TableCell>
+                                                    <TableCell align="right">Quantity</TableCell>
+                                                    <TableCell align="right">Price Per Unit</TableCell>
+                                                    <TableCell align="right">Total Price</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {commitment.sizeCommitments && commitment.sizeCommitments.map((sizeCommit, index) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell component="th" scope="row">{sizeCommit.size}</TableCell>
+                                                        <TableCell align="right">{sizeCommit.quantity}</TableCell>
+                                                        <TableCell align="right">${Number(sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
+                                                        <TableCell align="right">${Number(sizeCommit.totalPrice || sizeCommit.quantity * sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                <TableRow sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}>
+                                                    <TableCell colSpan={1}><strong>Total</strong></TableCell>
+                                                    <TableCell align="right"><strong>{originalTotalQuantity}</strong></TableCell>
+                                                    <TableCell align="right"></TableCell>
+                                                    <TableCell align="right"><strong>${Number(commitment.totalPrice).toFixed(2)}</strong></TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+
+                                    {/* Modified Commitments (if applicable) */}
+                                    {commitment.modifiedByDistributor && commitment.modifiedSizeCommitments && commitment.modifiedSizeCommitments.length > 0 && (
+                                        <>
+                                            <Typography variant="subtitle1" fontWeight="500" sx={{ mb: 2, color: 'warning.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <CompareArrows fontSize="small" />
+                                                Modified by Distributor
+                                            </Typography>
+                                            <TableContainer component={Paper} sx={{ mb: 3, boxShadow: 'none', border: '1px solid', borderColor: 'warning.light' }}>
+                                                <Table size="small">
+                                                    <TableHead>
+                                                        <TableRow sx={{ bgcolor: 'rgba(255, 152, 0, 0.08)' }}>
+                                                            <TableCell>Size</TableCell>
+                                                            <TableCell align="right">Quantity</TableCell>
+                                                            <TableCell align="right">Price Per Unit</TableCell>
+                                                            <TableCell align="right">Total Price</TableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {commitment.modifiedSizeCommitments.map((sizeCommit, index) => (
+                                                            <TableRow key={index}>
+                                                                <TableCell component="th" scope="row">{sizeCommit.size}</TableCell>
+                                                                <TableCell align="right">{sizeCommit.quantity}</TableCell>
+                                                                <TableCell align="right">${Number(sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
+                                                                <TableCell align="right">${Number(sizeCommit.totalPrice || sizeCommit.quantity * sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                        <TableRow sx={{ bgcolor: 'rgba(255, 152, 0, 0.08)' }}>
+                                                            <TableCell colSpan={1}><strong>Total</strong></TableCell>
+                                                            <TableCell align="right"><strong>{modifiedTotalQuantity}</strong></TableCell>
+                                                            <TableCell align="right"></TableCell>
+                                                            <TableCell align="right"><strong>${Number(commitment.modifiedTotalPrice).toFixed(2)}</strong></TableCell>
+                                                        </TableRow>
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                        </>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            <Grid container spacing={3}>
                                 {/* User Information Card */}
                                 <Grid item xs={12} md={6}>
                                     <Card elevation={0} sx={cardStyle}>
@@ -436,6 +481,102 @@ const CommitmentDetails = () => {
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="500">
                                                         {commitment.userId.email}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+
+                                {/* Commitment Summary Card */}
+                                <Grid item xs={12} md={6}>
+                                    <Card elevation={0} sx={cardStyle}>
+                                        <CardContent sx={{ p: 3 }}>
+                                            <Typography variant="h6" gutterBottom sx={{ 
+                                                color: 'primary.main',
+                                                fontWeight: 600,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                                mb: 2
+                                            }}>
+                                                <Info fontSize="small" />
+                                                Commitment Summary
+                                            </Typography>
+                                            <Divider sx={{ mb: 3, opacity: 0.1 }} />
+                                            
+                                            <Box display="flex" flexDirection="column" gap={3}>
+                                                <Box display="flex" alignItems="center">
+                                                    <Box sx={{
+                                                        mr: 2,
+                                                        p: 1,
+                                                        borderRadius: 2,
+                                                        bgcolor: 'rgba(25, 118, 210, 0.08)'
+                                                    }}>
+                                                        <ShoppingCart sx={{ color: 'primary.main' }} />
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography variant="body1" fontWeight="500">
+                                                            Total Quantity: {
+                                                                commitment.modifiedByDistributor ? 
+                                                                modifiedTotalQuantity : 
+                                                                originalTotalQuantity
+                                                            }
+                                                        </Typography>
+                                                        {commitment.modifiedByDistributor && (
+                                                            <Typography variant="caption" color="text.secondary" sx={{ 
+                                                                display: 'block',
+                                                                textDecoration: 'line-through',
+                                                                opacity: 0.7
+                                                            }}>
+                                                                Original: {originalTotalQuantity}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                <Box display="flex" alignItems="center">
+                                                    <Box sx={{
+                                                        mr: 2,
+                                                        p: 1,
+                                                        borderRadius: 2,
+                                                        bgcolor: 'rgba(25, 118, 210, 0.08)'
+                                                    }}>
+                                                        <AttachMoney sx={{ color: 'primary.main' }} />
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography variant="body1" fontWeight="500">
+                                                            Total Price: ${commitment.modifiedTotalPrice || commitment.totalPrice}
+                                                        </Typography>
+                                                        {commitment.modifiedTotalPrice && (
+                                                            <Typography variant="caption" color="text.secondary" sx={{ 
+                                                                display: 'block',
+                                                                textDecoration: 'line-through',
+                                                                opacity: 0.7
+                                                            }}>
+                                                                Original: ${commitment.totalPrice}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                <Box display="flex" alignItems="center">
+                                                    <Box sx={{
+                                                        mr: 2,
+                                                        p: 1,
+                                                        borderRadius: 2,
+                                                        bgcolor: 'rgba(25, 118, 210, 0.08)'
+                                                    }}>
+                                                        <CalendarToday sx={{ color: 'primary.main' }} />
+                                                    </Box>
+                                                    <Typography variant="body1" fontWeight="500">
+                                                        Created: {new Date(commitment.createdAt).toLocaleDateString(undefined, {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
                                                     </Typography>
                                                 </Box>
                                             </Box>
@@ -532,6 +673,14 @@ const CommitmentDetails = () => {
                                                         minute: '2-digit'
                                                     })}
                                                 </Typography>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                    {originalTotalQuantity} units, ${Number(commitment.totalPrice).toFixed(2)}
+                                                </Typography>
+                                                {commitment.appliedDiscountTier && (
+                                                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 0.5 }}>
+                                                        {commitment.appliedDiscountTier.tierDiscount}% discount applied
+                                                    </Typography>
+                                                )}
                                             </TimelineContent>
                                         </TimelineItem>
 
@@ -551,7 +700,12 @@ const CommitmentDetails = () => {
                                                         Modified by Distributor
                                                     </Typography>
                                                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                                        Quantity: {commitment.modifiedQuantity} | Price: ${commitment.modifiedTotalPrice}
+                                                        Quantity: {modifiedTotalQuantity} | Price: ${Number(commitment.modifiedTotalPrice).toFixed(2)}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
+                                                        <span style={{ textDecoration: 'line-through' }}>
+                                                            Original: {originalTotalQuantity} units, ${Number(commitment.totalPrice).toFixed(2)}
+                                                        </span>
                                                     </Typography>
                                                 </TimelineContent>
                                             </TimelineItem>
@@ -569,6 +723,10 @@ const CommitmentDetails = () => {
                                             <TimelineContent>
                                                 <Typography variant="body1" fontWeight="500" color={`${getStatusColor(commitment.status)}.main`}>
                                                     Current Status: {commitment.status.toUpperCase()}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                    Final: {commitment.modifiedByDistributor ? modifiedTotalQuantity : originalTotalQuantity} units, 
+                                                    ${Number(commitment.modifiedTotalPrice || commitment.totalPrice).toFixed(2)}
                                                 </Typography>
                                             </TimelineContent>
                                         </TimelineItem>

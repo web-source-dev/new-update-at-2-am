@@ -22,6 +22,19 @@ import {
   Card,
   useTheme,
   useMediaQuery,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -39,11 +52,21 @@ import {
   Groups,
   Visibility,
   QueryStats,
+  TrendingUp,
+  AddShoppingCart,
+  CheckCircle,
+  PlayArrow,
 } from '@mui/icons-material';
 import axios from 'axios';
 import Toast from '../Components/Toast/Toast';
 import { io } from 'socket.io-client';
 
+// Helper function to determine if the media is a video
+const isVideoUrl = (url) => {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+};
 
 const ViewSingleDeal = () => {
   const { dealId } = useParams();
@@ -52,7 +75,6 @@ const ViewSingleDeal = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
   const [getDealOpen, setGetDealOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [toast, setToast] = useState({
@@ -63,7 +85,12 @@ const ViewSingleDeal = () => {
   const [isCommitting, setIsCommitting] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const [socket, setSocket] = useState(null);
-
+  const [selectedSizes, setSelectedSizes] = useState({});
+  const [activeTier, setActiveTier] = useState(null);
+  const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalSavings, setTotalSavings] = useState(0);
+  
   const user_id = localStorage.getItem("user_id");
 
   const theme = useTheme();
@@ -143,7 +170,16 @@ const ViewSingleDeal = () => {
         }
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch-single/deal/${dealId}`);
         setDeal(response.data);
-        console.log(response.data)
+        console.log(response.data);
+        
+        // Initialize selected sizes with 0 quantity for each available size
+        if (response.data && response.data.sizes) {
+          const initialSizes = {};
+          response.data.sizes.forEach(size => {
+            initialSizes[size.size] = 0;
+          });
+          setSelectedSizes(initialSizes);
+        }
         
         // Check if deal is in favorites
         if (user_id) {
@@ -161,6 +197,15 @@ const ViewSingleDeal = () => {
             commitment => commitment.dealId._id === dealId
           );
           setUserCommitment(existingCommitment || null);
+          
+          // If user has existing commitment, set the selected sizes
+          if (existingCommitment && existingCommitment.sizeCommitments) {
+            const userSizes = {};
+            existingCommitment.sizeCommitments.forEach(sc => {
+              userSizes[sc.size] = sc.quantity;
+            });
+            setSelectedSizes(userSizes);
+          }
         }
       } catch (err) {
         setError(err.response?.data?.message || 'Error fetching deal details');
@@ -171,6 +216,50 @@ const ViewSingleDeal = () => {
     fetchDeal();
     // No need for interval-based polling anymore
   }, [dealId]);
+
+  // Calculate total quantity, price, and determine active discount tier
+  useEffect(() => {
+    if (!deal) return;
+    
+    // Calculate total quantity across all sizes
+    let newTotalQuantity = 0;
+    let newTotalPrice = 0;
+    let newTotalSavings = 0;
+    
+    // Calculate totals based on selected sizes
+    Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
+      if (quantity > 0) {
+        const sizeData = deal.sizes.find(s => s.size === sizeName);
+        if (sizeData) {
+          newTotalQuantity += quantity;
+          newTotalPrice += quantity * sizeData.discountPrice;
+          newTotalSavings += quantity * (sizeData.originalCost - sizeData.discountPrice);
+        }
+      }
+    });
+    
+    setTotalQuantity(newTotalQuantity);
+    setTotalPrice(newTotalPrice);
+    setTotalSavings(newTotalSavings);
+    
+    // Determine if any discount tier applies
+    if (deal.discountTiers && deal.discountTiers.length > 0) {
+      // Sort tiers by quantity (highest first) to find the highest applicable tier
+      const sortedTiers = [...deal.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
+      const applicableTier = sortedTiers.find(tier => newTotalQuantity >= tier.tierQuantity);
+      
+      // If a tier applies, adjust the price with the tier discount
+      if (applicableTier) {
+        setActiveTier(applicableTier);
+        // Discount is applied to the final price
+        const discountMultiplier = 1 - (applicableTier.tierDiscount / 100);
+        setTotalPrice(newTotalPrice * discountMultiplier);
+        setTotalSavings(newTotalSavings + (newTotalPrice * (applicableTier.tierDiscount / 100)));
+      } else {
+        setActiveTier(null);
+      }
+    }
+  }, [deal, selectedSizes]);
 
   const handleNextImage = () => {
     setCurrentImageIndex((prev) => 
@@ -207,19 +296,35 @@ const ViewSingleDeal = () => {
       });
       return;
     }
-    setGetDealOpen(true);
     
-    // If user has already committed to this deal, pre-populate with existing quantity
-    if (userCommitment) {
-      setQuantity(userCommitment.quantity);
+    // If user has already committed to this deal, pre-populate with existing quantities
+    if (userCommitment && userCommitment.sizeCommitments) {
+      const existingSizes = {};
+      userCommitment.sizeCommitments.forEach(sc => {
+        existingSizes[sc.size] = sc.quantity;
+      });
+      setSelectedSizes(existingSizes);
     } else {
-      setQuantity(1);
+      // Reset all sizes to 0
+      const resetSizes = {};
+      deal?.sizes.forEach(size => {
+        resetSizes[size.size] = 0;
+      });
+      setSelectedSizes(resetSizes);
     }
+    
+    setGetDealOpen(true);
   };
   
   const handleCloseGetDeal = () => {
     setGetDealOpen(false);
-    setQuantity(1);
+  };
+
+  const handleSizeQuantityChange = (size, quantity) => {
+    setSelectedSizes(prev => ({
+      ...prev,
+      [size]: Math.max(0, parseInt(quantity) || 0)
+    }));
   };
 
   const [redirectLoading, setRedirectLoading] = useState(false);
@@ -298,18 +403,68 @@ const ViewSingleDeal = () => {
       return;
     }
     
-    const totalPrice = quantity * deal.discountPrice;
+    // Validate that at least one size has a quantity greater than 0
+    const hasQuantity = Object.values(selectedSizes).some(qty => qty > 0);
+    if (!hasQuantity) {
+      setToast({
+        open: true,
+        message: 'Please select a quantity for at least one size',
+        severity: 'error'
+      });
+      return;
+    }
+    
+    // Prepare size commitments data
+    const sizeCommitments = [];
+    let totalCommitPrice = 0;
+    
+    Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
+      if (quantity > 0) {
+        const sizeData = deal.sizes.find(s => s.size === sizeName);
+        if (sizeData) {
+          const pricePerUnit = sizeData.discountPrice;
+          const sizeTotal = pricePerUnit * quantity;
+          totalCommitPrice += sizeTotal;
+          
+          sizeCommitments.push({
+            size: sizeName,
+            quantity,
+            pricePerUnit,
+            totalPrice: sizeTotal
+          });
+        }
+      }
+    });
+    
+    // Apply any applicable discount tier
+    let finalTotalPrice = totalCommitPrice;
+    let appliedDiscountTier = null;
+    
+    if (activeTier) {
+      const discountMultiplier = 1 - (activeTier.tierDiscount / 100);
+      finalTotalPrice = totalCommitPrice * discountMultiplier;
+      appliedDiscountTier = {
+        tierQuantity: activeTier.tierQuantity,
+        tierDiscount: activeTier.tierDiscount
+      };
+    }
 
     try {
       setIsCommitting(true);
+      const commitmentData = {
+        dealId,
+        userId: user_id,
+        sizeCommitments,
+        totalPrice: finalTotalPrice,
+      };
+      
+      if (appliedDiscountTier) {
+        commitmentData.appliedDiscountTier = appliedDiscountTier;
+      }
+      
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${dealId}`,
-        {
-          dealId,
-          userId: user_id,
-          quantity,
-          totalPrice,
-        }
+        commitmentData
       );
 
       setToast({
@@ -421,17 +576,34 @@ const ViewSingleDeal = () => {
             >
               {deal?.images?.length > 0 ? (
                 <>
-                  <Box
-                    component="img"
-                    src={deal.images[currentImageIndex]}
-                    alt={deal.name}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      p: 2,
-                    }}
-                  />
+                  {isVideoUrl(deal.images[currentImageIndex]) ? (
+                    <Box
+                      component="video"
+                      src={deal.images[currentImageIndex]}
+                      controls
+                      autoPlay
+                      muted
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        p: 2,
+                        bgcolor: 'black'
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      component="img"
+                      src={deal.images[currentImageIndex]}
+                      alt={deal.name}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        p: 2,
+                      }}
+                    />
+                  )}
                   {deal.images.length > 1 && (
                     <>
                       <IconButton
@@ -522,7 +694,7 @@ const ViewSingleDeal = () => {
                     },
                   }}
                 >
-                  {deal.images.map((image, index) => (
+                  {deal.images.map((mediaUrl, index) => (
                     <Box
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -540,18 +712,48 @@ const ViewSingleDeal = () => {
                           transform: 'scale(1.05)',
                           boxShadow: 3
                         },
+                        position: 'relative'
                       }}
                     >
-                      <Box
-                        component="img"
-                        src={image}
-                        alt={`${deal.name} - ${index + 1}`}
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
+                      {isVideoUrl(mediaUrl) ? (
+                        <>
+                          <Box
+                            component="video"
+                            src={mediaUrl}
+                            sx={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                            }}
+                          >
+                            <PlayArrow sx={{ color: 'white', fontSize: 24 }} />
+                          </Box>
+                        </>
+                      ) : (
+                        <Box
+                          component="img"
+                          src={mediaUrl}
+                          alt={`${deal.name} - ${index + 1}`}
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      )}
                     </Box>
                   ))}
                 </Box>
@@ -591,60 +793,80 @@ const ViewSingleDeal = () => {
                 >
                   {deal?.name}
                 </Typography>
-                <Chip 
-                  label={`Save ${Math.round(((deal?.originalCost - deal?.discountPrice) / deal?.originalCost) * 100)}%`}
-                  color="error"
-                  size="large"
-                  sx={{ 
-                    borderRadius: 1,
-                    '& .MuiChip-label': {
-                      px: 2,
-                      py: 0.5,
-                      fontSize: '1rem',
-                      fontWeight: 600
-                    }
-                  }}
-                />
+                {deal?.sizes && deal.sizes.length > 0 && (
+                  <Chip 
+                    label={`Save up to ${Math.max(...deal.sizes.map(size => 
+                      Math.round(((size.originalCost - size.discountPrice) / size.originalCost) * 100)
+                    ))}%`}
+                    color="error"
+                    size="large"
+                    sx={{ 
+                      borderRadius: 1,
+                      '& .MuiChip-label': {
+                        px: 2,
+                        py: 0.5,
+                        fontSize: '1rem',
+                        fontWeight: 600
+                      }
+                    }}
+                  />
+                )}
               </Box>
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'baseline', 
-                gap: 2,
-                flexWrap: 'wrap',
-                mb: 2
-              }}>
-                <Typography 
-                  variant="h5" 
-                  color="primary" 
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
-                  }}
-                >
-                  ${deal?.discountPrice}
-                </Typography>
-                <Typography 
-                  variant="h6" 
-                  color="text.secondary" 
-                  sx={{ 
-                    textDecoration: 'line-through', 
-                    opacity: 0.7,
-                    fontSize: { xs: '1rem', sm: '1.25rem' }
-                  }}
-                >
-                  ${deal?.originalCost}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="success.main"
-                  sx={{ 
-                    fontWeight: 500,
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  }}
-                >
-                  Save ${(deal?.originalCost - deal?.discountPrice).toFixed(2)} per unit
-                </Typography>
-              </Box>
+              
+              {/* Size options and prices */}
+              {deal?.sizes && deal.sizes.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Available Sizes
+                  </Typography>
+                  <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ mb: 2 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: 'grey.50' }}>
+                          <TableCell>Size</TableCell>
+                          <TableCell align="right">Original Price</TableCell>
+                          <TableCell align="right">Discount Price</TableCell>
+                          <TableCell align="right">Savings</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {deal.sizes.map((size, index) => {
+                          const savingsAmount = size.originalCost - size.discountPrice;
+                          const savingsPercent = ((savingsAmount / size.originalCost) * 100).toFixed(1);
+                          
+                          return (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <Typography variant="body1" fontWeight="medium">
+                                  {size.size}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+                                  ${size.originalCost.toFixed(2)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography variant="body1" color="primary" fontWeight="medium">
+                                  ${size.discountPrice.toFixed(2)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Chip 
+                                  label={`${savingsPercent}%`} 
+                                  size="small"
+                                  color="success"
+                                  sx={{ fontWeight: 'medium' }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
 
               {/* Category and Status Chips */}
               <Stack 
@@ -670,17 +892,6 @@ const ViewSingleDeal = () => {
                     '& .MuiChip-label': { px: 1 }
                   }}
                 />
-                {deal?.size && (
-                  <Chip 
-                    label={`Size: ${deal.size}`}
-                    color="default"
-                    variant="outlined"
-                    sx={{
-                      borderRadius: 1,
-                      '& .MuiChip-label': { px: 1 }
-                    }}
-                  />
-                )}
                 <Chip 
                   icon={<Schedule />}
                   label={`Ends ${new Date(deal?.dealEndsAt).toLocaleDateString()}`} 
@@ -702,7 +913,7 @@ const ViewSingleDeal = () => {
                 />
                 
                 <Chip 
-                  label={`Remeaning Quantity: ${deal?.minQtyForDiscount - deal?.totalCommittedQuantity}`}
+                  label={`Remaining Quantity: ${deal?.minQtyForDiscount - (deal?.totalCommittedQuantity || 0)}`}
                   color="success" 
                   variant="outlined"
                   sx={{
@@ -723,6 +934,59 @@ const ViewSingleDeal = () => {
                   />
                 )}
               </Stack>
+              
+              {/* Discount Tiers */}
+              {deal?.discountTiers && deal.discountTiers.length > 0 && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Volume Discount Tiers
+                  </Typography>
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      gap: 1,
+                      mt: 1
+                    }}
+                  >
+                    {deal.discountTiers.map((tier, index) => (
+                      <Paper
+                        key={index}
+                        variant="outlined"
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          bgcolor: activeTier === tier ? 'success.light' : 'background.paper',
+                          color: activeTier === tier ? 'white' : 'inherit',
+                          borderColor: activeTier === tier ? 'success.main' : 'divider'
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {activeTier === tier ? (
+                            <CheckCircle color="inherit" fontSize="small" />
+                          ) : (
+                            <TrendingUp color="primary" fontSize="small" />
+                          )}
+                          <Typography variant="body1" fontWeight={activeTier === tier ? 'bold' : 'medium'}>
+                            {tier.tierDiscount}% off when total quantity reaches {tier.tierQuantity}+ units
+                          </Typography>
+                        </Box>
+                        {activeTier === tier && (
+                          <Chip 
+                            label="Active" 
+                            color="success" 
+                            size="small"
+                            sx={{ bgcolor: 'white', color: 'success.dark', fontWeight: 'bold' }}
+                          />
+                        )}
+                      </Paper>
+                    ))}
+                  </Box>
+                </Box>
+              )}
             </Paper>
 
             {/* Description */}
@@ -1024,82 +1288,216 @@ const ViewSingleDeal = () => {
         open={getDealOpen} 
         onClose={handleCloseGetDeal} 
         fullWidth 
-        maxWidth="sm"
+        maxWidth="md"
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" fontWeight="bold">
-            {userCommitment ? 'Edit Commitment' : 'Get Deal'}: {deal?.name}
+            {userCommitment ? 'Edit Commitment' : 'Make Commitment'}: {deal?.name}
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ pt: '16px !important' }}>
-          <Stack spacing={2}>
-            <Typography variant="h6" gutterBottom>
-              Price Information
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
-
-            <Typography variant="body2" color="text.secondary">
-              Original Price: ${deal?.originalCost}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Discount Price: ${deal?.discountPrice}
-            </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
-            <Typography variant="body2" color="text.secondary">
-              Total Commitments: {deal?.totalCommitments || 0}
-            </Typography>
-
-<Typography variant="body2" color="text.secondary">
-              Min Quantity For Deal: {deal?.minQtyForDiscount || 0}
-            </Typography>
-            </Box>
-
-            <TextField
-              label="Quantity"
-              type="number"
-              fullWidth
-              variant="outlined"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3
-                }
-              }}
-            />
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                bgcolor: 'primary.main',
-                color: 'white',
-                p: 2,
-                borderRadius: 2,
-                mt: 2
-              }}
-            >
-              <Typography variant="h6">Total Price:</Typography>
-              <Typography variant="h6">
-                ${(quantity * (deal?.discountPrice || 0)).toFixed(2)}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <Typography variant="h6" gutterBottom>
+                Size & Quantity Selection
               </Typography>
-            </Box>
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                bgcolor: 'success.light',
-                color: 'white',
-                p: 2,
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="h6">You Save:</Typography>
-              <Typography variant="h6">
-                ${(quantity * ((deal?.originalCost || 0) - (deal?.discountPrice || 0))).toFixed(2)}
-              </Typography>
-            </Box>
-          </Stack>
+              
+              {/* Size selection with quantity inputs */}
+              {deal?.sizes && (
+                <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: 'grey.50' }}>
+                        <TableCell>Size</TableCell>
+                        <TableCell align="right">Unit Price</TableCell>
+                        <TableCell align="right">Quantity</TableCell>
+                        <TableCell align="right">Subtotal</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {deal.sizes.map((size, index) => {
+                        const quantity = selectedSizes[size.size] || 0;
+                        const subtotal = quantity * size.discountPrice;
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <Typography variant="body1" fontWeight="medium">
+                                {size.size}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body1" color="primary">
+                                ${size.discountPrice.toFixed(2)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TextField
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={quantity}
+                                onChange={(e) => handleSizeQuantityChange(size.size, e.target.value)}
+                                inputProps={{ min: 0, style: { textAlign: 'center' } }}
+                                sx={{ width: 80 }}
+                              />
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="body1" fontWeight="medium">
+                                ${subtotal.toFixed(2)}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      <TableRow sx={{ bgcolor: 'grey.50' }}>
+                        <TableCell colSpan={2}>
+                          <Typography variant="body1" fontWeight="bold">
+                            Total
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight="bold">
+                            {totalQuantity}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body1" fontWeight="bold">
+                            ${totalPrice.toFixed(2)}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+              
+              {/* Discount tiers */}
+              {deal?.discountTiers && deal.discountTiers.length > 0 && (
+                <>
+                  <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
+                    Volume Discount Tiers
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {deal.discountTiers.map((tier, index) => (
+                      <Paper
+                        key={index}
+                        variant="outlined"
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          bgcolor: activeTier === tier ? 'success.light' : 'background.paper',
+                          color: activeTier === tier ? 'white' : 'inherit',
+                          borderColor: activeTier === tier ? 'success.main' : 'divider'
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {activeTier === tier ? (
+                            <CheckCircle color="inherit" fontSize="small" />
+                          ) : (
+                            <TrendingUp color="primary" fontSize="small" />
+                          )}
+                          <Typography variant="body1">
+                            {tier.tierDiscount}% discount at {tier.tierQuantity}+ units
+                          </Typography>
+                        </Box>
+                        {activeTier === tier && (
+                          <Chip 
+                            label="Applied" 
+                            color="success" 
+                            size="small"
+                            sx={{ 
+                              bgcolor: 'white', 
+                              color: 'success.dark', 
+                              fontWeight: 'bold' 
+                            }}
+                          />
+                        )}
+                      </Paper>
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: 2, mb: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Order Summary
+                </Typography>
+                
+                <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body1">Items Subtotal:</Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    ${(totalPrice + totalSavings).toFixed(2)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body1">Total Savings:</Typography>
+                  <Typography variant="body1" fontWeight="medium" color="success.light">
+                    -${totalSavings.toFixed(2)}
+                  </Typography>
+                </Box>
+                
+                {activeTier && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body1">Volume Discount:</Typography>
+                    <Typography variant="body1" fontWeight="medium" color="success.light">
+                      {activeTier.tierDiscount}% off
+                    </Typography>
+                  </Box>
+                )}
+                
+                <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="h6">Total Price:</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    ${totalPrice.toFixed(2)}
+                  </Typography>
+                </Box>
+              </Paper>
+              
+              <Alert 
+                severity="info" 
+                sx={{ mb: 2 }}
+              >
+                <Typography variant="body2">
+                  Your commitment will be sent to the distributor. If approved, you'll be notified to complete the purchase.
+                </Typography>
+              </Alert>
+              
+              {totalQuantity > 0 && (
+                <Alert 
+                  severity="success" 
+                  icon={<AddShoppingCart />}
+                  sx={{ mb: 2 }}
+                >
+                  <Typography variant="body2" fontWeight="medium">
+                    You're ordering {totalQuantity} units across {Object.values(selectedSizes).filter(qty => qty > 0).length} size options.
+                  </Typography>
+                </Alert>
+              )}
+              
+              {deal?.minQtyForDiscount && (
+                <Alert 
+                  severity={totalQuantity >= deal.minQtyForDiscount ? "success" : "warning"}
+                  sx={{ mb: 2 }}
+                >
+                  <Typography variant="body2">
+                    {totalQuantity >= deal.minQtyForDiscount
+                      ? `You've met the minimum quantity of ${deal.minQtyForDiscount} units required for this deal!`
+                      : `This deal requires a minimum of ${deal.minQtyForDiscount} units from all members combined. Current total: ${deal?.totalCommittedQuantity || 0} units.`}
+                  </Typography>
+                </Alert>
+              )}
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button 
@@ -1114,7 +1512,7 @@ const ViewSingleDeal = () => {
             variant="contained"
             color={userCommitment ? "warning" : "primary"}
             onClick={handleCommitDeal}
-            disabled={isCommitting}
+            disabled={isCommitting || totalQuantity === 0}
             sx={{ 
               borderRadius: 2,
               background: userCommitment ? 'linear-gradient(45deg, #FF9800 30%, #FFC107 90%)' : undefined,
