@@ -3,7 +3,6 @@ import { TextField, Button, Container, Typography, Grid, Box, Paper, Skeleton, C
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CloudinaryUpload from '../../../Components/cloudinary/cloudinary';
-import MediaSelector from '../../../Components/MediaManager/MediaSelector';
 import Toast from '../../../Components/Toast/Toast';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -730,10 +729,10 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Upload Images</Typography>
-              <MediaSelector 
-                selectedMedia={formData.images}
-                onSelect={handleImageUpload} 
+              <CloudinaryUpload 
+                onUpload={handleImageUpload} 
                 onRemove={handleImageRemove}
+                initialImages={formData.images}
               />
             </Grid>
 
