@@ -181,33 +181,56 @@ const ViewSingleDeal = () => {
           setSelectedSizes(initialSizes);
         }
         
-        // Check if deal is in favorites
+        // Check if deal is in favorites and get user commitments only if user is logged in
         if (user_id) {
-          const favResponse = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
-            { params: { user_id } }
-          );
-          setIsFavorite(favResponse.data.some(fav => fav.dealId === dealId));
+          try {
+            const favResponse = await axios.get(
+              `${process.env.REACT_APP_BACKEND_URL}/deals/favorite`,
+              { params: { user_id } }
+            );
+            // Compare either string to string or object id to string
+            setIsFavorite(favResponse.data.some(fav => 
+              fav.dealId === dealId || 
+              fav.dealId?._id === dealId || 
+              String(fav.dealId) === String(dealId)
+            ));
+          } catch (favError) {
+            console.error('Error fetching favorites:', favError);
+            // Continue with the app even if favorites check fails
+          }
           
-          // Check if user has already committed to this deal
-          const commitmentsResponse = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/deals/commit/fetch/${user_id}`
-          );
-          const existingCommitment = commitmentsResponse.data.find(
-            commitment => commitment.dealId._id === dealId
-          );
-          setUserCommitment(existingCommitment || null);
-          
-          // If user has existing commitment, set the selected sizes
-          if (existingCommitment && existingCommitment.sizeCommitments) {
-            const userSizes = {};
-            existingCommitment.sizeCommitments.forEach(sc => {
-              userSizes[sc.size] = sc.quantity;
-            });
-            setSelectedSizes(userSizes);
+          try {
+            // Check if user has already committed to this deal
+            const commitmentsResponse = await axios.get(
+              `${process.env.REACT_APP_BACKEND_URL}/deals/commit/fetch/${user_id}`
+            );
+            // Add defensive coding to handle possible missing data
+            if (commitmentsResponse.data && Array.isArray(commitmentsResponse.data)) {
+              const existingCommitment = commitmentsResponse.data.find(
+                commitment => 
+                  commitment.dealId?._id === dealId || 
+                  String(commitment.dealId) === String(dealId)
+              );
+              setUserCommitment(existingCommitment || null);
+              
+              // If user has existing commitment, set the selected sizes
+              if (existingCommitment && existingCommitment.sizeCommitments) {
+                const userSizes = {};
+                existingCommitment.sizeCommitments.forEach(sc => {
+                  if (sc && sc.size) {
+                    userSizes[sc.size] = sc.quantity || 0;
+                  }
+                });
+                setSelectedSizes(userSizes);
+              }
+            }
+          } catch (commitError) {
+            console.error('Error fetching user commitments:', commitError);
+            // Continue with the app even if commitments check fails
           }
         }
       } catch (err) {
+        console.error('Error in fetchDeal:', err);
         setError(err.response?.data?.message || 'Error fetching deal details');
       } finally {
         setLoading(false);
@@ -215,7 +238,7 @@ const ViewSingleDeal = () => {
     };
     fetchDeal();
     // No need for interval-based polling anymore
-  }, [dealId]);
+  }, [dealId, navigate, user_id]);
 
   // Calculate total quantity, price, and determine active discount tier
   useEffect(() => {
@@ -367,6 +390,7 @@ const ViewSingleDeal = () => {
         severity: 'success'
       });
     } catch (error) {
+      console.error('Error toggling favorite:', error);
       setToast({
         open: true,
         message: error.response?.data?.message || 'Error updating favorites',
@@ -892,7 +916,20 @@ const ViewSingleDeal = () => {
                     '& .MuiChip-label': { px: 1 }
                   }}
                 />
-                <Chip 
+                {deal?.sizes && deal.sizes.length > 1 && (
+                  <Chip 
+                    label="Mix & Match" 
+                    size="medium"
+                    sx={{ 
+                      fontWeight: 'bold',
+                      background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                      color: 'white',
+                      borderRadius: 1,
+                      '& .MuiChip-label': { px: 1 }
+                    }}
+                  />
+                )}
+                 <Chip 
                   icon={<Schedule />}
                   label={`Ends ${new Date(deal?.dealEndsAt).toLocaleDateString()}`} 
                   color="warning" 
@@ -1054,32 +1091,6 @@ const ViewSingleDeal = () => {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LocalOffer color="primary" fontSize="small" />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Original Price
-                      </Typography>
-                      <Typography variant="body1" fontWeight="500">
-                        ${deal?.originalCost} per unit
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <ShoppingCart color="primary" fontSize="small" />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Discount Price
-                      </Typography>
-                      <Typography variant="body1" fontWeight="500" color="primary">
-                        ${deal?.discountPrice} per unit
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Groups color="primary" fontSize="small" />
                     <Box>
                       <Typography variant="body2" color="text.secondary">
@@ -1116,19 +1127,6 @@ const ViewSingleDeal = () => {
                       </Typography>
                       <Typography variant="body1" fontWeight="500" color="success.main">
                         {deal?.totalCommittedQuantity || 0} commitments
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Visibility color="info" fontSize="small" />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Engagement
-                      </Typography>
-                      <Typography variant="body1" fontWeight="500">
-                        {deal?.views || 0} views • {deal?.impressions || 0} impressions
                       </Typography>
                     </Box>
                   </Box>
@@ -1423,12 +1421,12 @@ const ViewSingleDeal = () => {
             </Grid>
             
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: 2, mb: 2 }}>
+              <Paper sx={{ p: 2, bgcolor: 'white', color: 'black', borderRadius: 2, mb: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Order Summary
                 </Typography>
                 
-                <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                <Divider sx={{ borderColor: 'rgba(0,0,0,0.2)', my: 1 }} />
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body1">Items Subtotal:</Typography>

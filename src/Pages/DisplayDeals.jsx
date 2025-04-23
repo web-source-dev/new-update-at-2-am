@@ -804,13 +804,28 @@ const DisplayDeals = () => {
                     </Typography>
                   )}
                 </Box>
-                <Chip 
-                  size="small" 
-                  label={deal.category} 
-                  color="primary" 
-                  variant="outlined"
-                  sx={{ borderRadius: 1 }}
-                />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 1 }}>
+                  <Chip 
+                    label={deal.category} 
+                    size="small" 
+                    variant="outlined"
+                    color="primary"
+                    sx={{ borderRadius: '4px' }}
+                  />
+                  {deal.sizes && deal.sizes.length > 1 && (
+                    <Chip 
+                      label="Mix & Match" 
+                      size="small"
+                      sx={{ 
+                        fontWeight: 'bold',
+                        borderRadius: '4px',
+                        background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                        color: 'white',
+                        '& .MuiChip-label': { px: 1 }
+                      }}
+                    />
+                  )}
+                </Box>
               </Box>
               
               {/* Size options */}

@@ -56,7 +56,7 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
   
   // Common bottle sizes
   const bottleSizes = [
-    '50ml', '200ml', '375ml', '500ml', '700ml', '750ml', '1L', '1.5L', '1.75L', '3L', '5L'
+    '100ml','187ml', '200ml', '350ml','375ml', '500ml', '700ml', '750ml', '1L', '1.5L', '1.75L', '3L', '5L'
   ];
 
   useEffect(() => {
@@ -107,6 +107,14 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                   value={size}
                   onChange={(e) => setSize(e.target.value)}
                   label="Size"
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 48 * 4.5, // 4 items + half item to indicate scrolling
+                        overflow: 'auto',
+                      },
+                    },
+                  }}
                 >
                   {bottleSizes.map((option) => (
                     <MenuItem key={option} value={option}>{option}</MenuItem>
@@ -280,9 +288,9 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
   // Define categories
   const categories = [
-    'Bourbon', 'Whiskey', 'Scotch', 'Vodka', 'Gin', 'Rum', 'Tequila', 
-    'Mezcal', 'Brandy', 'Cognac', 'Liqueur', 'Wine', 'Beer', 'Cider', 
-    'Champagne', 'Prosecco', 'Ready-to-Drink', 'Non-Alcoholic'
+    'AMERICAN WHISKEY', 'BEER', 'BOURBAN', 'BRANDY COGNAC', 'CANADIAN', 'GIN', 'IRISH', 
+    'LIQUEURS', 'MIXERS', 'NON-ALCOHOLIC', 'RTD', 'RUM', 'SCOTCH', 'SPARKLING WINE',
+    'SPECIALTIES', 'TEQUILA', 'UNKNOWN', 'VODKA','WINE'
   ];
 
   useEffect(() => {
@@ -534,6 +542,14 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   value={formData.category}
                   onChange={handleChange}
                   label="Category"
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 48 * 4.5, // 4 items + half item to indicate scrolling
+                        overflow: 'auto',
+                      },
+                    },
+                  }}
                 >
                   {categories.map((category) => (
                     <MenuItem key={category} value={category}>{category}</MenuItem>

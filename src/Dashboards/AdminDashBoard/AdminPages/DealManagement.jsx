@@ -613,6 +613,28 @@ const DealsManagment = () => {
                     {deal.name}
                   </Typography>
 
+                  {/* Category and Mix & Match label */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, flexWrap: 'wrap', gap: 1 }}>
+                    <Chip 
+                      label={deal.category} 
+                      size="small" 
+                      variant="outlined"
+                      color="primary"
+                    />
+                    {deal.sizes && deal.sizes.length > 1 && (
+                      <Chip
+                        label="Mix & Match"
+                        size="small"
+                        sx={{
+                          fontWeight: 'bold',
+                          background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                          color: 'white',
+                          '& .MuiChip-label': { px: 1 }
+                        }}
+                      />
+                    )}
+                  </Box>
+
                   {/* Description */}
                   <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', WebkitLineClamp: 2, mb: 2 }}>
                     {deal.description}
@@ -777,6 +799,20 @@ const DealsManagment = () => {
                   <Typography variant="body2" color="text.secondary">
                     {deal.category}
                   </Typography>
+                  {deal.sizes && deal.sizes.length > 1 && (
+                    <Chip
+                      label="Mix & Match"
+                      size="small"
+                      color="secondary"
+                      sx={{
+                        ml: 1,
+                        fontWeight: 'bold',
+                        background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                        color: 'white',
+                        '& .MuiChip-label': { px: 1 }
+                      }}
+                    />
+                  )}
                   {deal.sizes && deal.sizes.length > 0 ? (
                     <Box sx={{ display: 'flex', gap: 1, mt: 1, mb: 1, flexWrap: 'wrap' }}>
                       <Typography variant="body2" color="text.secondary">
@@ -902,20 +938,42 @@ const DealsManagment = () => {
                   </TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{deal.name}</TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
-                    {deal.sizes && deal.sizes.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {deal.sizes.map((sizeItem, idx) => (
-                          <Chip 
-                            key={idx} 
-                            label={sizeItem.size} 
-                            size="small" 
-                            sx={{ fontSize: '0.7rem' }}
-                          />
-                        ))}
+                        {deal.sizes && deal.sizes.length > 0 ? (
+                          deal.sizes.map((sizeItem, idx) => (
+                            <Chip 
+                              key={idx} 
+                              label={sizeItem.size} 
+                              size="small" 
+                              sx={{ fontSize: '0.7rem' }}
+                            />
+                          ))
+                        ) : (
+                          <Chip label="Standard" size="small" />
+                        )}
                       </Box>
-                    ) : (
-                      "Standard"
-                    )}
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Chip 
+                          label={deal.category} 
+                          size="small" 
+                          variant="outlined"
+                          color="primary"
+                        />
+                        {deal.sizes && deal.sizes.length > 1 && (
+                          <Chip
+                            label="Mix & Match"
+                            size="small"
+                            sx={{
+                              fontWeight: 'bold',
+                              background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                              color: 'white',
+                              '& .MuiChip-label': { px: 1 }
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
                   </TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}> 
                     {deal.sizes && deal.sizes.length > 0 ? (

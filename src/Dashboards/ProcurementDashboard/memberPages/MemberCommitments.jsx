@@ -547,6 +547,20 @@ const MemberCommitments = ({ userId }) => {
                               />
                             </Tooltip>
                           )}
+                          {/* Add Mix & Match label if commitment has multiple sizes */}
+                          {commitment.sizeCommitments && commitment.sizeCommitments.length > 1 && (
+                            <Chip 
+                              label="Mix & Match" 
+                              size="small"
+                              sx={{ 
+                                mt: 0.5, 
+                                ml: 0.5,
+                                fontWeight: 'bold',
+                                background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                                color: 'white'
+                              }}
+                            />
+                          )}
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" fontWeight="medium">

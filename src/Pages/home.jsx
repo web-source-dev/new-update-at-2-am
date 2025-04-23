@@ -6,13 +6,8 @@ import {
   Button,
   Grid,
   Card,
-  CardContent,
-  CardMedia,
-  Avatar,
   useTheme,
-  useMediaQuery,
   Fade,
-  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { motion } from "framer-motion";
@@ -29,11 +24,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { format } from 'date-fns';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import TimerIcon from '@mui/icons-material/Timer';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import Toast from '../Components/Toast/Toast';
 
 // Enhanced Styled Components
@@ -79,11 +69,7 @@ const FeatureIcon = styled(Box)({
 });
 
 const HomePage = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [isVisible, setIsVisible] = useState({});
-  const [latestDeals, setLatestDeals] = useState([]);
-  const [dealsLoading, setDealsLoading] = useState(true);
+      const [isVisible, setIsVisible] = useState({});
   const [toast, setToast] = useState({
     open: false,
     message: '',
@@ -105,41 +91,7 @@ const HomePage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const fetchLatestDeals = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/common/latest-deals`);
-        setLatestDeals(response.data.deals);
-      } catch (error) {
-        console.error('Error fetching latest deals:', error);
-      } finally {
-        setDealsLoading(false);
-      }
-    };
-
-    fetchLatestDeals();
-  }, []);
-
   const navigate = useNavigate();
-  const [redirectLoading, setRedirectLoading] = useState(false);
-  const user_id = localStorage.getItem('user_id');
-  const handleDealClick = (dealId) => {
-    if (!user_id) {
-      setToast({
-        open: true,
-        message: 'Please login to view deals',
-        severity: 'error'
-      });
-      setTimeout(() => 
-        setRedirectLoading(true), 2000);
-      const currentPath = window.location.pathname;
-      localStorage.setItem('redirectPath', currentPath);
-      setTimeout(() => window.location.href = '/login', 3000);
-      return;
-    }
-    navigate(`/deals-catlog/deals/${dealId}`);
-  };
-
   const handleToastClose = () => {
     setToast({
       open: false,
@@ -148,16 +100,6 @@ const HomePage = () => {
     });
   };
 
-  if (redirectLoading) {
-    return <Box sx={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh'
-    }}>
-      <CircularProgress size={40} />
-    </Box>
-  }
   return (
     <>
       {/* Hero Section */}
@@ -413,148 +355,6 @@ const HomePage = () => {
               </Grid>
             ))}
           </Grid>
-        </Container>
-      </Box>
-
-      {/* Active Deals Dashboard */}
-      <Box sx={{ py: 10, bgcolor: '#f8f9fa' }}>
-        <Container>
-          <Typography variant="h3" fontWeight="800" textAlign="center" gutterBottom>
-            Active
-            <Box component="span" sx={{ color: '#1a237e' }}> Deals</Box>
-          </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
-            Explore current group purchasing opportunities
-          </Typography>
-          {dealsLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Grid container spacing={4}>
-              {latestDeals.map((deal, index) => (
-                <Grid item xs={12} sm={6} md={4} key={deal._id}>
-                  <AnimatedCard
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ duration: 0.3 }}
-                    onClick={() => handleDealClick(deal._id)}
-                    sx={{ 
-                      cursor: 'pointer',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <Box sx={{ position: 'relative' }}>
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={deal.images?.[0] || 'https://via.placeholder.com/400x200?text=No+Image'}
-                        alt={deal.name}
-                      />
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 16,
-                          right: 16,
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          px: 2,
-                          py: 0.5,
-                          borderRadius: 2,
-                        }}
-                      >
-                        {Math.round((1 - deal.discountPrice / deal.originalCost) * 100)}% OFF
-                      </Box>
-                    </Box>
-                    
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar
-                              src={deal.distributor?.logo}
-                              alt={deal.distributor?.businessName || deal.distributor?.name}
-                              sx={{
-                                width: 40,
-                                height: 40,
-                                mr: 1,
-                                borderRadius: '50%',
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                bgcolor: 'primary.main'
-                              }}
-                            >
-                              {(deal.distributor?.businessName || deal.distributor?.name)?.charAt(0) || 'D'}
-                            </Avatar> 
-                        <Typography variant="subtitle2" fontWeight="bold" color="text.secondary">
-                          {deal.distributor?.businessName}
-                        </Typography>
-                      </Box>
-
-                      <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        {deal.name}
-                      </Typography>
-
-                      <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2 }}>
-                        <Typography variant="h5" color="primary" fontWeight="bold">
-                          ${deal.discountPrice.toLocaleString()}
-                        </Typography>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            textDecoration: 'line-through',
-                            ml: 1,
-                            color: 'text.secondary'
-                          }}
-                        >
-                          ${deal.originalCost.toLocaleString()}
-                        </Typography>
-                      </Box>
-
-                      <Grid container spacing={1} sx={{ mb: 2 }}>
-                        <Grid item xs={6}>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <PeopleAltIcon sx={{ fontSize: 16, mr: 0.5, color: 'primary.main' }} />
-                            <Typography variant="body2">
-                              {deal.totalCommittedQty || 0}/{deal.minQtyForDiscount} units
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <VisibilityIcon sx={{ fontSize: 16, mr: 0.5, color: 'primary.main' }} />
-                            <Typography variant="body2">
-                              {deal.views} views
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      </Grid>
-
-                      {deal.dealEndsAt && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <TimerIcon sx={{ fontSize: 16, mr: 0.5, color: 'error.main' }} />
-                          <Typography variant="body2" color="error.main">
-                            Ends {format(new Date(deal.dealEndsAt), 'MMM dd, yyyy')}
-                          </Typography>
-                        </Box>
-                      )}
-
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDealClick(deal._id);
-                        }}
-                        sx={{ mt: 'auto' }}
-                      >
-                        Make Commitment
-                      </Button>
-                    </CardContent>
-                  </AnimatedCard>
-                </Grid>
-              ))}
-            </Grid>
-          )}
         </Container>
       </Box>
 

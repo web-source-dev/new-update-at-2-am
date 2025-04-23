@@ -856,14 +856,26 @@ const ManageDeals = () => {
                         <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
                           {deal.name}
                         </Typography>
-                        <Chip
-                          label={deal.category}
-                          color="primary"
-                          size="small"
-                          sx={{
-                            fontWeight: 'bold'
-                          }}
-                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                          <Chip 
+                            label={deal.category}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                          />
+                          {deal.sizes && deal.sizes.length > 1 && (
+                            <Chip 
+                              label="Mix & Match" 
+                              size="small"
+                              sx={{ 
+                                fontWeight: 'bold',
+                                background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                                color: 'white',
+                                '& .MuiChip-label': { px: 1 }
+                              }}
+                            />
+                          )}
+                        </Box>
                       </Box>
                       <Divider sx={{ my: 2 }} />
 
@@ -1098,11 +1110,28 @@ const ManageDeals = () => {
                           <Typography variant="h6" fontWeight="bold">
                             {deal.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Category: {deal.category}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                            <Chip 
+                              label={deal.category}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                            />
+                            {deal.sizes && deal.sizes.length > 1 && (
+                              <Chip 
+                                label="Mix & Match" 
+                                size="small"
+                                sx={{ 
+                                  fontWeight: 'bold',
+                                  background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+                                  color: 'white',
+                                  '& .MuiChip-label': { px: 1 }
+                                }}
+                              />
+                            )}
+                          </Box>
                           
-                          {/* Display Sizes */}
+                          {/* Sizes Section */}
                           {deal.sizes && deal.sizes.length > 0 && (
                             <Box sx={{ display: 'flex', gap: 1, mt: 1, mb: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                               <Typography variant="body2" color="text.secondary">
