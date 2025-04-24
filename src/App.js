@@ -34,7 +34,9 @@ import AllTopMembers from './Pages/AllTopMembers';
 import EachMemberDetail from './Pages/EachMemberDetail';
 import TopMembers from './Pages/TopMembers';
 import DealAnalytics from './Dashboards/Components/DealAnalytics';
-
+import AllCoopMembers from './Dashboards/Components/AllCoopMembers';
+import AssignSupplierPage from './Dashboards/Pages/AssignSupplierPage';
+import Compare from './Compare/Compare';
 // Layout component to handle conditional rendering of Header and Footer
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -114,9 +116,12 @@ const App = () => {
 
         {/* Distributor Routes */}
         <Route path="/distributor/deal-analytics/:dealId" element={<DealAnalytics />} />
+        <Route path="/distributor/compare" element={<Compare />} />
 
         {/* Admin Routes */}
         <Route path="/admin/deal-analytics/:dealId" element={<DealAnalytics />} />
+        <Route path="/coop-members" element={<AllCoopMembers />} />
+        <Route path="/assign-supplier/:memberId" element={<AssignSupplierPage />} />
       </Routes>
     </Router>
     <Box

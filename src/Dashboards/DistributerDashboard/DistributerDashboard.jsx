@@ -19,6 +19,10 @@ import AllMembersForDistributor from '../../TopMembersDistributer/AllMembersforD
 import ViewSingleMember from '../../TopMembersDistributer/viewSingleMember';
 import { Button } from '@mui/material';
 import SplashAgain from '../Components/SplashAgain';
+import CoopMembersPage from '../Pages/CoopMembersPage';
+import AssignSupplierPage from '../Pages/AssignSupplierPage';
+import { Navigate } from 'react-router-dom';
+import Compare from '../../Compare/Compare';
 const DistributerDashboard = () => {
   const navigate  = useNavigate();
   let match = useMatch('/dashboard/distributor/*');
@@ -56,6 +60,8 @@ const DistributerDashboard = () => {
       ]
     },
     { path: `all/committed/deals`, label: 'All Committed Deals' },
+    { path: `coop-members`, label: 'Co-op Members' },
+    { path: `distributor/compare`, label: 'Compare Supply' },
   ];
 
   return (
@@ -145,6 +151,18 @@ const DistributerDashboard = () => {
             <Route path="offers/view/splash-content" element={<>
               <AnnouncementToast event="deal_management" />
               <SplashAgain />
+            </>} />
+            <Route path="coop-members" element={<>
+              <AnnouncementToast event="deal_management" />
+              <CoopMembersPage />
+            </>} />
+            <Route path="assign-supplier/:memberId" element={<>
+              <AnnouncementToast event="deal_management" />
+              <AssignSupplierPage />
+            </>} />
+            <Route path="distributor/compare" element={<>
+              <AnnouncementToast event="deal_management" />
+              <Compare />
             </>} />
           </Routes>
         </div>

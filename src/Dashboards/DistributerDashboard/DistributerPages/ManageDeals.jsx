@@ -16,7 +16,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 const ManageDeals = () => {
   const [deals, setDeals] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [layout, setLayout] = useState('grid');
+  const [layout, setLayout] = useState('table');
   const [toast, setToast] = useState({
     open: false,
     message: '',
@@ -797,34 +797,51 @@ const ManageDeals = () => {
       ) : (
         <>
           {layout === 'grid' && (
-            <Grid container spacing={3}>
+            <Grid container spacing={2.5}>
               {currentDeals.map((deal) => (
                 <Grid item xs={12} sm={6} md={4} key={deal._id}>
                   <Card sx={{
-                    borderRadius: 3,
-                    boxShadow: 4,
+                    borderRadius: '12px',
                     overflow: "hidden",
                     position: 'relative',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.25s ease',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.07)',
                     '&:hover': {
-                      boxShadow: 6,
-                      transform: 'translateY(-4px)',
-                      transition: 'all 0.3s ease-in-out'
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
                     }
                   }}>
+                    {/* Image Section with Overlay */}
                     <Box sx={{ position: 'relative' }}>
                       <CardMedia
                         component="img"
-                        height="180"
+                        height="160"
                         image={deal.images[0] || "https://via.placeholder.com/300"}
                         alt={deal.name}
-                        sx={{ objectFit: "cover" }}
+                        sx={{ 
+                          objectFit: "cover",
+                          filter: deal.status === 'inactive' ? 'grayscale(0.5)' : 'none'
+                        }}
                       />
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7) 100%)',
+                      }} />
+                      
+                      {/* Status & Categories Positioned on Image */}
                       <Box sx={{
                         position: 'absolute',
                         top: 10,
                         left: 10,
                         display: 'flex',
-                        gap: 1,
+                        gap: 0.75,
                         flexWrap: 'wrap'
                       }}>
                         {deal.name.toLowerCase().includes('(copy)') && (
@@ -833,9 +850,12 @@ const ManageDeals = () => {
                             color="info"
                             size="small"
                             sx={{
-                              backgroundColor: 'rgba(33, 150, 243, 0.9)',
+                              height: '20px',
+                              fontSize: '0.65rem',
+                              backgroundColor: 'rgba(33, 150, 243, 0.85)',
                               color: 'white',
-                              fontWeight: 'bold'
+                              fontWeight: 'bold',
+                              backdropFilter: 'blur(4px)'
                             }}
                           />
                         )}
@@ -844,193 +864,361 @@ const ManageDeals = () => {
                           color={deal.status === 'active' ? 'success' : 'default'}
                           size="small"
                           sx={{
-                            backgroundColor: deal.status === 'active' ? 'rgba(46, 125, 50, 0.9)' : 'rgba(97, 97, 97, 0.9)',
+                            height: '20px',
+                            fontSize: '0.65rem',
+                            backgroundColor: deal.status === 'active' ? 'rgba(46, 125, 50, 0.85)' : 'rgba(97, 97, 97, 0.85)',
                             color: 'white',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            backdropFilter: 'blur(4px)'
                           }}
                         />
-                      </Box>
-                    </Box>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
-                          {deal.name}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        <Chip 
+                          label={deal.category}
+                          size="small"
+                          sx={{ 
+                            height: '20px',
+                            fontSize: '0.65rem',
+                            backgroundColor: 'rgba(25, 118, 210, 0.85)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            backdropFilter: 'blur(4px)'
+                          }}
+                        />
+                        {deal.sizes && deal.sizes.length > 1 && (
                           <Chip 
-                            label={deal.category}
+                            label="Mix & Match" 
                             size="small"
-                            variant="outlined"
-                            color="primary"
+                            sx={{ 
+                              height: '20px',
+                              fontSize: '0.65rem',
+                              fontWeight: 'bold',
+                              background: 'linear-gradient(45deg, rgba(255,142,83,0.85) 30%, rgba(254,107,139,0.85) 90%)',
+                              color: 'white',
+                              backdropFilter: 'blur(4px)'
+                            }}
                           />
-                          {deal.sizes && deal.sizes.length > 1 && (
+                        )}
+                      </Box>
+                      
+                      {/* Deal Name on Image */}
+                      <Typography 
+                        variant="h6" 
+                        sx={{
+                          position: 'absolute',
+                          bottom: 10,
+                          left: 10,
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: '1rem',
+                          textShadow: '0 1px 3px rgba(0,0,0,0.7)',
+                          width: '90%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {deal.name}
+                      </Typography>
+                    </Box>
+                    
+                    <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0 }}>
+                      {/* Two Column Layout for Pricing and Stats */}
+                      <Grid container spacing={1.5} sx={{ mb: 1 }}>
+                        {/* Left Column - Pricing */}
+                        <Grid item xs={7}>
+                          <Box sx={{ 
+                            p: 1.25, 
+                            height: '100%',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.02)', 
+                            border: '1px solid rgba(0, 0, 0, 0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center'
+                          }}>
+                            {deal.sizes && deal.sizes.length > 0 ? (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                                  Price Range:
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                                  <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'error.light', fontSize: '0.75rem', mr: 0.5 }}>
+                                    ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                                  </Typography>
+                                  <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold', fontSize: '0.95rem' }}>
+                                    ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            ) : (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                                  Price:
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                                  <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'error.light', fontSize: '0.75rem', mr: 0.5 }}>
+                                    ${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}
+                                  </Typography>
+                                  <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold', fontSize: '0.95rem' }}>
+                                    ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
+                        </Grid>
+                        
+                        {/* Right Column - Stats */}
+                        <Grid item xs={5}>
+                          <Box sx={{ 
+                            p: 1.25, 
+                            height: '100%',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between'
+                          }}>
+                            <Box>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                Min Qty
+                              </Typography>
+                              <Typography variant="body1" fontWeight="medium" sx={{ fontSize: '0.95rem' }}>
+                                {deal.minQtyForDiscount}
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, mr: 0.5 }}>
+                                Members:
+                              </Typography>
+                              <Typography variant="body2" fontWeight="medium">
+                                {deal.totalCommitmentCount || 0}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
+                      </Grid>
+
+                      {/* Sizes as Pills */}
+                      {deal.sizes && deal.sizes.length > 0 && (
+                        <Box sx={{ 
+                          display: 'flex', 
+                          gap: 0.5, 
+                          overflowX: 'auto',
+                          mb: 1.5,
+                          pb: 0.5,
+                          '&::-webkit-scrollbar': {
+                            height: '3px',
+                          },
+                          '&::-webkit-scrollbar-thumb': {
+                            backgroundColor: 'rgba(0,0,0,0.2)',
+                            borderRadius: '3px',
+                          }
+                        }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ 
+                            fontWeight: 'bold', 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            whiteSpace: 'nowrap', 
+                            mr: 0.5 
+                          }}>
+                            Sizes:
+                          </Typography>
+                          {deal.sizes.map((sizeItem, idx) => (
                             <Chip 
-                              label="Mix & Match" 
-                              size="small"
+                              key={idx} 
+                              label={sizeItem.size} 
+                              size="small" 
+                              variant="outlined" 
                               sx={{ 
-                                fontWeight: 'bold',
-                                background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
-                                color: 'white',
-                                '& .MuiChip-label': { px: 1 }
+                                height: '20px',
+                                fontSize: '0.65rem',
+                                borderColor: 'primary.light',
+                                minWidth: 'fit-content'
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      )}
+
+                      {/* Progress Bar */}
+                      <Box sx={{ mb: 1.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                          <Typography variant="caption" sx={{ 
+                            color: 'text.secondary', 
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}>
+                            Progress:
+                          </Typography>
+                          <Typography variant="caption" fontWeight="medium" sx={{ 
+                            bgcolor: 'rgba(0,0,0,0.04)', 
+                            px: 0.75, 
+                            py: 0.25, 
+                            borderRadius: '4px',
+                            fontSize: '0.7rem'
+                          }}>
+                            {deal.totalCommittedQuantity || 0} / {deal.minQtyForDiscount}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 0.75 }}>
+                          <Box sx={{ flex: 1 }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={Math.min(100, (((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) || 0)}
+                              sx={{ 
+                                height: 6, 
+                                borderRadius: 3,
+                                backgroundColor: 'rgba(0,0,0,0.04)',
+                                '& .MuiLinearProgress-bar': {
+                                  background: 'linear-gradient(90deg, #1976d2, #4dabf5)'
+                                }
+                              }}
+                            />
+                          </Box>
+                          {(((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) >= 100 && (
+                            <CheckCircleIcon
+                              sx={{
+                                color: 'success.main',
+                                fontSize: 16
                               }}
                             />
                           )}
                         </Box>
                       </Box>
-                      <Divider sx={{ my: 2 }} />
 
-                      {/* Sizes Section */}
-                      {deal.sizes && deal.sizes.length > 0 && (
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
-                            Available Sizes:
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {deal.sizes.map((sizeItem, idx) => (
-                              <Chip 
-                                key={idx} 
-                                label={sizeItem.size} 
-                                size="small" 
-                                variant="outlined" 
-                                sx={{ borderColor: 'primary.light' }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
-
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          {deal.sizes && deal.sizes.length > 0 ? (
-                            <Typography variant="body2" color="text.secondary">
-                              Price Range: <br />
-                              <span style={{ textDecoration: 'line-through' }}>
-                                ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
-                              </span><br />
-                              <span style={{ color: 'green', fontWeight: 'bold' }}>
-                                ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
-                              </span>
-                            </Typography>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              Price: <span style={{ textDecoration: 'line-through' }}>${deal.avgOriginalCost?.toFixed(2) || deal.originalCost}</span> / ${deal.avgDiscountPrice?.toFixed(2) || deal.discountPrice}
-                            </Typography>
-                          )}
-                          <Typography variant="body2" color="text.secondary">
-                            Views: {deal.views}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary">
-                            Min Qty for Deal: {deal.minQtyForDiscount}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Members: {deal.totalCommitmentCount || 0}
-                            {deal.pendingCommitmentCount > 0 && (
-                              <Chip 
-                                size="small"
-                                label={`${deal.pendingCommitmentCount} pending`}
-                                color="warning"
-                                variant="outlined"
-                                sx={{ ml: 1, fontSize: '0.7rem' }}
-                              />
-                            )}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-
-                      {/* Discount Tiers Section */}
-                      {deal.discountTiers && deal.discountTiers.length > 0 && (
-                        <Box sx={{ mt: 2, mb: 2 }}>
-                          <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
-                            Volume Discounts:
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                            {deal.discountTiers.map((tier, idx) => (
-                              <Typography key={idx} variant="body2" color="text.secondary">
-                                {tier.tierQuantity}+ units: {tier.tierDiscount}% off
-                              </Typography>
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
-
-                      <Typography variant="body2" color="text.secondary">
-                        Deal Progress : {deal.totalCommittedQuantity || 0} / {deal.minQtyForDiscount}
+                      {/* Deal Timeline */}
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary" 
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between',
+                          bgcolor: 'rgba(0,0,0,0.02)',
+                          py: 0.5,
+                          px: 1,
+                          borderRadius: '4px',
+                          mb: 1
+                        }}
+                      >
+                        <span style={{ fontWeight: 'bold' }}>{deal.bulkAction ? "Expired" : "Ends:"}</span>
+                        <span style={{ fontWeight: 500 }}>
+                          {deal.bulkAction ? 
+                            "Completed" : 
+                            new Date(deal.dealEndsAt).toLocaleDateString(undefined, { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            })
+                          }
+                        </span>
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2, mt: 2, gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={Math.min(100, (((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) || 0)}
-                          sx={{ height: 6, borderRadius: 2, width: '90%' }}
-                        />
-
-                        {(((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100) >= 100 && (
-                          <CheckCircleIcon
-                            sx={{
-                              color: 'success.main'
-                            }}
-                          />
-                        )}
-                      </Box>
-
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
-                      </Typography>
-
                     </CardContent>
-                    <Divider />
+
+                    {/* Action Buttons */}
                     <CardActions sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                      padding: 2
+                      borderTop: '1px solid rgba(0, 0, 0, 0.05)',
+                      padding: '8px 12px',
+                      mt: 'auto'
                     }}>
-                      {(location.pathname.includes("distributor")) && (
-                        <>
-                          <Tooltip title="Edit">
-                            <IconButton color="primary" onClick={() => handleEdit(deal)}>
-                              <Edit />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Duplicate">
-                            <IconButton color="info" onClick={() => handleDuplicate(deal)}>
-                              <ContentCopy />
-                            </IconButton>
-                          </Tooltip>
-                        </>
-                      )}
-                      <Tooltip title="View">
-                        <IconButton color="info" onClick={() => handleView(deal._id)}>
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                      {deal.bulkAction ? (
-                        <Chip 
-                          label={deal.bulkStatus} 
-                          color={deal.bulkStatus === "approved" ? "success" : "error"} 
-                          variant="outlined" 
-                        />
-                      ) : (
-                        <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
-                          <Switch
-                            checked={deal.status === 'active'}
-                            onChange={() => handleToggleChange(deal._id, deal.status)}
-                            color="primary"
-                          />
-                        </Tooltip>
-                      )}
-                      {!deal.bulkAction && (
-                        <Tooltip title='Delete'>
-                          <Button
-                            color="error"
-                            onClick={() => handleDelete(deal._id)}
-                            variant="outlined"
+                      <Box>
+                        {(location.pathname.includes("distributor")) && (
+                          <>
+                            <Tooltip title="Edit Deal">
+                              <IconButton 
+                                color="primary" 
+                                onClick={() => handleEdit(deal)}
+                                size="small"
+                                sx={{ 
+                                  width: 28,
+                                  height: 28,
+                                  bgcolor: 'rgba(25, 118, 210, 0.08)',
+                                  mr: 0.75,
+                                  '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.15)' } 
+                                }}
+                              >
+                                <Edit fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Duplicate Deal">
+                              <IconButton 
+                                color="info" 
+                                onClick={() => handleDuplicate(deal)}
+                                size="small"
+                                sx={{ 
+                                  width: 28,
+                                  height: 28,
+                                  bgcolor: 'rgba(3, 169, 244, 0.08)',
+                                  mr: 0.75,
+                                  '&:hover': { bgcolor: 'rgba(3, 169, 244, 0.15)' } 
+                                }}
+                              >
+                                <ContentCopy fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
+                        <Tooltip title="View Details">
+                          <IconButton 
+                            color="info" 
+                            onClick={() => handleView(deal._id)}
+                            size="small"
+                            sx={{ 
+                              width: 28,
+                              height: 28,
+                              bgcolor: 'rgba(0, 150, 136, 0.08)',
+                              '&:hover': { bgcolor: 'rgba(0, 150, 136, 0.15)' } 
+                            }}
                           >
-                            <DeleteOutline />
-                          </Button>
+                            <Visibility fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                          </IconButton>
                         </Tooltip>
-                      )}
+                      </Box>
+                      <Box>
+                        {deal.bulkAction ? (
+                          <Chip 
+                            label={deal.bulkStatus} 
+                            color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                            variant="outlined" 
+                            size="small"
+                            sx={{ height: '24px', fontSize: '0.7rem' }}
+                          />
+                        ) : (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            {!deal.bulkAction && (
+                              <Tooltip title='Delete'>
+                                <IconButton
+                                  color="error"
+                                  onClick={() => handleDelete(deal._id)}
+                                  size="small"
+                                  sx={{ 
+                                    width: 28,
+                                    height: 28,
+                                    bgcolor: 'rgba(211, 47, 47, 0.08)',
+                                    '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' } 
+                                  }}
+                                >
+                                  <DeleteOutline fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
+                              <Switch
+                                checked={deal.status === 'active'}
+                                onChange={() => handleToggleChange(deal._id, deal.status)}
+                                color="primary"
+                                size="small"
+                                sx={{ transform: 'scale(0.8)', ml: '-4px' }}
+                              />
+                            </Tooltip>
+                          </Box>
+                        )}
+                      </Box>
                     </CardActions>
                   </Card>
                 </Grid>
