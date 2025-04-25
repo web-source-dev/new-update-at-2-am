@@ -393,7 +393,7 @@ const MediaManager = ({
           </Box>
           
           {/* Right Sidebar - Media Details */}
-          {selectedMedia && !selectorMode && (
+          {selectedMedia && (
             <Box sx={{ 
               width: 300, 
               borderLeft: `1px solid ${theme.palette.divider}`,

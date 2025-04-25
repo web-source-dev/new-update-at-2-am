@@ -8,6 +8,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import MediaManager, { MediaSelector, MediaUploader } from '../../../Components/MediaManager';
 
 const CreateDealSkeleton = () => (
   <Container>
@@ -745,10 +746,10 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Upload Images</Typography>
-              <CloudinaryUpload 
-                onUpload={handleImageUpload} 
+              <MediaSelector
+                onSelect={handleImageUpload} 
                 onRemove={handleImageRemove}
-                initialImages={formData.images}
+                selectedMedia={formData.images}
               />
             </Grid>
 

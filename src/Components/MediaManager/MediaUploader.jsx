@@ -308,12 +308,12 @@ const MediaUploader = ({
             icon={<CloudUploadIcon />} 
             iconPosition="start"
           />
-          {/* <Tab 
+          <Tab 
             label="Set Details" 
             icon={<DescriptionIcon />} 
             iconPosition="start" 
             disabled={uploading || uploadedUrls.length === 0}
-          /> */}
+          />
         </Tabs>
       </Box>
       
@@ -442,22 +442,15 @@ const MediaUploader = ({
 
             <Box>
               {uploadedUrls.length > 0 && (
-                // <Button 
-                //   onClick={() => setActiveTab(1)} 
-                //   variant="contained"
-                //   color="primary"
-                //   disabled={uploading}
-                // >
-                //   Next: Set Details
-                // </Button>
                 <Button 
-                onClick={saveToDatabase} 
-                variant="contained"
-                disabled={uploading}
-                startIcon={uploading ? <CircularProgress size={20} color="inherit" /> : null}
-              >
-                {uploading ? 'Saving...' : 'Save to Library'}
-              </Button>
+                  onClick={() => setActiveTab(1)} 
+                  variant="contained"
+                  color="primary"
+                  disabled={uploading}
+                >
+                  Next: Set Details
+                </Button>
+               
               )}
             </Box>
           </>

@@ -19,10 +19,8 @@ import {
   DialogActions,
   TextField,
   Button,
-  ListItemSecondaryAction,
   CircularProgress,
   Alert,
-  Snackbar,
   Divider
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -356,11 +354,11 @@ const FolderTree = ({
         <Typography variant="subtitle1" fontWeight="medium">
           Folders
         </Typography>
-        {/* <Tooltip title="New Folder">
+        <Tooltip title="New Folder">
           <IconButton size="small" onClick={() => openNewFolderDialog("root")}>
             <AddIcon fontSize="small" />
           </IconButton>
-        </Tooltip> */}
+        </Tooltip>
       </Box>
       
       <List
