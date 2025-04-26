@@ -361,25 +361,72 @@ const ManageDeals = () => {
   };
 
   const handleDuplicate = async (deal) => {
+    // Get current date for new start date
+    const currentDate = new Date();
+    
+    // Set end date to 30 days from now
+    const newEndDate = new Date();
+    newEndDate.setDate(newEndDate.getDate() + 30);
+    
+    // Format dates for message
+    const startDateString = currentDate.toLocaleDateString();
+    const endDateString = newEndDate.toLocaleDateString();
+    
     handleConfirmDialogOpen(
       'Confirm Duplicate',
-      `Are you sure you want to create a duplicate of "${deal.name}"? The new deal will be created as inactive.`,
+      `Are you sure you want to create a duplicate of "${deal.name}"? 
+      
+The new deal will be created with the following settings:
+- Name: ${deal.name} (Copy)
+- Status: Inactive (you can activate it after review)
+- Start Date: ${startDateString}
+- End Date: ${endDateString}
+- All other settings will be copied from the original deal
+- All statistics (views, sales, etc.) will be reset to zero`,
       async () => {
         try {
+          // Clone discount tiers if they exist
+          const clonedDiscountTiers = deal.discountTiers && deal.discountTiers.length > 0 
+            ? JSON.parse(JSON.stringify(deal.discountTiers)) 
+            : [];
+          
+          // Create a clean duplicate deal with only the required fields
           const duplicatedDeal = {
-            ...deal,
             name: `${deal.name} (Copy)`,
+            description: deal.description,
+            sizes: JSON.parse(JSON.stringify(deal.sizes)), // Deep clone to avoid reference issues
+            distributor: deal.distributor,
+            category: deal.category,
+            status: 'inactive',
+            dealStartAt: currentDate.toISOString(),
+            dealEndsAt: newEndDate.toISOString(),
+            singleStoreDeals: deal.singleStoreDeals,
+            minQtyForDiscount: deal.minQtyForDiscount,
+            discountTiers: clonedDiscountTiers,
+            images: [...(deal.images || [])], // Clone array to avoid reference issues
+            // Clear all statistics and tracking data
             views: 0,
             impressions: 0,
             totalSold: 0,
             totalRevenue: 0,
-            commitments: [],
-            notificationHistory: new Map(),
-            status: 'inactive'
+            bulkAction: false,
+            commitments: [] // Empty array instead of a reference to the original deal's commitments
+            // Don't include notificationHistory as the backend will initialize it
           };
-          delete duplicatedDeal._id;
 
-          const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/deals/create`, duplicatedDeal);
+          console.log('Sending duplicate deal:', duplicatedDeal);
+          const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/deals/create/create`, duplicatedDeal)
+            .catch(err => {
+              console.error('Duplicate deal API error:', err.response?.data || err.message);
+              setToast({
+                open: true,
+                message: err.response?.data?.message || 'Error duplicating deal. Please check the console for details.',
+                severity: 'error'
+              });
+              throw err; // Re-throw to stop execution
+            });
+          
+          // Add the new deal to the state
           setDeals([...deals, response.data]);
           setToast({
             open: true,
@@ -387,6 +434,7 @@ const ManageDeals = () => {
             severity: 'success'
           });
         } catch (error) {
+          console.error('Error duplicating deal:', error);
           throw error;
         }
       },
