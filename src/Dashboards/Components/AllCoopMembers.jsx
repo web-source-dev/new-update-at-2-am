@@ -36,12 +36,15 @@ import {
   OpenInNew as ExternalLinkIcon,
   People as PeopleIcon,
   Group as GroupIcon,
+  CalendarMonth as CalendarIcon,
+  FilterAltOff as FilterOffIcon,
 } from "@mui/icons-material";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 
 const AllCoopMembers = () => {
   const [members, setMembers] = useState([]);
+  const [allMembers, setAllMembers] = useState([]); // All fetched members before filtering
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,6 +59,43 @@ const AllCoopMembers = () => {
     message: "",
     severity: "info"
   });
+  
+  // Month filter - current month by default
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  const [monthFilter, setMonthFilter] = useState(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
+  
+  // Generate available month options for the dropdown - last 12 months
+  const getMonthOptions = () => {
+    // Add "Current Month" and "All Time" options
+    const options = [
+      { value: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`, label: 'Current Month' },
+      { value: 'all', label: 'All Time' }
+    ];
+    
+    // Generate the last 11 months (plus current = 12 total)
+    let date = new Date(currentYear, currentMonth);
+    for (let i = 1; i < 12; i++) {
+      // Move to previous month
+      date.setMonth(date.getMonth() - 1);
+      
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      
+      const monthName = monthNames[date.getMonth()];
+      const year = date.getFullYear();
+      
+      options.push({
+        value: `${year}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        label: `${monthName} ${year}`
+      });
+    }
+    
+    return options;
+  };
   
   // Get user data from localStorage
   const userData = localStorage.getItem("user_id");
@@ -76,10 +116,20 @@ const AllCoopMembers = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch members who have committed to deals
-        const membersResponse = await axios.get(
-          `${apiUrl}/api/suppliers/committed-members/${distributorId}`
-        );
+        
+        // Determine if we need to send month filter to backend
+        let url = `${apiUrl}/api/suppliers/committed-members/${distributorId}`;
+        
+        if (monthFilter && monthFilter !== 'all') {
+          const [year, month] = monthFilter.split('-');
+          url += `?month=${month}&year=${year}`;
+        }
+        
+        // Fetch members who have committed to deals with month filter
+        const membersResponse = await axios.get(url);
+        
+        // Store all members for later filtering
+        setAllMembers(membersResponse.data.members);
         setMembers(membersResponse.data.members);
         setFilteredMembers(membersResponse.data.members);
 
@@ -101,7 +151,14 @@ const AllCoopMembers = () => {
     };
 
     fetchData();
-  }, [distributorId, apiUrl, user_role]);
+  }, [distributorId, apiUrl, user_role, monthFilter]);
+
+  // Handle month filter change
+  const handleMonthFilterChange = (e) => {
+    const newMonthFilter = e.target.value;
+    setMonthFilter(newMonthFilter);
+    // The fetchData function will be called from useEffect when monthFilter changes
+  };
 
   useEffect(() => {
     // Apply filters
@@ -135,6 +192,9 @@ const AllCoopMembers = () => {
 
     setFilteredMembers(result);
   }, [searchQuery, members, supplierFilter]);
+
+  // Get month filter options
+  const monthOptions = getMonthOptions();
 
   const handleExportMemberData = async (memberId) => {
     try {
@@ -928,6 +988,19 @@ const AllCoopMembers = () => {
     setSnackbar({...snackbar, open: false});
   };
 
+  // Function to reset all filters to default values
+  const handleResetFilters = () => {
+    setSearchQuery(""); // Clear search
+    setSupplierFilter("all"); // Reset supplier filter
+    setMonthFilter(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`); // Set to current month
+    
+    setSnackbar({
+      open: true,
+      message: "All filters have been reset",
+      severity: "success"
+    });
+  };
+
   // Count members per supplier for the bulk export dropdown
   const getMembersCountBySupplierId = (supplierId) => {
     return members.filter(m => m.supplier && m.supplier._id === supplierId).length;
@@ -1011,14 +1084,26 @@ const AllCoopMembers = () => {
         </Alert>
       )}
 
+      {monthFilter !== 'all' && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography fontWeight="bold">
+            Showing data for {monthOptions.find(option => option.value === monthFilter)?.label || 'selected month'}:
+          </Typography>
+          <Typography>
+            {filteredMembers.length} members with commitments during this period.
+            Total value: ${filteredMembers.reduce((sum, member) => sum + member.totalSpent, 0).toFixed(2)}
+          </Typography>
+        </Alert>
+      )}
+
       <Grid container spacing={4} mb={5}>
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>Total Members</Typography>
-              <Typography variant="h4">{members.length}</Typography>
+              <Typography variant="h4">{filteredMembers.length}</Typography>
               <Typography variant="body2" color="textSecondary">
-                With commitments to your deals
+                With commitments {monthFilter !== 'all' ? 'in selected month' : 'to your deals'}
               </Typography>
             </CardContent>
           </Card>
@@ -1028,11 +1113,11 @@ const AllCoopMembers = () => {
             <CardContent>
               <Typography color="textSecondary" gutterBottom>Members with Suppliers</Typography>
               <Typography variant="h4">
-                {members.filter((member) => member.supplier).length}
+                {filteredMembers.filter((member) => member.supplier).length}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                {members.length > 0 
-                  ? ((members.filter((member) => member.supplier).length / members.length) * 100).toFixed(1) 
+                {filteredMembers.length > 0 
+                  ? ((filteredMembers.filter((member) => member.supplier).length / filteredMembers.length) * 100).toFixed(1) 
                   : 0}% assigned
               </Typography>
             </CardContent>
@@ -1043,10 +1128,10 @@ const AllCoopMembers = () => {
             <CardContent>
               <Typography color="textSecondary" gutterBottom>Total Commitments Value</Typography>
               <Typography variant="h4">
-                ${members.reduce((sum, member) => sum + member.totalSpent, 0).toFixed(2)}
+                ${filteredMembers.reduce((sum, member) => sum + member.totalSpent, 0).toFixed(2)}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Across {members.reduce((sum, member) => sum + member.dealCount, 0)} deals
+                Across {filteredMembers.reduce((sum, member) => sum + member.dealCount, 0)} deals
               </Typography>
             </CardContent>
           </Card>
@@ -1100,30 +1185,93 @@ const AllCoopMembers = () => {
             })}
           </MuiSelect>
         </FormControl>
+        
+        {/* Month filter */}
+        <FormControl sx={{ minWidth: { xs: "100%", md: 250 } }}>
+          <InputLabel id="month-filter-label">Filter by month</InputLabel>
+          <MuiSelect
+            labelId="month-filter-label"
+            value={monthFilter}
+            onChange={handleMonthFilterChange}
+            label="Filter by month"
+            startAdornment={
+              loading ? (
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+              ) : (
+                <CalendarIcon color="action" sx={{ mr: 1 }} />
+              )
+            }
+            disabled={loading}
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: 224, // Shows 4 items (56px per item)
+                  overflow: 'auto'
+                }
+              }
+            }}
+          >
+            {monthOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </MuiSelect>
+        </FormControl>
       </Stack>
 
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Member</TableCell>
-              <TableCell>Business</TableCell>
-              <TableCell>Contact</TableCell>
-              <TableCell>Total Spent</TableCell>
-              <TableCell>Deals</TableCell>
-              <TableCell>Supplier</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredMembers.length === 0 ? (
+        {filteredMembers.length === 0 ? (
+          <Box p={5} textAlign="center" sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '300px'
+          }}>
+            <FilterOffIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2, opacity: 0.7 }} />
+            <Typography variant="h5" color="textSecondary" gutterBottom fontWeight="medium">
+              No members found
+            </Typography>
+            <Typography variant="body1" color="textSecondary" mb={4} sx={{ maxWidth: 500 }}>
+              {monthFilter !== 'all' 
+                ? 'No members made commitments during this period. Try selecting a different month or adjust your filter criteria.' 
+                : 'No members match your current filter criteria. Try adjusting your search or supplier filter.'}
+            </Typography>
+            <Button 
+              variant="contained"
+              color="primary"
+              onClick={handleResetFilters}
+              startIcon={<FilterOffIcon />}
+              size="large"
+              sx={{ 
+                px: 3, 
+                py: 1,
+                borderRadius: 2,
+                boxShadow: (theme) => theme.shadows[3],
+                '&:hover': {
+                  boxShadow: (theme) => theme.shadows[6],
+                }
+              }}
+            >
+              Reset All Filters
+            </Button>
+          </Box>
+        ) : (
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No members found
-                </TableCell>
+                <TableCell>Member</TableCell>
+                <TableCell>Business</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Total Spent</TableCell>
+                <TableCell>Deals</TableCell>
+                <TableCell>Supplier</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ) : (
-              filteredMembers.map((member) => (
+            </TableHead>
+            <TableBody>
+              {filteredMembers.map((member) => (
                 <TableRow key={member.user._id}>
                   <TableCell>
                     <Typography fontWeight="bold">{member.user.name}</Typography>
@@ -1183,10 +1331,10 @@ const AllCoopMembers = () => {
                     </Stack>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </Paper>
 
       <Menu
