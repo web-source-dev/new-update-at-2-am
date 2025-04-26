@@ -61,7 +61,7 @@ const AllCoopMembers = () => {
   const userData = localStorage.getItem("user_id");
   const user_role = localStorage.getItem("user_role");
   const distributorId = userData;
-  const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000/api";
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (user_role !== "distributor") {
@@ -78,14 +78,14 @@ const AllCoopMembers = () => {
         setLoading(true);
         // Fetch members who have committed to deals
         const membersResponse = await axios.get(
-          `${apiUrl}/suppliers/committed-members/${distributorId}`
+          `${apiUrl}/api/suppliers/committed-members/${distributorId}`
         );
         setMembers(membersResponse.data.members);
         setFilteredMembers(membersResponse.data.members);
 
         // Fetch suppliers
         const suppliersResponse = await axios.get(
-          `${apiUrl}/suppliers/by-distributor/${distributorId}`
+          `${apiUrl}/api/suppliers/by-distributor/${distributorId}`
         );
         setSuppliers(suppliersResponse.data.suppliers);
       } catch (error) {
@@ -140,7 +140,7 @@ const AllCoopMembers = () => {
     try {
       setExportLoading(true);
       const response = await axios.get(
-        `${apiUrl}/suppliers/export-member-data/${memberId}/${distributorId}`
+        `${apiUrl}/api/suppliers/export-member-data/${memberId}/${distributorId}`
       );
       
       // Create Excel workbook
@@ -314,7 +314,7 @@ const AllCoopMembers = () => {
     try {
       setExportLoading(true);
       const response = await axios.get(
-        `${apiUrl}/suppliers/export-supplier-data/${supplierId}/${distributorId}`
+        `${apiUrl}/api/suppliers/export-supplier-data/${supplierId}/${distributorId}`
       );
       
       // Create Excel workbook
@@ -601,7 +601,7 @@ const AllCoopMembers = () => {
       
       // Get detailed commitment data for all members
       const memberDetailPromises = filteredMembers.map(member => 
-        axios.get(`${apiUrl}/suppliers/export-member-data/${member.user._id}/${distributorId}`)
+        axios.get(`${apiUrl}/api/suppliers/export-member-data/${member.user._id}/${distributorId}`)
       );
       
       const memberDetailsResponses = await Promise.all(memberDetailPromises);

@@ -75,7 +75,7 @@ const AssignSuppliers = () => {
   const userData = localStorage.getItem("user_id");
   const user_role = localStorage.getItem("user_role");
   const distributorId = userData;
-  const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000/api";
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (user_role !== "distributor") {
@@ -90,7 +90,7 @@ const AssignSuppliers = () => {
         
         // Fetch member data and commitments
         const memberResponse = await axios.get(
-          `${apiUrl}/suppliers/export-member-data/${memberId}/${distributorId}`
+          `${apiUrl}/api/suppliers/export-member-data/${memberId}/${distributorId}`
         );
         
         setMember(memberResponse.data.data.member);
@@ -102,7 +102,7 @@ const AssignSuppliers = () => {
         
         // Fetch all suppliers
         const suppliersResponse = await axios.get(
-          `${apiUrl}/suppliers/by-distributor/${distributorId}`
+          `${apiUrl}/api/suppliers/by-distributor/${distributorId}`
         );
         setSuppliers(suppliersResponse.data.suppliers);
         
@@ -155,7 +155,7 @@ const AssignSuppliers = () => {
         return;
       }
       
-      const response = await axios.post(`${apiUrl}/suppliers`, {
+      const response = await axios.post(`${apiUrl}/api/suppliers`, {
         ...formData,
         distributorId,
       });
@@ -192,7 +192,7 @@ const AssignSuppliers = () => {
         return;
       }
       
-      await axios.put(`${apiUrl}/suppliers/assign/${selectedSupplierId}`, {
+      await axios.put(`${apiUrl}/api/suppliers/assign/${selectedSupplierId}`, {
         memberId,
         distributorId,
         multiMemberAssignment: true // Ensure the same supplier can be assigned to multiple members
@@ -230,7 +230,7 @@ const AssignSuppliers = () => {
         return;
       }
       
-      await axios.put(`${apiUrl}/suppliers/unassign/${assignedSupplier.id}`, {
+      await axios.put(`${apiUrl}/api/suppliers/unassign/${assignedSupplier.id}`, {
         memberId,
         distributorId
       });
