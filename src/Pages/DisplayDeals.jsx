@@ -765,7 +765,7 @@ const DisplayDeals = () => {
               </Box>
             )}
             
-            <CardContent sx={{ flexGrow: 1, p: 2, pt: 1 }}>
+            <CardContent sx={{ flexGrow: 1, p: 2, pt: 4 }}>
                 <Typography 
                   variant="h6" 
                 sx={{ 
