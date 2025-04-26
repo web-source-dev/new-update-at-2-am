@@ -53,6 +53,7 @@ const FolderTree = ({
   const [newFolderParentId, setNewFolderParentId] = useState("root");
   const [isProcessing, setIsProcessing] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [pendingFolderId, setPendingFolderId] = useState(null);
 
   // Automatically expand the parent of the selected folder
   useEffect(() => {
@@ -122,7 +123,9 @@ const FolderTree = ({
 
   const handleOpenRenameDialog = () => {
     if (selectedFolderForMenu) {
+      setPendingFolderId(selectedFolderForMenu._id);
       setNewFolderName(selectedFolderForMenu.name);
+      console.log(`Stored folder ID for rename: ${selectedFolderForMenu._id}`);
       setRenameDialogOpen(true);
       handleCloseMenu();
     }
@@ -136,6 +139,10 @@ const FolderTree = ({
   };
   
   const openDeleteConfirmation = () => {
+    if (selectedFolderForMenu) {
+      setPendingFolderId(selectedFolderForMenu._id);
+      console.log(`Stored folder ID for deletion: ${selectedFolderForMenu._id}`);
+    }
     setConfirmDeleteOpen(true);
     handleCloseMenu();
   };
@@ -143,39 +150,46 @@ const FolderTree = ({
   const user_id = localStorage.getItem("user_id");
   
   const handleRenameFolder = async () => {
-    if (!selectedFolderForMenu || !newFolderName.trim()) return;
+    // Use pendingFolderId instead of selectedFolderForMenu
+    if (!pendingFolderId) {
+      enqueueSnackbar("No folder selected for renaming", { variant: "error" });
+      setIsProcessing(false);
+      setRenameDialogOpen(false);
+      return;
+    }
+    
+    if (!newFolderName || !newFolderName.trim()) {
+      enqueueSnackbar("Please enter a valid folder name", { variant: "error" });
+      return;
+    }
     
     setIsProcessing(true);
 
     try {
+      // Log user ID for debugging
+      console.log(`Using user_id: ${user_id} for folder rename`);
+      console.log(`Using pending folder ID for rename: ${pendingFolderId}`);
+      
+      if (!user_id) {
+        throw new Error('User ID not found. Please log in again.');
+      }
+      
       // Check if we have the dedicated rename function
       if (typeof onRenameFolder === 'function') {
-        // Use the dedicated rename function if available
-        await onRenameFolder(selectedFolderForMenu._id, newFolderName.trim());
-      } else {
-        // Fall back to direct API call if no rename function is provided
-        const response = await api.put(`/api/media-manager/folders/${selectedFolderForMenu._id}/${user_id}`, {
-          name: newFolderName.trim()
-        });
-        
-        // Log success for debugging
-        console.log("Folder renamed successfully:", response.data);
+        // Use the stored pendingFolderId instead of selectedFolderForMenu._id
+        await onRenameFolder(pendingFolderId, newFolderName.trim());
         enqueueSnackbar("Folder renamed successfully", { variant: "success" });
-        
-        // Fallback refresh mechanism using the createFolder function
-        if (typeof onCreateFolder === 'function') {
-          // Passing empty strings is understood by MediaManager to trigger refresh
-          await onCreateFolder("", "");
-        }
+      } else {
+        throw new Error('Rename folder function not available');
       }
     } catch (error) {
       console.error("Error renaming folder:", error);
-      enqueueSnackbar("Failed to rename folder", { variant: "error" });
+      enqueueSnackbar(error.message || "Failed to rename folder", { variant: "error" });
     } finally {
       setRenameDialogOpen(false);
       setNewFolderName("");
       setIsProcessing(false);
-      setSelectedFolderForMenu(null); // Clear selected folder for menu
+      setPendingFolderId(null); // Clear the pending folder ID
     }
   };
   
@@ -242,26 +256,31 @@ const FolderTree = ({
   };
   
   const handleDeleteFolder = async () => {
-    if (!selectedFolderForMenu) return;
+    if (!pendingFolderId) {
+      enqueueSnackbar("No folder selected for deletion", { variant: "error" });
+      setIsProcessing(false);
+      setConfirmDeleteOpen(false);
+      return;
+    }
     
     setIsProcessing(true);
     
     try {
-      console.log(`Attempting to delete folder: ${selectedFolderForMenu._id} (${selectedFolderForMenu.name})`);
+      console.log(`Attempting to delete folder with ID: ${pendingFolderId}`);
       
       // Check if onDeleteFolder function exists
       if (typeof onDeleteFolder !== 'function') {
         throw new Error('Delete folder function not provided');
       }
       
-      // Call parent delete function with the folder ID
-      await onDeleteFolder(selectedFolderForMenu._id);
+      // Use the stored ID
+      await onDeleteFolder(pendingFolderId);
       
       // Close the folder in the UI if it was expanded
-      if (expandedFolders[selectedFolderForMenu._id]) {
+      if (expandedFolders[pendingFolderId]) {
         setExpandedFolders(prev => {
           const updated = {...prev};
-          delete updated[selectedFolderForMenu._id];
+          delete updated[pendingFolderId];
           return updated;
         });
       }
@@ -273,7 +292,7 @@ const FolderTree = ({
     } finally {
       setConfirmDeleteOpen(false);
       setIsProcessing(false);
-      setSelectedFolderForMenu(null); // Clear selected folder for menu
+      setPendingFolderId(null); // Clear the pending folder ID
     }
   };
 

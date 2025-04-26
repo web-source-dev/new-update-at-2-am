@@ -197,23 +197,40 @@ const MediaManager = ({
         throw new Error('Invalid folder ID or name');
       }
       
-      console.log(`Renaming folder ${folderId} to "${newName}"`);
+      // Log the user ID to make sure it's valid
+      console.log(`Renaming folder ${folderId} to "${newName}" for user ${user_id}`);
+      
+      if (!user_id) {
+        throw new Error('User ID not found. Please log in again.');
+      }
       
       const response = await api.put(`/api/media-manager/folders/${folderId}/${user_id}`, {
         name: newName.trim()
       });
       
-      console.log("Rename folder response:", response.data);
+      console.log("Rename folder complete, response:", response.data);
       
-      // Refresh folders and UI
+      // Force immediate refresh of folders
       await fetchFolders();
+      // Double-check we have the updated folder
+      const updatedFolders = await api.get(`/api/media-manager/folders/${user_id}`);
+      console.log("Updated folders after rename:", updatedFolders.data);
+      
+      // Increment refresh counter to trigger UI update
       setRefreshCounter(prev => prev + 1);
       
       enqueueSnackbar("Folder renamed successfully", { variant: "success" });
+      setTimeout(() => {
+        fetchFolders().then(() => {
+          setRefreshCounter(prev => prev + 1);
+        });
+      }, 500); // 500ms delay
       return response.data;
     } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to rename folder";
       console.error("Error renaming folder:", error);
-      enqueueSnackbar(error.message || "Failed to rename folder", { variant: "error" });
+      console.error("Error details:", error.response?.data || error.message);
+      enqueueSnackbar(errorMessage, { variant: "error" });
       throw error;
     }
   };
@@ -243,6 +260,11 @@ const MediaManager = ({
       enqueueSnackbar("Folder created successfully", { variant: "success" });
       
       // Return the created folder data
+      setTimeout(() => {
+        fetchFolders().then(() => {
+          setRefreshCounter(prev => prev + 1);
+        });
+      }, 500); // 500ms delay
       return response.data;
     } catch (error) {
       console.error("Error creating folder:", error);
@@ -254,10 +276,14 @@ const MediaManager = ({
   // Handle folder deletion
   const handleDeleteFolder = async (folderId) => {
     try {
-      console.log(`Deleting folder ${folderId}`);
+      console.log(`Deleting folder ${folderId} for user ${user_id}`);
       
       if (!folderId) {
         throw new Error('Invalid folder ID');
+      }
+      
+      if (!user_id) {
+        throw new Error('User ID not found. Please log in again.');
       }
       
       // First, find all child folders to handle properly
@@ -266,9 +292,15 @@ const MediaManager = ({
         console.log(`Folder has ${childFolders.length} child folders that will be moved`);
       }
       
-      // Make API call to delete the folder
-      const response = await api.delete(`/api/media-manager/folders/${folderId}/${user_id}`);
-      console.log("Delete folder response:", response.data);
+      // Make API call to delete the folder with detailed error handling
+      try {
+        const response = await api.delete(`/api/media-manager/folders/${folderId}/${user_id}`);
+        console.log("Delete folder response:", response.data);
+      } catch (deleteError) {
+        console.error("API error deleting folder:", deleteError);
+        console.error("Error response:", deleteError.response?.data);
+        throw new Error(deleteError.response?.data?.message || 'Failed to delete folder');
+      }
       
       // If we were in the deleted folder, go to root
       if (selectedFolder === folderId) {
@@ -278,12 +310,22 @@ const MediaManager = ({
       
       // Force a refresh to update the UI
       console.log("Triggering refresh after folder deletion");
-      await fetchFolders(); // Immediately fetch folders
+      try {
+        await fetchFolders(); // Immediately fetch folders
+      } catch (fetchError) {
+        console.error("Error refreshing folders after delete:", fetchError);
+      }
+      
       setRefreshCounter(prev => prev + 1); // Also increment refresh counter
       await fetchStats(); // Update stats
       
       enqueueSnackbar("Folder deleted successfully", { variant: "success" });
-      return response.data;
+      setTimeout(() => {
+        fetchFolders().then(() => {
+          setRefreshCounter(prev => prev + 1);
+        });
+      }, 500); // 500ms delay
+      return { message: "Folder deleted successfully" };
     } catch (error) {
       console.error("Error deleting folder:", error);
       enqueueSnackbar(error.message || "Failed to delete folder", { variant: "error" });
