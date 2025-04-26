@@ -701,25 +701,6 @@ const AssignSuppliers = () => {
                     icon={assignedSupplier ? <CheckCircleIcon fontSize="small" /> : <InfoIcon fontSize="small" />}
                   />
                 </Box>
-                
-                <Button
-                  startIcon={<DownloadIcon />}
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={handleExportData}
-                  disabled={exportLoading}
-                  sx={{ 
-                    mt: 2,
-                    borderRadius: 2,
-                    boxShadow: 'none',
-                    '&:hover': {
-                      boxShadow: theme.shadows[4]
-                    }
-                  }}
-                >
-                  {exportLoading ? "Exporting..." : "Export Data"}
-                </Button>
               </CardContent>
             </StyledCard>
           </Grid>

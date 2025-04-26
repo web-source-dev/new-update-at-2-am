@@ -438,42 +438,6 @@ const AllCoopMembers = () => {
       const productSummarySheet = XLSX.utils.aoa_to_sheet(productSummary);
       XLSX.utils.book_append_sheet(wb, productSummarySheet, "Product Summary");
       
-      // Shipping manifest with all products grouped by member
-      const shippingManifest = [
-        ["Shipping Manifest - All Products To Ship"],
-        ["Member", "Business Name", "Contact", "Address", "Deal Name", "Category", "Size", "Quantity", "Price/Unit", "Total Value", "Order Status", "Shipping Notes"]
-      ];
-      
-      response.data.data.members.forEach(memberData => {
-        if (memberData.commitments.length > 0) {
-          memberData.commitments.forEach(commitment => {
-            if (commitment.status === "approved") { // Only include approved commitments
-              commitment.sizeCommitments.forEach(sizeCommit => {
-                shippingManifest.push([
-                  memberData.member.name,
-                  memberData.member.businessName || "N/A",
-                  memberData.member.email + (memberData.member.phone ? ` / ${memberData.member.phone}` : ""),
-                  memberData.member.address || "N/A",
-                  commitment.dealName,
-                  commitment.category || "N/A",
-                  sizeCommit.size,
-                  sizeCommit.quantity,
-                  `$${sizeCommit.pricePerUnit.toFixed(2)}`,
-                  `$${sizeCommit.totalPrice.toFixed(2)}`,
-                  commitment.status,
-                  `Ship to business address above. ${
-                    memberData.member.businessName ? 'Business name: ' + memberData.member.businessName : 'Personal order'
-                  }. Total ${sizeCommit.quantity} units.`
-                ]);
-              });
-            }
-          });
-        }
-      });
-      
-      const shippingManifestSheet = XLSX.utils.aoa_to_sheet(shippingManifest);
-      XLSX.utils.book_append_sheet(wb, shippingManifestSheet, "Shipping Manifest");
-      
       // Create printable packing slips for each member with approved orders
       response.data.data.members.forEach(memberData => {
         // Only create packing slips for members who have approved commitments
@@ -637,7 +601,7 @@ const AllCoopMembers = () => {
       
       setSnackbar({
         open: true,
-        message: "Supplier fulfillment package with shipping manifests and packing slips has been exported successfully",
+        message: "Supplier fulfillment package with packing slips has been exported successfully",
         severity: "success"
       });
     } catch (error) {
