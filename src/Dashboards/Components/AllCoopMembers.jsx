@@ -45,14 +45,12 @@ const AllCoopMembers = () => {
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMember, setSelectedMember] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [supplierFilter, setSupplierFilter] = useState("all");
   const [bulkExportSupplierId, setBulkExportSupplierId] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuMember, setMenuMember] = useState(null);
-  const [alertOpen, setAlertOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -63,7 +61,7 @@ const AllCoopMembers = () => {
   const userData = localStorage.getItem("user_id");
   const user_role = localStorage.getItem("user_role");
   const distributorId = userData;
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000/api";
 
   useEffect(() => {
     if (user_role !== "distributor") {

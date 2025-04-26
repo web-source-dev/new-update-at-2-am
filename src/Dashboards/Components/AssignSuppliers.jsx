@@ -75,7 +75,7 @@ const AssignSuppliers = () => {
   const userData = localStorage.getItem("user_id");
   const user_role = localStorage.getItem("user_role");
   const distributorId = userData;
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000/api";
 
   useEffect(() => {
     if (user_role !== "distributor") {
