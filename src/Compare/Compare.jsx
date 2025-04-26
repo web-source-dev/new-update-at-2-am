@@ -5,6 +5,7 @@ import {
   Box, Button, Card, CardHeader, CardContent, Chip, CircularProgress, 
   Alert, Dialog, DialogTitle, DialogContent, Table, TableBody, 
   TableCell, TableHead, TableRow, Typography, IconButton, Snackbar,
+  FormControl, InputLabel, Select, MenuItem, Grid
 } from '@mui/material';
 import { 
   CloudDownload as DownloadIcon, 
@@ -12,7 +13,8 @@ import {
   History as HistoryIcon, 
   Visibility as EyeIcon,
   Close as CloseIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  FilterAlt as FilterIcon
 } from '@mui/icons-material';
 import UploadForCompare from './UploadForCompare';
 
@@ -40,6 +42,8 @@ const Compare = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const [monthFilter, setMonthFilter] = useState('current'); // Default to current month
+  const [availableMonths, setAvailableMonths] = useState([]);
   
   const navigate = useNavigate();
   
@@ -55,7 +59,50 @@ const Compare = () => {
     }
     
     fetchDeals();
+    generateAvailableMonths();
   }, [userRole, navigate]);
+  
+  // Generate a list of available months (current month and past 12 months)
+  const generateAvailableMonths = () => {
+    const months = [];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    // Add current month
+    months.push({
+      value: 'current',
+      label: 'Current Month'
+    });
+    
+    // Add option for all months
+    months.push({
+      value: 'all',
+      label: 'All Months'
+    });
+    
+    // Add past 12 months
+    for (let i = 0; i < 12; i++) {
+      let month = currentMonth - i;
+      let year = currentYear;
+      
+      if (month < 0) {
+        month += 12;
+        year -= 1;
+      }
+      
+      const monthString = `${String(month + 1).padStart(2, '0')}`;
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+      
+      months.push({
+        value: `${year}-${monthString}`,
+        label: `${monthNames[month]} ${year}`
+      });
+    }
+    
+    setAvailableMonths(months);
+  };
   
   const showSnackbar = (message, severity = 'info') => {
     setSnackbarMessage(message);
@@ -76,7 +123,20 @@ const Compare = () => {
         throw new Error('User ID not found. Please log in again.');
       }
       
-      const response = await api.get(`${process.env.REACT_APP_BACKEND_URL}/api/compare/${userId}`);
+      // Add monthFilter parameter if not set to 'all'
+      let url = `${process.env.REACT_APP_BACKEND_URL}/api/compare/${userId}`;
+      if (monthFilter && monthFilter !== 'all') {
+        url += `?monthFilter=${monthFilter}`;
+      }
+      
+      const response = await api.get(url);
+      
+      // Show a message if no deals found for the selected month
+      if (response.data.length === 0 && monthFilter !== 'all') {
+        const monthName = availableMonths.find(m => m.value === monthFilter)?.label || monthFilter;
+        showSnackbar(`No comparison data found for ${monthName}. Try selecting a different time period.`, 'info');
+      }
+      
       setDeals(response.data);
     } catch (err) {
       console.error('Error fetching deals:', err);
@@ -93,6 +153,23 @@ const Compare = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Update fetchDeals when monthFilter changes
+  useEffect(() => {
+    if (userId) {
+      fetchDeals();
+    }
+  }, [monthFilter]);
+  
+  const handleMonthFilterChange = (event) => {
+    const newMonthFilter = event.target.value;
+    
+    // If changing from one filter to another, show loading state
+    if (newMonthFilter !== monthFilter) {
+      setLoading(true);
+      setMonthFilter(newMonthFilter);
     }
   };
   
@@ -138,7 +215,13 @@ const Compare = () => {
       setLoadingHistory(true);
       setComparisonHistory([]);
       
-      const response = await api.get(`${process.env.REACT_APP_BACKEND_URL}/api/compare/history/${dealId}/${userId}`);
+      // Add monthFilter parameter to history fetch if not set to 'all'
+      let url = `${process.env.REACT_APP_BACKEND_URL}/api/compare/history/${dealId}/${userId}`;
+      if (monthFilter && monthFilter !== 'all') {
+        url += `?monthFilter=${monthFilter}`;
+      }
+      
+      const response = await api.get(url);
       
       if (response.data.length === 0) {
         showSnackbar('No comparison history found for this deal', 'info');
@@ -262,9 +345,74 @@ const Compare = () => {
         </Box>
       </Box>
       
+      {/* Month Filter Controls */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography variant="subtitle1" sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                <FilterIcon color="primary" sx={{ mr: 1 }} />
+                Filter by Time Period
+              </Typography>
+              <FormControl fullWidth size="small">
+                <InputLabel id="month-filter-label">Time Period</InputLabel>
+                <Select
+                  labelId="month-filter-label"
+                  id="month-filter"
+                  value={monthFilter}
+                  label="Time Period"
+                  onChange={handleMonthFilterChange}
+                >
+                  {availableMonths.map((month) => (
+                    <MenuItem key={month.value} value={month.value}>
+                      {month.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={8} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: {xs: 'flex-start', sm: 'flex-end'} }}>
+              <Button 
+                variant="outlined" 
+                size="small" 
+                onClick={fetchDeals}
+                startIcon={<RefreshIcon />}
+              >
+                Refresh Data
+              </Button>
+              {monthFilter !== 'current' && (
+                <Button 
+                  variant="text" 
+                  size="small" 
+                  onClick={() => setMonthFilter('current')}
+                  sx={{ ml: 1 }}
+                >
+                  Back to Current Month
+                </Button>
+              )}
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+      
       <Card>
         <CardHeader 
-          title="Your Deals" 
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="h6" component="div">Your Deals</Typography>
+              {monthFilter !== 'all' && (
+                <Chip 
+                  label={monthFilter === 'current' 
+                    ? 'Current Month' 
+                    : availableMonths.find(m => m.value === monthFilter)?.label || monthFilter}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{ ml: 2 }}
+                />
+              )}
+            </Box>
+          }
           action={
             <Button
               onClick={fetchDeals}
@@ -289,7 +437,25 @@ const Compare = () => {
             <TableBody>
               {deals.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">No deals found</TableCell>
+                  <TableCell colSpan={5} align="center">
+                    <Box sx={{ py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Typography variant="body1" sx={{ mb: 2 }}>
+                        {monthFilter === 'current' 
+                          ? 'No comparison data found for the current month' 
+                          : monthFilter === 'all' 
+                            ? 'No comparison data found for any time period' 
+                            : `No comparison data found for ${availableMonths.find(m => m.value === monthFilter)?.label || monthFilter}`}
+                      </Typography>
+                      <Button 
+                        variant="outlined" 
+                        size="small" 
+                        onClick={() => setMonthFilter('all')}
+                        startIcon={<FilterIcon />}
+                      >
+                        View All Time Periods
+                      </Button>
+                    </Box>
+                  </TableCell>
                 </TableRow>
               ) : (
                 deals.map((deal) => (
@@ -389,7 +555,11 @@ const Compare = () => {
       {/* History Dialog */}
       <Dialog open={showHistoryModal} onClose={() => setShowHistoryModal(false)} maxWidth="lg" fullWidth>
         <DialogTitle>
-          Comparison History
+          Comparison History {monthFilter !== 'all' && (
+            <Typography component="span" variant="subtitle1" color="text.secondary">
+              {monthFilter === 'current' ? '(Current Month)' : `(${monthFilter})`}
+            </Typography>
+          )}
           <IconButton
             onClick={() => setShowHistoryModal(false)}
             sx={{ position: 'absolute', right: 8, top: 8 }}
