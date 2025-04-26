@@ -49,6 +49,9 @@ import {
   Business,
   LocalShipping,
   Assignment as AssignmentIcon,
+  HandshakeOutlined,
+  People,
+  CompareArrows,
 } from "@mui/icons-material";
 import Links from "../Components/Buttons/Links";
 
@@ -137,6 +140,12 @@ const Sidebar = ({ match, links }) => {
         return <AssignmentIcon />;
       case "All Deals":
         return <Business />;
+      case "All Committed Deals":
+        return <HandshakeOutlined />;
+      case "Co-op Members":
+        return <People />;
+      case "Compare Supply":
+        return <CompareArrows />;
       default:
         return <Description />;
     }
