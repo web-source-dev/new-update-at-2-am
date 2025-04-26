@@ -365,7 +365,7 @@ const MediaManager = ({
           p: 0, 
           overflow: 'hidden', 
           borderRadius: selectorMode ? 0 : 2,
-          height: selectorMode ? '100%' : 'calc(100vh - 180px)', 
+          height: { xs: 'calc(100vh - 120px)', sm: 'calc(100vh - 150px)', md: selectorMode ? '100%' : 'calc(100vh - 180px)' },
           display: 'flex', 
           flexDirection: 'column',
           border: selectorMode ? 'none' : undefined
@@ -390,11 +390,18 @@ const MediaManager = ({
         
         <Divider />
         
-        <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexGrow: 1, 
+          overflow: 'hidden',
+          flexDirection: { xs: 'column', md: 'row' }  // Stack on mobile, row on desktop
+        }}>
           {/* Left Sidebar - Folder Navigation */}
           <Box sx={{ 
-            width: 240, 
-            borderRight: `1px solid ${theme.palette.divider}`,
+            width: { xs: '100%', md: 240 }, 
+            height: { xs: selectedFolder === "root" ? 'auto' : '200px', md: 'auto' },
+            borderRight: { xs: 'none', md: `1px solid ${theme.palette.divider}` },
+            borderBottom: { xs: `1px solid ${theme.palette.divider}`, md: 'none' },
             p: 1,
             overflow: 'auto'
           }}>
@@ -412,7 +419,8 @@ const MediaManager = ({
           <Box sx={{ 
             flexGrow: 1, 
             p: 2,
-            width: '80%',
+            width: { xs: '100%', md: 'calc(100% - 240px)' },
+            height: { xs: selectedMedia ? 'calc(100% - 200px - 300px)' : 'calc(100% - 200px)', md: 'auto' },
             overflow: 'auto',
             display: 'flex'
           }}>
@@ -434,11 +442,13 @@ const MediaManager = ({
             )}
           </Box>
           
-          {/* Right Sidebar - Media Details */}
+          {/* Right Sidebar - Media Details - Shows at bottom on mobile */}
           {selectedMedia && (
             <Box sx={{ 
-              width: 300, 
-              borderLeft: `1px solid ${theme.palette.divider}`,
+              width: { xs: '100%', md: 300 },
+              height: { xs: '300px', md: 'auto' },
+              borderLeft: { xs: 'none', md: `1px solid ${theme.palette.divider}` },
+              borderTop: { xs: `1px solid ${theme.palette.divider}`, md: 'none' },
               p: 2,
               overflow: 'auto'
             }}>
@@ -447,7 +457,7 @@ const MediaManager = ({
                 onClose={() => setSelectedMedia(null)}
                 onDelete={() => handleMediaDelete(selectedMedia._id)}
                 folders={folders}
-                onUpdate={() => setRefreshCounter(prev => prev + 1)} // Use the refresh counter here too
+                onUpdate={() => setRefreshCounter(prev => prev + 1)}
               />
             </Box>
           )}

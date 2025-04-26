@@ -255,19 +255,31 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Media Details</Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 1
+      }}>
+        <Typography variant="subtitle1" fontWeight="medium">
+          Media Details
+        </Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
       </Box>
       
-      <Divider sx={{ mb: 2 }} />
+      <Divider sx={{ mb: 1 }} />
 
       {/* Preview */}
-      <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box sx={{ mb: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {media.type === "image" ? (
           <Box
             component="img"
@@ -276,7 +288,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
             sx={{
               width: '100%',
               height: 'auto',
-              maxHeight: 200,
+              maxHeight: { xs: 100, sm: 150, md: 200 },
               borderRadius: 1,
               objectFit: 'contain',
               bgcolor: 'background.paper'
@@ -286,7 +298,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
           <Paper
             sx={{
               width: '100%',
-              height: 120,
+              height: { xs: 80, sm: 100, md: 120 },
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -300,10 +312,10 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
       </Box>
 
       {/* Media Info */}
-      <Box sx={{ mb: 2, flexGrow: 1, overflowY: 'auto' }}>
+      <Box sx={{ mb: 1, flexGrow: 1, overflowY: 'auto' }}>
         {editing ? (
           // Edit Mode
-          <Stack spacing={2}>
+          <Stack spacing={1}>
             <TextField
               label="Name"
               name="name"
@@ -389,30 +401,33 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
           </Stack>
         ) : (
           // View Mode
-          <Stack spacing={2}>
+          <Stack spacing={1}>
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Name
               </Typography>
-              <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>
+              <Typography variant="body1" sx={{ 
+                wordBreak: 'break-word',
+                fontSize: { xs: '0.85rem', md: '1rem' }
+              }}>
                 {media.name}
               </Typography>
             </Box>
             
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Type
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {getMediaTypeIcon()}
-                <Typography variant="body1">
+                <Typography variant="body2">
                   {media.type.charAt(0).toUpperCase() + media.type.slice(1)}
                 </Typography>
               </Box>
             </Box>
             
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Size
               </Typography>
               <Typography variant="body1">
@@ -421,7 +436,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
             </Box>
             
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Folder
               </Typography>
               <Typography variant="body1">
@@ -430,7 +445,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
             </Box>
             
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Date Added
               </Typography>
               <Typography variant="body1">
@@ -439,7 +454,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
             </Box>
             
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Tags
               </Typography>
               {media.tags && media.tags.length > 0 ? (
@@ -456,7 +471,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
             </Box>
             
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
                 Status
               </Typography>
               <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
@@ -490,7 +505,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
 
       {/* Action Buttons */}
       <Box sx={{ mt: 'auto' }}>
-        <Divider sx={{ mb: 2 }} />
+        <Divider sx={{ mb: 1 }} />
         
         {editing ? (
           <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -498,6 +513,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
               variant="outlined" 
               onClick={() => setEditing(false)}
               startIcon={<CloseIcon />}
+              size="small"
             >
               Cancel
             </Button>
@@ -505,6 +521,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
               variant="contained" 
               onClick={handleSave}
               startIcon={<SaveIcon />}
+              size="small"
             >
               Save
             </Button>
@@ -516,6 +533,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
               variant="outlined" 
               onClick={() => setEditing(true)}
               startIcon={<EditIcon />}
+              size="small"
             >
               Edit Details
             </Button>
@@ -527,6 +545,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
                 onClick={handleCopyLink}
                 startIcon={<ContentCopyIcon />}
                 sx={{ flex: 1 }}
+                size="small"
               >
                 Copy Link
               </Button>
@@ -537,6 +556,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
                 onClick={onDelete}
                 startIcon={<DeleteIcon />}
                 sx={{ flex: 1 }}
+                size="small"
               >
                 Delete
               </Button>

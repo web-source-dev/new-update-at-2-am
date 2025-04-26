@@ -94,9 +94,9 @@ const MediaLibrary = ({
   
   // Grid View
   const GridView = () => (
-    <Grid container spacing={2}>
+    <Grid container spacing={1}>
       {mediaItems.map((media) => (
-        <Grid item xs={12} sm={6} md={4} lg={3} key={media._id}>
+        <Grid item xs={6} sm={4} md={4} lg={3} key={media._id}>
           <Card 
             sx={{ 
               cursor: 'pointer',
@@ -115,7 +115,7 @@ const MediaLibrary = ({
             }}
             onClick={() => onMediaSelect(media)}
           >
-            <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
+            <Box sx={{ position: 'relative', paddingTop: '75%' }}>
               {media.type === "image" ? (
                 <Box
                   sx={{
@@ -264,14 +264,14 @@ const MediaLibrary = ({
               )}
             </Box>
             
-            <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+            <CardContent sx={{ flexGrow: 1, p: 1, pb: 1 }}>
               <Typography variant="subtitle2" noWrap>
                 {media.name}
               </Typography>
             </CardContent>
             
             {!selectorMode && (
-              <CardActions sx={{ justifyContent: 'space-between', px: 1 }}>
+              <CardActions sx={{ justifyContent: 'space-between', p: 0.5 }}>
                 <Box>
                   <Tooltip title="Preview">
                     <IconButton size="small" onClick={(e) => {

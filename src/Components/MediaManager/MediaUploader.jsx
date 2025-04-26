@@ -257,11 +257,20 @@ const MediaUploader = ({
       PaperProps={{
         sx: { 
           borderRadius: 2,
-          height: '80vh'
+          height: { xs: '100%', sm: '80vh' },
+          maxHeight: { xs: '100%', sm: '80vh' },
+          m: { xs: 0, sm: 2 },
+          width: { xs: '100%', sm: 'auto' }
         }
       }}
     >
-      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <DialogTitle sx={{ 
+        m: 0, 
+        p: { xs: 1, sm: 2 }, 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center' 
+      }}>
         <Typography variant="h6">Upload Media</Typography>
         <IconButton
           aria-label="close"
@@ -319,7 +328,7 @@ const MediaUploader = ({
       
       <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
         {activeTab === 0 ? (
-          <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+          <Box sx={{ flexGrow: 1, overflowY: 'auto', p: { xs: 1, sm: 2 } }}>
             <FileUploader 
               onUpload={handleCloudinaryUpload}
               onRemove={handleCloudinaryRemove}
@@ -328,7 +337,11 @@ const MediaUploader = ({
             />
           </Box>
         ) : (
-          <Box sx={{ p: 3, flexGrow: 1, overflowY: 'auto' }}>
+          <Box sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            flexGrow: 1, 
+            overflowY: 'auto' 
+          }}>
             <Typography variant="subtitle1" gutterBottom>
               Media Details
             </Typography>
@@ -429,7 +442,10 @@ const MediaUploader = ({
       
       <Divider />
       
-      <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+      <DialogActions sx={{ 
+        p: { xs: 1, sm: 2 }, 
+        justifyContent: 'space-between' 
+      }}>
         {activeTab === 0 ? (
           <>
             <Button 

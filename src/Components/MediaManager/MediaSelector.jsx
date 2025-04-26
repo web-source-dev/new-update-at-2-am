@@ -12,13 +12,15 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Chip
+  Chip,
+  Paper
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
 import MovieIcon from '@mui/icons-material/Movie';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import MediaSelectorWrapper from './MediaSelectorWrapper';
 
 /**
@@ -30,6 +32,8 @@ import MediaSelectorWrapper from './MediaSelectorWrapper';
  */
 const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
   const [open, setOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   
   const handleOpen = () => {
     setOpen(true);
@@ -37,6 +41,15 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
   
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handlePreviewOpen = (url) => {
+    setPreviewUrl(url);
+    setPreviewOpen(true);
+  };
+
+  const handlePreviewClose = () => {
+    setPreviewOpen(false);
   };
 
   // Used to determine if the media is an image or video
@@ -60,17 +73,76 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
   };
   
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
+      {/* Full-width Add Media Button at the top */}
+      <Paper 
+        elevation={0} 
+        variant="outlined" 
+        sx={{ 
+          mb: 3, 
+          borderRadius: 2,
+          overflow: 'hidden',
+          borderStyle: 'dashed',
+          borderWidth: 2,
+          borderColor: 'primary.light'
+        }}
+      >
+        <Button
+          onClick={handleOpen}
+          fullWidth
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 3,
+            transition: 'all 0.2s ease-in-out',
+            bgcolor: 'rgba(0, 0, 0, 0.02)',
+            '&:hover': {
+              bgcolor: 'rgba(0, 0, 0, 0.04)',
+            }
+          }}
+        >
+          <AddPhotoAlternateIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+          <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'medium' }}>
+            Add Media From Library
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Upload or select existing images and videos
+          </Typography>
+        </Button>
+      </Paper>
+      
+      {/* Selected Media Section Title */}
+      {selectedMedia.length > 0 && (
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            Selected Media ({selectedMedia.length})
+          </Typography>
+          <Divider sx={{ flexGrow: 1, ml: 2 }} />
+        </Box>
+      )}
+      
+      {/* Display selected media below the button */}
       <Grid container spacing={2}>
-        {/* Display selected media */}
         {selectedMedia.map((url, index) => (
-          <Grid item xs={6} sm={4} md={3} key={index}>
-            <Card variant="outlined" sx={{ 
-              position: 'relative',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column' 
-            }}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <Card 
+              variant="outlined" 
+              sx={{ 
+                position: 'relative',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 2,
+                overflow: 'hidden',
+                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                } 
+              }}
+            >
               <Box sx={{ position: 'relative', paddingTop: '75%' }}>
                 {getMediaType(url) === 'image' ? (
                   <CardMedia
@@ -120,17 +192,44 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
                     top: 8,
                     left: 8,
                     fontSize: '0.7rem',
-                    height: 24
+                    height: 24,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(4px)',
+                    '& .MuiChip-icon': {
+                      color: getMediaType(url) === 'image' ? 'primary.main' : 'error.main'
+                    }
                   }}
                 />
               </Box>
               
-              <CardActions sx={{ p: 0.5, justifyContent: 'flex-end', mt: 'auto' }}>
+              <CardActions sx={{ 
+                p: 1, 
+                justifyContent: 'space-between', 
+                mt: 'auto',
+                bgcolor: 'background.paper'
+              }}>
+                <IconButton 
+                  size="small" 
+                  color="primary" 
+                  onClick={() => handlePreviewOpen(url)}
+                  aria-label="view"
+                  sx={{ 
+                    borderRadius: 1,
+                    '&:hover': { bgcolor: 'primary.50' } 
+                  }}
+                >
+                  <VisibilityIcon fontSize="small" />
+                </IconButton>
+                
                 <IconButton 
                   size="small" 
                   color="error" 
                   onClick={() => onRemove(index)}
                   aria-label="delete"
+                  sx={{ 
+                    borderRadius: 1,
+                    '&:hover': { bgcolor: 'error.50' } 
+                  }}
                 >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
@@ -138,32 +237,6 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
             </Card>
           </Grid>
         ))}
-        
-        {/* Add media button */}
-        <Grid item xs={6} sm={4} md={3}>
-          <Button
-            onClick={handleOpen}
-            variant="outlined"
-            sx={{
-              height: '100%',
-              minHeight: 120,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderStyle: 'dashed',
-              borderWidth: 2,
-              borderRadius: 1,
-              p: 2,
-              textAlign: 'center'
-            }}
-          >
-            <AddPhotoAlternateIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-            <Typography variant="body2">
-              Add Media from Library
-            </Typography>
-          </Button>
-        </Grid>
       </Grid>
       
       {/* Media Manager Dialog */}
@@ -195,6 +268,54 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
             onMediaSelect={handleMediaSelect} 
             onCancel={handleClose} 
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog
+        open={previewOpen}
+        onClose={handlePreviewClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2, overflow: 'hidden' }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: 'background.paper',
+          p: 2
+        }}>
+          <Typography variant="h6">Media Preview</Typography>
+          <IconButton onClick={handlePreviewClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#000' }}>
+          {previewUrl && getMediaType(previewUrl) === 'image' ? (
+            <img 
+              src={previewUrl} 
+              alt="Preview" 
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '70vh',
+                objectFit: 'contain'
+              }} 
+            />
+          ) : previewUrl ? (
+            <video 
+              src={previewUrl} 
+              controls 
+              autoPlay 
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '70vh' 
+              }} 
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </Box>

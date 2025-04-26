@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Grid, Box, Paper, Skeleton, CircularProgress, IconButton, Divider, Card, CardContent, List, ListItem, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, InputAdornment, Select, MenuItem, FormControl, InputLabel, FormHelperText } from '@mui/material';
+import { 
+  TextField, Button, Container, Typography, Grid, Box, Paper, Skeleton, 
+  CircularProgress, IconButton, Divider, Card, CardContent, List, ListItem, 
+  ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, 
+  InputAdornment, Select, MenuItem, FormControl, InputLabel, FormHelperText,
+  Avatar, Chip, Fade, Tooltip, Zoom, alpha
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CloudinaryUpload from '../../../Components/cloudinary/cloudinary';
@@ -8,43 +15,193 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import SaveIcon from '@mui/icons-material/Save';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
+import CategoryIcon from '@mui/icons-material/Category';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import MediaManager, { MediaSelector, MediaUploader } from '../../../Components/MediaManager';
 
+// Styled components for enhanced design
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  borderRadius: 16,
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+  background: `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s ease-in-out',
+  '&:hover': {
+    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
+  }
+}));
+
+const SectionHeading = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(2),
+  marginTop: theme.spacing(3),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    left: 0,
+    bottom: -8,
+    width: '40px',
+    height: '3px',
+    backgroundColor: theme.palette.primary.main,
+    borderRadius: '10px',
+  }
+}));
+
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  fontWeight: 600,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  '& svg': {
+    color: theme.palette.primary.main,
+  }
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: 12,
+  transition: 'all 0.3s ease',
+  height: '100%',
+  '&:hover': {
+    transform: 'translateY(-5px)',
+    boxShadow: theme.shadows[6],
+  }
+}));
+
+const StyledIconButton = styled(IconButton)(({ theme, color = 'primary' }) => ({
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  marginLeft: theme.spacing(1),
+  transition: 'all 0.2s',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+  }
+}));
+
+const ActionButton = styled(Button)(({ theme }) => ({
+  borderRadius: 8,
+  padding: theme.spacing(1, 3),
+  boxShadow: 'none',
+  fontWeight: 600,
+  textTransform: 'none',
+  transition: 'all 0.3s',
+  '&:hover': {
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    transform: 'translateY(-2px)'
+  }
+}));
+
+const SubmitButton = styled(Button)(({ theme }) => ({
+  borderRadius: 30,
+  padding: theme.spacing(1.5, 4),
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  fontWeight: 600,
+  textTransform: 'none',
+  fontSize: '1rem',
+  transition: 'all 0.3s',
+  '&:hover': {
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+    transform: 'translateY(-3px)'
+  }
+}));
+
+const SavingsChip = styled(Chip)(({ theme, saving }) => ({
+  backgroundColor: saving > 25 
+    ? alpha(theme.palette.success.main, 0.15)
+    : alpha(theme.palette.primary.main, 0.15),
+  color: saving > 25 ? theme.palette.success.dark : theme.palette.primary.dark,
+  fontWeight: 600,
+  border: 'none',
+  borderRadius: 16,
+}));
+
+const TierItem = styled(ListItem)(({ theme }) => ({
+  backgroundColor: alpha(theme.palette.background.paper, 0.7),
+  marginBottom: theme.spacing(1.5),
+  borderRadius: 12,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  transition: 'all 0.2s',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.light, 0.05),
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+  }
+}));
+
 const CreateDealSkeleton = () => (
-  <Container>
-    <Box sx={{ mb: 4 }}>
-      <Skeleton variant="text" sx={{ fontSize: '2rem', mb: 2 }} />
-      <Paper sx={{ p: 3 }}>
-        <Grid container spacing={3}>
+  <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Skeleton variant="text" width={100} height={40} sx={{ mb: 3 }} />
+    
+    <Fade in={true} timeout={800}>
+      <StyledPaper>
+        <Skeleton variant="text" width={240} height={40} sx={{ mb: 4 }} />
+        
+        <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            {[...Array(4)].map((_, index) => (
-              <Box key={index} sx={{ mb: 3 }}>
-                <Skeleton variant="text" sx={{ fontSize: '1rem', mb: 1 }} />
-                <Skeleton variant="rectangular" height={56} />
-              </Box>
-            ))}
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ mb: 3 }}>
-              <Skeleton variant="text" sx={{ fontSize: '1rem', mb: 1 }} />
-              <Skeleton variant="rectangular" height={200} />
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Skeleton variant="circular" width={24} height={24} sx={{ mr: 1 }} />
+              <Skeleton variant="text" width={120} />
             </Box>
-            {[...Array(2)].map((_, index) => (
-              <Box key={index} sx={{ mb: 3 }}>
-                <Skeleton variant="text" sx={{ fontSize: '1rem', mb: 1 }} />
-                <Skeleton variant="rectangular" height={56} />
-              </Box>
-            ))}
+            <Skeleton variant="rounded" height={56} sx={{ borderRadius: 2, mb: 3 }} />
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Skeleton variant="circular" width={24} height={24} sx={{ mr: 1 }} />
+              <Skeleton variant="text" width={150} />
+            </Box>
+            <Skeleton variant="rounded" height={56} sx={{ borderRadius: 2, mb: 3 }} />
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Skeleton variant="circular" width={24} height={24} sx={{ mr: 1 }} />
+              <Skeleton variant="text" width={180} />
+            </Box>
+            <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2, mb: 3 }} />
           </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Skeleton variant="circular" width={24} height={24} sx={{ mr: 1 }} />
+              <Skeleton variant="text" width={140} />
+            </Box>
+            
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {[...Array(3)].map((_, i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Skeleton variant="rounded" height={140} sx={{ borderRadius: 3 }} />
+                </Grid>
+              ))}
+            </Grid>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Skeleton variant="circular" width={24} height={24} sx={{ mr: 1 }} />
+              <Skeleton variant="text" width={160} />
+            </Box>
+            <Skeleton variant="rounded" height={56} sx={{ borderRadius: 2, mb: 3 }} />
+          </Grid>
+          
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Skeleton variant="rectangular" width={100} height={36} />
-              <Skeleton variant="rectangular" width={100} height={36} />
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Skeleton variant="circular" width={24} height={24} sx={{ mr: 1 }} />
+              <Skeleton variant="text" width={130} />
+            </Box>
+            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2, mb: 4 }} />
+          </Grid>
+          
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Skeleton variant="rounded" width={200} height={56} sx={{ borderRadius: 30 }} />
             </Box>
           </Grid>
         </Grid>
-      </Paper>
-    </Box>
+      </StyledPaper>
+    </Fade>
   </Container>
 );
 
@@ -93,26 +250,71 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
     onClose();
   };
 
+  // Calculate savings
+  const calculateSavings = () => {
+    if (!originalCost || !discountPrice) return { percent: 0, amount: 0 };
+    
+    const original = Number(originalCost);
+    const discount = Number(discountPrice);
+    
+    if (isNaN(original) || isNaN(discount) || original <= 0 || discount <= 0 || discount >= original) {
+      return { percent: 0, amount: 0 };
+    }
+    
+    const savingsAmount = original - discount;
+    const savingsPercent = ((savingsAmount / original) * 100).toFixed(2);
+    
+    return { percent: savingsPercent, amount: savingsAmount.toFixed(2) };
+  };
+  
+  const savings = calculateSavings();
+  const isValidInput = size && originalCost && discountPrice && Number(discountPrice) < Number(originalCost);
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{initialSize ? 'Edit Size' : 'Add Size'}</DialogTitle>
-      <DialogContent>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          overflow: 'hidden'
+        }
+      }}
+      TransitionComponent={Zoom}
+    >
+      <DialogTitle sx={{ 
+        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        py: 2
+      }}>
+        <StraightenIcon color="primary" />
+        <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+          {initialSize ? 'Edit Size Option' : 'Add New Size Option'}
+        </Typography>
+      </DialogTitle>
+      
+      <DialogContent sx={{ pt: 3, pb: 1 }}>
         <Box component="form" sx={{ mt: 2 }}>
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             <Grid item xs={12}>
               <FormControl fullWidth required error={!!error && !size}>
-                <InputLabel id="size-select-label">Size</InputLabel>
+                <InputLabel id="size-select-label">Bottle Size</InputLabel>
                 <Select
                   labelId="size-select-label"
                   id="size-select"
                   value={size}
                   onChange={(e) => setSize(e.target.value)}
-                  label="Size"
+                  label="Bottle Size"
+                  sx={{ borderRadius: 2 }}
                   MenuProps={{
                     PaperProps: {
-                      style: {
-                        maxHeight: 48 * 4.5, // 4 items + half item to indicate scrolling
-                        overflow: 'auto',
+                      sx: {
+                        maxHeight: 48 * 4.5,
+                        borderRadius: 2,
                       },
                     },
                   }}
@@ -124,12 +326,14 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                 {!!error && !size && <FormHelperText>Size is required</FormHelperText>}
               </FormControl>
             </Grid>
+            
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Original Cost"
                 type="number"
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  sx: { borderRadius: 2 }
                 }}
                 value={originalCost}
                 onChange={(e) => setOriginalCost(e.target.value)}
@@ -138,12 +342,14 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                 error={!!error && !originalCost}
               />
             </Grid>
+            
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Discount Price"
                 type="number"
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  sx: { borderRadius: 2 }
                 }}
                 value={discountPrice}
                 onChange={(e) => setDiscountPrice(e.target.value)}
@@ -152,17 +358,73 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                 error={!!error && (!discountPrice || Number(discountPrice) >= Number(originalCost))}
               />
             </Grid>
+            
+            {isValidInput && (
+              <Grid item xs={12}>
+                <Paper 
+                  elevation={0}
+                  sx={{
+                    p: 2, 
+                    mt: 1, 
+                    borderRadius: 2,
+                    backgroundColor: (theme) => alpha(theme.palette.success.light, 0.1),
+                    border: (theme) => `1px dashed ${alpha(theme.palette.success.main, 0.3)}`,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Customer Savings:
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <SavingsChip 
+                        label={`${savings.percent}%`} 
+                        saving={Number(savings.percent)}
+                        size="small"
+                        icon={<PriceChangeIcon />}
+                      />
+                      <SavingsChip 
+                        label={`$${savings.amount}`} 
+                        saving={Number(savings.percent)}
+                        size="small"
+                      />
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+            )}
+            
             {error && (
               <Grid item xs={12}>
-                <Typography color="error" variant="body2">{error}</Typography>
+                <Typography color="error" variant="body2" sx={{ mt: 1 }}>{error}</Typography>
               </Grid>
             )}
           </Grid>
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">Save</Button>
+      
+      <DialogActions sx={{ px: 3, py: 2, bgcolor: 'background.paper' }}>
+        <Button 
+          onClick={onClose}
+          variant="outlined"
+          sx={{ 
+            borderRadius: 2,
+            px: 3
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          variant="contained" 
+          color="primary"
+          startIcon={<SaveIcon />}
+          sx={{ 
+            borderRadius: 2,
+            px: 3
+          }}
+        >
+          Save Size
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -209,49 +471,132 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
     onClose();
   };
 
+  const isValidInput = tierQuantity && 
+                     tierDiscount && 
+                     Number(tierQuantity) > Number(minQty || 0) &&
+                     Number(tierDiscount) > 0 && 
+                     Number(tierDiscount) < 100;
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{initialTier ? 'Edit Discount Tier' : 'Add Discount Tier'}</DialogTitle>
-      <DialogContent>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          overflow: 'hidden'
+        }
+      }}
+      TransitionComponent={Zoom}
+    >
+      <DialogTitle sx={{ 
+        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        py: 2
+      }}>
+        <LocalOfferIcon color="primary" />
+        <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+          {initialTier ? 'Edit Discount Tier' : 'Add Volume Discount Tier'}
+        </Typography>
+      </DialogTitle>
+      
+      <DialogContent sx={{ pt: 3, pb: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Volume discount tiers provide additional discounts when total order commitments reach specified quantities.
+        </Typography>
+        
         <Box component="form" sx={{ mt: 2 }}>
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Tier Quantity"
+                label="Quantity Threshold"
                 type="number"
                 value={tierQuantity}
                 onChange={(e) => setTierQuantity(e.target.value)}
                 fullWidth
                 required
+                InputProps={{
+                  sx: { borderRadius: 2 },
+                  endAdornment: <InputAdornment position="end">units</InputAdornment>,
+                }}
                 error={!!error && (!tierQuantity || Number(tierQuantity) <= Number(minQty || 0))}
-                helperText={`Must be greater than ${minQty || 0}`}
+                helperText={`Must be greater than ${minQty || 0} units`}
               />
             </Grid>
+            
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Discount Percentage"
                 type="number"
                 InputProps={{
                   endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                  sx: { borderRadius: 2 }
                 }}
                 value={tierDiscount}
                 onChange={(e) => setTierDiscount(e.target.value)}
                 fullWidth
                 required
                 error={!!error && (!tierDiscount || Number(tierDiscount) <= 0 || Number(tierDiscount) >= 100)}
+                helperText="Enter a value between 1-99%"
               />
             </Grid>
+            
+            {isValidInput && (
+              <Grid item xs={12}>
+                <Paper 
+                  elevation={0}
+                  sx={{
+                    p: 2, 
+                    mt: 1, 
+                    borderRadius: 2,
+                    backgroundColor: (theme) => alpha(theme.palette.info.light, 0.1),
+                    border: (theme) => `1px dashed ${alpha(theme.palette.info.main, 0.3)}`,
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    When total order commitments reach <b>{tierQuantity} units</b> or more, 
+                    all purchases will receive a <b>{tierDiscount}% discount</b> on their orders.
+                  </Typography>
+                </Paper>
+              </Grid>
+            )}
+            
             {error && (
               <Grid item xs={12}>
-                <Typography color="error" variant="body2">{error}</Typography>
+                <Typography color="error" variant="body2" sx={{ mt: 1 }}>{error}</Typography>
               </Grid>
             )}
           </Grid>
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">Save</Button>
+      
+      <DialogActions sx={{ px: 3, py: 2, bgcolor: 'background.paper' }}>
+        <Button 
+          onClick={onClose}
+          variant="outlined"
+          sx={{ 
+            borderRadius: 2,
+            px: 3
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          variant="contained" 
+          color="primary"
+          startIcon={<SaveIcon />}
+          sx={{ 
+            borderRadius: 2,
+            px: 3
+          }}
+        >
+          Save Tier
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -281,6 +626,10 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Date constraints for timeframe pickers
+  const [minEndDate, setMinEndDate] = useState('');
+  const today = new Date().toISOString().slice(0, 16);
+  
   // Dialogs state
   const [sizeDialogOpen, setSizeDialogOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -303,11 +652,40 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
         sizes: initialData.sizes || [],
         discountTiers: initialData.discountTiers || []
       });
+      
+      // Set min end date if we have a start date from initialData
+      if (initialData.dealStartAt) {
+        setMinEndDate(new Date(initialData.dealStartAt).toISOString().slice(0, 16));
+      }
+    } else {
+      // For new deals, set default start date to today
+      setFormData(prevState => ({
+        ...prevState,
+        dealStartAt: today
+      }));
+      setMinEndDate(today);
     }
   }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+    
+    // Special handling for dealStartAt
+    if (name === 'dealStartAt') {
+      // Update the minimum allowed end date when start date changes
+      setMinEndDate(value);
+      
+      // If end date is now before start date, clear it or set it to start date
+      if (formData.dealEndsAt && new Date(formData.dealEndsAt) < new Date(value)) {
+        setFormData({
+          ...formData,
+          [name]: value,
+          dealEndsAt: '' // Clear the end date since it's now invalid
+        });
+        return;
+      }
+    }
+    
     setFormData({
       ...formData,
       [name]: files ? files[0] : value
@@ -502,285 +880,473 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   const averageSavings = calculateAverageSavings();
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Button 
-        variant="outlined" 
-        color="primary" 
-        onClick={() => navigate(-1)}
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 3 }}
-      >
-        Back
-      </Button>
-      
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-        <Typography variant="h5" gutterBottom color="primary" sx={{ mb: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Button 
+          variant="outlined" 
+          color="primary" 
+          onClick={() => navigate(-1)}
+          startIcon={<ArrowBackIcon />}
+          sx={{ 
+            borderRadius: 8,
+            px: 3,
+            py: 1,
+            fontWeight: 500,
+            textTransform: 'none',
+          }}
+        >
+          Back to Deals
+        </Button>
+        
+        <Typography variant="h4" component="h1" fontWeight={600} color="primary">
           {initialData ? 'Edit Deal' : 'Create New Deal'}
         </Typography>
-        
-        <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Deal Name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                fullWidth
-                required
-                size="small"
-                variant="outlined"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required size="small">
-                <InputLabel id="category-select-label">Category</InputLabel>
-                <Select
-                  labelId="category-select-label"
-                  id="category-select"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  label="Category"
-                  MenuProps={{
-                    PaperProps: {
-                      style: {
-                        maxHeight: 48 * 4.5, // 4 items + half item to indicate scrolling
-                        overflow: 'auto',
-                      },
-                    },
-                  }}
-                >
-                  {categories.map((category) => (
-                    <MenuItem key={category} value={category}>{category}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+      </Box>
+      
+      <Fade in={true} timeout={800}>
+        <StyledPaper>
+          <Box component="form" onSubmit={handleSubmit}>
+            <Grid container spacing={4}>
+              {/* Basic Information Section */}
+              <Grid item xs={12}>
+                <SectionHeading>
+                  <SectionTitle variant="h6">
+                    <LocalOfferIcon />
+                    Basic Information
+                  </SectionTitle>
+                </SectionHeading>
+                
+                <Grid container spacing={3} sx={{ mt: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="Deal Name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      fullWidth
+                      required
+                      variant="outlined"
+                      InputProps={{ sx: { borderRadius: 2 } }}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth required>
+                      <InputLabel id="category-select-label">Category</InputLabel>
+                      <Select
+                        labelId="category-select-label"
+                        id="category-select"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        label="Category"
+                        sx={{ borderRadius: 2 }}
+                        startAdornment={
+                          <InputAdornment position="start">
+                            <CategoryIcon fontSize="small" color="primary" />
+                          </InputAdornment>
+                        }
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 48 * 4.5,
+                              borderRadius: 2,
+                            },
+                          },
+                        }}
+                      >
+                        {categories.map((category) => (
+                          <MenuItem key={category} value={category}>{category}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                label="Special Comment"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={3}
-                size="small"
-              />
-            </Grid>
-
-            {/* Size Management Section */}
-            <Grid item xs={12}>
-              <Box sx={{ mb: 1, mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Size Options</Typography>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  startIcon={<AddIcon />}
-                  onClick={handleAddSize}
-                >
-                  Add Size
-                </Button>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-              
-              {formData.sizes.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ my: 2, textAlign: 'center' }}>
-                  No sizes added yet. Click "Add Size" to add size options for this deal.
-                </Typography>
-              ) : (
-                <Grid container spacing={2}>
-                  {formData.sizes.map((sizeObj, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
-                      <Card variant="outlined">
-                        <CardContent sx={{ pb: 1 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <Typography variant="h6" component="div">{sizeObj.size}</Typography>
-                            <Box>
-                              <IconButton size="small" onClick={() => handleEditSize(index)}>
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteSize(index)}>
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary">
-                            Original Cost: ${sizeObj.originalCost}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Discount Price: ${sizeObj.discountPrice}
-                          </Typography>
-                          <Typography variant="body2" color="primary" sx={{ fontWeight: 'bold', mt: 1 }}>
-                            Savings: {(((sizeObj.originalCost - sizeObj.discountPrice) / sizeObj.originalCost) * 100).toFixed(2)}%
-                            (${(sizeObj.originalCost - sizeObj.discountPrice).toFixed(2)})
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Special Comment"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      fullWidth
+                      multiline
+                      rows={3}
+                      InputProps={{ sx: { borderRadius: 2 } }}
+                      helperText="Add any special details or conditions for this deal"
+                    />
+                  </Grid>
                 </Grid>
-              )}
+              </Grid>
 
-              {formData.sizes.length > 0 && (
-                <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(0, 0, 0, 0.03)', borderRadius: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    Average Savings Across All Sizes: {averageSavings.percent}% (${averageSavings.amount})
-                  </Typography>
-                </Box>
-              )}
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Minimum Quantity for Deal"
-                name="minQtyForDiscount"
-                type="number"
-                value={formData.minQtyForDiscount}
-                onChange={handleChange}
-                fullWidth
-                required
-                size="small"
-                helperText="Minimum total quantity required for deal approval"
-              />
-            </Grid>
-
-            {/* Discount Tiers Section */}
-            <Grid item xs={12}>
-              <Box sx={{ mb: 1, mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Discount Tiers</Typography>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  startIcon={<AddIcon />}
-                  onClick={handleAddTier}
-                  disabled={!formData.minQtyForDiscount}
-                >
-                  Add Tier
-                </Button>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-              
-              {!formData.minQtyForDiscount && (
-                <Typography variant="body2" color="error" sx={{ my: 2 }}>
-                  Please set a minimum quantity first before adding discount tiers.
-                </Typography>
-              )}
-              
-              {formData.minQtyForDiscount && formData.discountTiers.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ my: 2, textAlign: 'center' }}>
-                  No discount tiers added yet. Tiers allow for greater discounts at higher total commitment quantities.
-                </Typography>
-              ) : (
-                <List>
-                  {formData.discountTiers.map((tier, index) => (
-                    <ListItem 
-                      key={index}
-                      secondaryAction={
-                        <Box>
-                          <IconButton edge="end" aria-label="edit" onClick={() => handleEditTier(index)}>
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteTier(index)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      }
-                      sx={{ bgcolor: 'rgba(0, 0, 0, 0.03)', mb: 1, borderRadius: 1 }}
+              {/* Size Options Section */}
+              <Grid item xs={12}>
+                <SectionHeading>
+                  <SectionTitle variant="h6">
+                    <StraightenIcon />
+                    Size & Pricing Options
+                  </SectionTitle>
+                  
+                  <ActionButton 
+                    variant="contained" 
+                    color="primary" 
+                    startIcon={<AddIcon />}
+                    onClick={handleAddSize}
+                  >
+                    Add Size
+                  </ActionButton>
+                </SectionHeading>
+                
+                {formData.sizes.length === 0 ? (
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      textAlign: 'center', 
+                      py: 4, 
+                      px: 2, 
+                      backgroundColor: (theme) => alpha(theme.palette.primary.light, 0.05),
+                      border: '1px dashed rgba(0, 0, 0, 0.12)',
+                      borderRadius: 2
+                    }}
+                  >
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                      No sizes added yet. Click "Add Size" to add size options for this deal.
+                    </Typography>
+                    <ActionButton 
+                      variant="outlined" 
+                      onClick={handleAddSize}
+                      startIcon={<AddIcon />}
                     >
-                      <ListItemText
-                        primary={`Tier ${index + 1}: ${tier.tierDiscount}% discount at ${tier.tierQuantity}+ units`}
-                        secondary={`All commitments will receive ${tier.tierDiscount}% off when total commitments reach ${tier.tierQuantity} units`}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Deal Starts At"
-                name="dealStartAt"
-                type="datetime-local"
-                value={formData.dealStartAt}
-                onChange={handleChange}
-                fullWidth
-                required
-                size="small"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Deal Ends At"
-                name="dealEndsAt"
-                type="datetime-local"
-                value={formData.dealEndsAt}
-                onChange={handleChange}
-                fullWidth
-                required
-                size="small"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Single Store Deals"
-                name="singleStoreDeals"
-                value={formData.singleStoreDeals}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={3}
-                size="small"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ mb: 2 }}>Upload Images</Typography>
-              <MediaSelector
-                onSelect={handleImageUpload} 
-                onRemove={handleImageRemove}
-                selectedMedia={formData.images}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Button 
-                type="submit" 
-                variant="contained" 
-                color="primary"
-                disabled={isSubmitting || formData.sizes.length === 0}
-                sx={{ 
-                  mt: 2,
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 2
-                }}
-              >
-                {isSubmitting ? (
-                  <CircularProgress size={24} color="inherit" />
+                      Add First Size
+                    </ActionButton>
+                  </Paper>
                 ) : (
-                  initialData ? 'Update Deal' : 'Create Deal'
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    {formData.sizes.map((sizeObj, index) => {
+                      const savingsPercent = (((sizeObj.originalCost - sizeObj.discountPrice) / sizeObj.originalCost) * 100).toFixed(2);
+                      const savingsAmount = (sizeObj.originalCost - sizeObj.discountPrice).toFixed(2);
+                      
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <StyledCard>
+                            <CardContent sx={{ p: 3 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                                  {sizeObj.size}
+                                </Typography>
+                                <Box>
+                                  <StyledIconButton size="small" onClick={() => handleEditSize(index)}>
+                                    <EditIcon fontSize="small" />
+                                  </StyledIconButton>
+                                  <StyledIconButton size="small" onClick={() => handleDeleteSize(index)} color="error">
+                                    <DeleteIcon fontSize="small" />
+                                  </StyledIconButton>
+                                </Box>
+                              </Box>
+                              
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body2" color="text.secondary">Original Cost:</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  ${sizeObj.originalCost}
+                                </Typography>
+                              </Box>
+                              
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                <Typography variant="body2" color="text.secondary">Deal Price:</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'success.main' }}>
+                                  ${sizeObj.discountPrice}
+                                </Typography>
+                              </Box>
+                              
+                              <Divider sx={{ my: 1.5 }} />
+                              
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
+                                <Typography variant="subtitle2">Customer Savings:</Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                                  <SavingsChip 
+                                    label={`${savingsPercent}%`} 
+                                    saving={Number(savingsPercent)}
+                                    size="small"
+                                  />
+                                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'success.main' }}>
+                                    Save ${savingsAmount}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </CardContent>
+                          </StyledCard>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
                 )}
-              </Button>
-              {formData.sizes.length === 0 && (
-                <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-                  Please add at least one size option before submitting
-                </Typography>
-              )}
+
+                {formData.sizes.length > 0 && (
+                  <Box 
+                    sx={{ 
+                      mt: 3, 
+                      p: 2.5, 
+                      borderRadius: 2,
+                      backgroundColor: (theme) => alpha(theme.palette.success.light, 0.1),
+                      border: '1px dashed rgba(76, 175, 80, 0.3)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 500, color: 'success.dark' }}>
+                      Average Customer Savings
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <SavingsChip 
+                        label={`${averageSavings.percent}%`} 
+                        saving={Number(averageSavings.percent)}
+                        icon={<PriceChangeIcon />}
+                      />
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.dark' }}>
+                        ${averageSavings.amount}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Grid>
+
+              {/* Deal Volume & Tiers Section */}
+              <Grid item xs={12}>
+                <SectionHeading>
+                  <SectionTitle variant="h6">
+                    <StorefrontIcon />
+                    Volume Requirements & Tiers
+                  </SectionTitle>
+                </SectionHeading>
+                
+                <Grid container spacing={3} sx={{ mt: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="Minimum Quantity for Deal"
+                      name="minQtyForDiscount"
+                      type="number"
+                      value={formData.minQtyForDiscount}
+                      onChange={handleChange}
+                      fullWidth
+                      required
+                      InputProps={{ 
+                        sx: { borderRadius: 2 },
+                        endAdornment: <InputAdornment position="end">units</InputAdornment>,
+                      }}
+                      helperText="Minimum total quantity required for deal approval"
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="Single Store Deals"
+                      name="singleStoreDeals"
+                      value={formData.singleStoreDeals}
+                      onChange={handleChange}
+                      fullWidth
+                      InputProps={{ sx: { borderRadius: 2 } }}
+                      helperText="Special conditions for single store deals (optional)"
+                    />
+                  </Grid>
+                </Grid>
+              
+                {/* Discount Tiers Section */}
+                <Box sx={{ mt: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                      Volume Discount Tiers
+                    </Typography>
+                    <ActionButton 
+                      variant="outlined" 
+                      color="primary" 
+                      startIcon={<AddIcon />}
+                      onClick={handleAddTier}
+                      disabled={!formData.minQtyForDiscount}
+                    >
+                      Add Tier
+                    </ActionButton>
+                  </Box>
+                  
+                  {!formData.minQtyForDiscount && (
+                    <Paper 
+                      elevation={0} 
+                      sx={{ 
+                        p: 2, 
+                        mb: 2, 
+                        borderRadius: 2,
+                        backgroundColor: (theme) => alpha(theme.palette.warning.light, 0.1),
+                        border: '1px dashed rgba(255, 152, 0, 0.3)'
+                      }}
+                    >
+                      <Typography variant="body2" color="warning.dark">
+                        Please set a minimum quantity first before adding discount tiers.
+                      </Typography>
+                    </Paper>
+                  )}
+                  
+                  {formData.minQtyForDiscount && formData.discountTiers.length === 0 ? (
+                    <Paper 
+                      elevation={0} 
+                      sx={{ 
+                        textAlign: 'center', 
+                        py: 3, 
+                        px: 2, 
+                        backgroundColor: (theme) => alpha(theme.palette.primary.light, 0.05),
+                        border: '1px dashed rgba(0, 0, 0, 0.12)',
+                        borderRadius: 2
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        No discount tiers added yet. Tiers allow for greater discounts at higher total commitment quantities.
+                      </Typography>
+                      <ActionButton 
+                        variant="outlined" 
+                        onClick={handleAddTier}
+                        startIcon={<AddIcon />}
+                        size="small"
+                        sx={{ mt: 1 }}
+                      >
+                        Add First Tier
+                      </ActionButton>
+                    </Paper>
+                  ) : (
+                    <List sx={{ mt: 1 }}>
+                      {formData.discountTiers.map((tier, index) => (
+                        <TierItem 
+                          key={index}
+                          secondaryAction={
+                            <Box>
+                              <StyledIconButton edge="end" aria-label="edit" onClick={() => handleEditTier(index)}>
+                                <EditIcon fontSize="small" />
+                              </StyledIconButton>
+                              <StyledIconButton edge="end" aria-label="delete" onClick={() => handleDeleteTier(index)} color="error">
+                                <DeleteIcon fontSize="small" />
+                              </StyledIconButton>
+                            </Box>
+                          }
+                          disablePadding
+                          sx={{ p: 2 }}
+                        >
+                          <Box sx={{ width: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                              <Chip 
+                                label={`Tier ${index + 1}`} 
+                                size="small" 
+                                color="primary" 
+                                sx={{ mr: 1.5, fontWeight: 600 }}
+                              />
+                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                {tier.tierDiscount}% discount at {tier.tierQuantity}+ units
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" color="text.secondary">
+                              All commitments will receive {tier.tierDiscount}% off when total commitments reach {tier.tierQuantity} units
+                            </Typography>
+                          </Box>
+                        </TierItem>
+                      ))}
+                    </List>
+                  )}
+                </Box>
+              </Grid>
+
+              {/* Deal Timeframe Section */}
+              <Grid item xs={12}>
+                <SectionHeading>
+                  <SectionTitle variant="h6">
+                    <CalendarMonthIcon />
+                    Deal Timeframe
+                  </SectionTitle>
+                </SectionHeading>
+                
+                <Grid container spacing={3} sx={{ mt: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="Deal Starts At"
+                      name="dealStartAt"
+                      type="datetime-local"
+                      value={formData.dealStartAt}
+                      onChange={handleChange}
+                      fullWidth
+                      required
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      InputProps={{ 
+                        sx: { borderRadius: 2 },
+                      }}
+                      inputProps={{
+                        min: today, // Restrict to today and future dates
+                      }}
+                      helperText="Select a date and time from today onwards"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="Deal Ends At"
+                      name="dealEndsAt"
+                      type="datetime-local"
+                      value={formData.dealEndsAt}
+                      onChange={handleChange}
+                      fullWidth
+                      required
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      InputProps={{ 
+                        sx: { borderRadius: 2 },
+                      }}
+                      inputProps={{
+                        min: minEndDate, // Dynamically set based on start date
+                      }}
+                      helperText={formData.dealStartAt ? "Must be after the start date" : "Please select a start date first"}
+                      disabled={!formData.dealStartAt} // Disable until start date is selected
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {/* Images Section */}
+              <Grid item xs={12}>
+                <SectionHeading>
+                  <SectionTitle variant="h6">
+                    <InsertPhotoIcon />
+                    Product Images
+                  </SectionTitle>
+                </SectionHeading>
+                
+                <Box sx={{ mt: 2, mb: 3 }}>
+                  <MediaSelector
+                    onSelect={handleImageUpload} 
+                    onRemove={handleImageRemove}
+                    selectedMedia={formData.images}
+                  />
+                </Box>
+              </Grid>
+
+              {/* Submit Button */}
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <SubmitButton 
+                    type="submit" 
+                    variant="contained" 
+                    color="primary"
+                    disabled={isSubmitting || formData.sizes.length === 0}
+                    startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                  >
+                    {isSubmitting ? 'Saving...' : (initialData ? 'Update Deal' : 'Create Deal')}
+                  </SubmitButton>
+                </Box>
+                {formData.sizes.length === 0 && (
+                  <Typography variant="body2" color="error" sx={{ mt: 2, textAlign: 'center' }}>
+                    Please add at least one size option before submitting
+                  </Typography>
+                )}
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      </Paper>
+          </Box>
+        </StyledPaper>
+      </Fade>
       
       {/* Size Dialog */}
       <SizeDialog 

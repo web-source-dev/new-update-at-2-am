@@ -324,7 +324,7 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
       <Paper 
         elevation={0} 
         sx={{ 
-          p: 2, 
+          p: { xs: 1, sm: 2 }, 
           mb: 2, 
           border: `2px dashed ${isDragging ? 'primary.main' : 'rgba(0, 0, 0, 0.1)'}`,
           backgroundColor: isDragging ? 'rgba(25, 118, 210, 0.04)' : 'rgba(0, 0, 0, 0.01)',
@@ -347,10 +347,22 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
           accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         />
         
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
-          <CloudUploadIcon sx={{ fontSize: 60, color: 'primary.main', opacity: 0.7, mb: 2 }} />
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          py: { xs: 2, sm: 3 } 
+        }}>
+          <CloudUploadIcon sx={{ 
+            fontSize: { xs: 40, sm: 60 }, 
+            color: 'primary.main', 
+            opacity: 0.7, 
+            mb: 1 
+          }} />
           
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{ 
+            fontSize: { xs: '1rem', sm: '1.25rem' } 
+          }}>
             Drag & Drop Files or
           </Typography>
           
@@ -359,11 +371,17 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
             onClick={() => fileInputRef.current.click()}
             disabled={disabled || uploading}
             startIcon={<AddIcon />}
+            size="small"
+            sx={{ mt: 1 }}
           >
             Browse Files
           </Button>
           
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ 
+            mt: 1,
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            display: { xs: 'none', sm: 'block' }
+          }}>
             Supported file types: Images, Videos, PDFs, Documents
           </Typography>
           {uploading && (
@@ -376,15 +394,15 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
       
       {/* File Preview Grid */}
       {files.length > 0 && (
-        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>
           {files.length} file{files.length !== 1 ? 's' : ''}
           {uploading ? ' - Uploading...' : ''}
         </Typography>
       )}
       
-      <Grid container spacing={2}>
+      <Grid container spacing={1}>
         {files.map((file) => (
-          <Grid item xs={12} sm={6} md={4} key={file.id}>
+          <Grid item xs={6} sm={6} md={4} key={file.id}>
             <Card variant="outlined" sx={{ position: 'relative' }}>
               {/* File Preview */}
               <Box sx={{ position: 'relative', paddingTop: '56.25%', bgcolor: 'rgba(0, 0, 0, 0.03)' }}>
@@ -499,16 +517,20 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
               )}
               
               {/* File Info */}
-              <CardContent sx={{ py: 1 }}>
-                <Typography variant="subtitle2" noWrap title={file.name}>
+              <CardContent sx={{ py: 0.5, px: 1 }}>
+                <Typography variant="subtitle2" noWrap title={file.name} sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}>
                   {file.name}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{
+                  fontSize: { xs: '0.65rem', sm: '0.75rem' }
+                }}>
                   {formatFileSize(file.size)}
                 </Typography>
               </CardContent>
               
-              <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
+              <CardActions sx={{ justifyContent: 'flex-end', pt: 0, pb: 0.5, px: 0.5 }}>
                 <IconButton
                   size="small"
                   color="error"

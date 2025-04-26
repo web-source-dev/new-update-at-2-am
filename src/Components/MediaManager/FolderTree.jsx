@@ -369,7 +369,12 @@ const FolderTree = ({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 1
+      }}>
         <Typography variant="subtitle1" fontWeight="medium">
           Folders
         </Typography>
@@ -387,7 +392,9 @@ const FolderTree = ({
           borderRadius: 1,
           '& .MuiListItemButton-root:hover': {
             bgcolor: 'action.hover',
-          }
+          },
+          maxHeight: { xs: '150px', md: 'none' },
+          overflow: 'auto'
         }}
         component="nav"
         dense
@@ -398,16 +405,19 @@ const FolderTree = ({
             dense
             sx={{ 
               borderRadius: 1,
+              py: { xs: 0.5, md: 1 },
               bgcolor: selectedFolder === "root" ? 'action.selected' : 'transparent'
             }}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              <HomeIcon color={selectedFolder === "root" ? "primary" : "action"} />
+            <ListItemIcon sx={{ minWidth: { xs: 30, md: 36 } }}>
+              <HomeIcon color={selectedFolder === "root" ? "primary" : "action"} 
+                fontSize="small" />
             </ListItemIcon>
             <ListItemText 
               primary="All Media"
               primaryTypographyProps={{ 
-                fontWeight: selectedFolder === "root" ? 'medium' : 'regular'
+                fontWeight: selectedFolder === "root" ? 'medium' : 'regular',
+                variant: { xs: 'body2', md: 'body1' }
               }}
             />
           </ListItemButton>

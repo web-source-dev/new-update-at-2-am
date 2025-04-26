@@ -59,16 +59,29 @@ const MediaToolbar = ({
   };
 
   return (
-    <Box sx={{ p: 2, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+    <Box sx={{ 
+      p: { xs: 1, sm: 2 }, 
+      display: "flex", 
+      alignItems: "center", 
+      flexWrap: "wrap", 
+      gap: { xs: 1, sm: 2 }
+    }}>
       {/* Left side: Statistics */}
       {!selectorMode && (
-        <Stack direction="row" spacing={2} sx={{ display: { xs: 'none', md: 'flex' } }}>
+        <Stack 
+          direction="row" 
+          spacing={{ xs: 1, sm: 2 }} 
+          sx={{ 
+            display: { xs: 'none', sm: 'none', md: 'flex' } 
+          }}
+        >
           <Tooltip title="Total Files">
             <Chip
               icon={<FolderIcon />}
               label={`${stats.total} files`}
               variant="outlined"
               color="primary"
+              size="small"
             />
           </Tooltip>
           
@@ -78,6 +91,7 @@ const MediaToolbar = ({
               label={`${stats.images}`}
               variant="outlined"
               color="success"
+              size="small"
             />
           </Tooltip>
           
@@ -87,6 +101,7 @@ const MediaToolbar = ({
               label={`${stats.videos}`}
               variant="outlined"
               color="error"
+              size="small"
             />
           </Tooltip>
           
@@ -96,6 +111,7 @@ const MediaToolbar = ({
               label={`${stats.documents}`}
               variant="outlined"
               color="warning"
+              size="small"
             />
           </Tooltip>
         </Stack>
@@ -107,7 +123,13 @@ const MediaToolbar = ({
         value={searchValue}
         onChange={(e) => onSearch(e.target.value)}
         size="small"
-        sx={{ flexGrow: 1, maxWidth: 300 }}
+        sx={{ 
+          flexGrow: 1, 
+          maxWidth: { xs: '100%', sm: 300 },
+          minWidth: { xs: '100%', sm: 'auto' },
+          mb: { xs: 1, sm: 0 },
+          order: { xs: -1, sm: 0 }  // Make search full-width at top on mobile
+        }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -118,13 +140,13 @@ const MediaToolbar = ({
       />
 
       {/* Filter Dropdown */}
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel id="media-filter-label">
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <FilterListIcon fontSize="small" sx={{ mr: 0.5 }} />
-            Filter
-          </Box>
-        </InputLabel>
+      <FormControl 
+        size="small" 
+        sx={{ 
+          minWidth: { xs: '48%', sm: 120 }
+        }}
+      >
+        <InputLabel id="media-filter-label">Filter</InputLabel>
         <Select
           labelId="media-filter-label"
           value={filterValue}
@@ -137,44 +159,29 @@ const MediaToolbar = ({
         </Select>
       </FormControl>
 
-      {/* Sort Dropdown
-      <FormControl size="small" sx={{ minWidth: 140 }}>
-        <InputLabel id="media-sort-label">
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <SortIcon fontSize="small" sx={{ mr: 0.5 }} />
-            Sort By
-          </Box>
-        </InputLabel>
-        <Select
-          labelId="media-sort-label"
-          value={sortValue}
-          onChange={(e) => onSortChange(e.target.value)}
-          label="Sort By"
-        >
-          <MenuItem value="createdAt">Date Added</MenuItem>
-          <MenuItem value="name">Name</MenuItem>
-          <MenuItem value="size">Size</MenuItem>
-        </Select>
-      </FormControl> */}
-
       {/* Sort Order Toggle */}
       <Tooltip title={sortOrderValue === "asc" ? "Ascending" : "Descending"}>
         <Button
           size="small"
           variant="outlined"
           onClick={() => onSortOrderChange(sortOrderValue === "asc" ? "desc" : "asc")}
-          sx={{ minWidth: 40, px: 1 }}
+          sx={{ 
+            minWidth: 40, 
+            px: 1,
+            display: { xs: 'none', sm: 'inline-flex' }
+          }}
         >
           {sortOrderValue === "asc" ? "A→Z" : "Z→A"}
         </Button>
       </Tooltip>
 
       {/* View Mode Toggle */}
-      <Box>
+      <Box sx={{ display: 'flex', ml: 'auto' }}>
         <Tooltip title="Grid View">
           <IconButton
             color={viewModeValue === "grid" ? "primary" : "default"}
             onClick={() => onViewModeChange("grid")}
+            size="small"
           >
             <GridViewIcon />
           </IconButton>
@@ -183,26 +190,42 @@ const MediaToolbar = ({
           <IconButton
             color={viewModeValue === "list" ? "primary" : "default"}
             onClick={() => onViewModeChange("list")}
+            size="small"
           >
             <ViewListIcon />
           </IconButton>
         </Tooltip>
       </Box>
 
-      {/* Modified Upload Button Section */}
-      <>
+      {/* New Folder Button - Only in non-selector mode */}
+      {!selectorMode && (
+        <Button
+          variant="outlined"
+          startIcon={<CreateNewFolderIcon />}
+          onClick={() => setNewFolderDialogOpen(true)}
+          size="small"
+          sx={{ 
+            display: { xs: 'none', sm: 'inline-flex' } 
+          }}
+        >
+          New Folder
+        </Button>
+      )}
 
-        {/* New Folder Button - Only in non-selector mode */}
-        {!selectorMode && (
-          <Button
-            variant="outlined"
-            startIcon={<CreateNewFolderIcon />}
+      {/* Mobile-only new folder button */}
+      {!selectorMode && (
+        <Tooltip title="New Folder">
+          <IconButton
             onClick={() => setNewFolderDialogOpen(true)}
+            sx={{ 
+              display: { xs: 'inline-flex', sm: 'none' } 
+            }}
+            size="small"
           >
-            New Folder
-          </Button>
-        )}
-      </>
+            <CreateNewFolderIcon />
+          </IconButton>
+        </Tooltip>
+      )}
 
       {/* New Folder Dialog */}
       <Dialog open={newFolderDialogOpen} onClose={() => setNewFolderDialogOpen(false)}>
