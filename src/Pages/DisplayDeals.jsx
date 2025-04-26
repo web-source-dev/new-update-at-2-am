@@ -132,8 +132,8 @@ const DisplayDeals = () => {
     searchQuery: '',
     category: '',
     distributor: '',
-    priceRange: [0, 1000],
-    minQuantity: [0, 500],
+    priceRange: [0, 1000000],
+    minQuantity: [0, 5000000],
     favoritesOnly: false,
     committedOnly: false
   });
@@ -766,19 +766,12 @@ const DisplayDeals = () => {
             )}
             
             <CardContent sx={{ flexGrow: 1, p: 2, pt: 1 }}>
-              <Typography 
-                variant="h6" 
-                component="div"
-                gutterBottom
+                <Typography 
+                  variant="h6" 
                 sx={{ 
                   fontWeight: 'bold',
-                  fontSize: '1rem',
-                  height: '2.5rem',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
+                  fontSize: '1.5rem',
+                  color: 'black',
                 }}
               >
                 {deal.name}
