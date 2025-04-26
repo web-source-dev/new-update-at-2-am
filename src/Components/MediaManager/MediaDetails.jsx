@@ -36,10 +36,7 @@ import MovieIcon from "@mui/icons-material/Movie";
 import DescriptionIcon from "@mui/icons-material/Description";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import StarIcon from "@mui/icons-material/Star";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
-import FolderIcon from "@mui/icons-material/Folder";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { format } from "date-fns";
 import api from "../../services/api";
 import { useSnackbar } from "notistack";
@@ -120,7 +117,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put(`/media-manager/media/${media._id}/${user_id}`, mediaData);
+      await api.put(`/api/media-manager/media/${media._id}/${user_id}`, mediaData);
       setEditing(false);
       onUpdate();
       enqueueSnackbar("Media updated successfully", { variant: "success" });
@@ -164,7 +161,7 @@ const MediaDetails = ({ media, onClose, onDelete, folders, onUpdate }) => {
     setMovingMedia(true);
     
     try {
-      await api.put(`/media-manager/media/${media._id}/${user_id}`, {
+      await api.put(`/api/media-manager/media/${media._id}/${user_id}`, {
         folderId: selectedFolder
       });
       

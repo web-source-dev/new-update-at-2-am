@@ -90,7 +90,7 @@ const MediaManager = ({
       
       console.log("Fetching media with params:", params); // Debug log
       
-      const response = await api.get(`/media-manager/media/${user_id}`, { params });
+      const response = await api.get(`/api/media-manager/media/${user_id}`, { params });
       
       console.log("Media fetched:", response.data.media); // Debug log
       setMediaItems(response.data.media);
@@ -112,7 +112,7 @@ const MediaManager = ({
   const fetchFolders = async () => {
     try {
       // Remove any query params to get ALL folders regardless of parent
-      const response = await api.get(`/media-manager/folders/${user_id}`);
+      const response = await api.get(`/api/media-manager/folders/${user_id}`);
       setFolders(response.data);
     } catch (error) {
       console.error("Error fetching folders:", error);
@@ -123,7 +123,7 @@ const MediaManager = ({
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await api.get(`/media-manager/stats/${user_id}`);
+      const response = await api.get(`/api/media-manager/stats/${user_id}`);
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -178,7 +178,7 @@ const MediaManager = ({
   // Handle media deletion
   const handleMediaDelete = async (mediaId) => {
     try {
-      await api.delete(`/media-manager/media/${mediaId}/${user_id}`);
+      await api.delete(`/api/media-manager/media/${mediaId}/${user_id}`);
       setSelectedMedia(null);
       // Trigger a refresh
       setRefreshCounter(prev => prev + 1);
@@ -199,7 +199,7 @@ const MediaManager = ({
       
       console.log(`Renaming folder ${folderId} to "${newName}"`);
       
-      const response = await api.put(`/media-manager/folders/${folderId}/${user_id}`, {
+      const response = await api.put(`/api/media-manager/folders/${folderId}/${user_id}`, {
         name: newName.trim()
       });
       
@@ -232,7 +232,7 @@ const MediaManager = ({
       
       console.log(`Creating folder "${folderName}" with parent ${parentId}`);
       
-      const response = await api.post(`/media-manager/folders/${user_id}`, {
+      const response = await api.post(`/api/media-manager/folders/${user_id}`, {
         name: folderName,
         parentId: parentId
       });
@@ -267,7 +267,7 @@ const MediaManager = ({
       }
       
       // Make API call to delete the folder
-      const response = await api.delete(`/media-manager/folders/${folderId}/${user_id}`);
+      const response = await api.delete(`/api/media-manager/folders/${folderId}/${user_id}`);
       console.log("Delete folder response:", response.data);
       
       // If we were in the deleted folder, go to root

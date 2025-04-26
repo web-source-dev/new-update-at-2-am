@@ -173,7 +173,7 @@ const MediaUploader = ({
         
         console.log(`Saving media item ${i+1}/${totalItems} with data:`, mediaData);
         
-        const response = await api.post(`/media-manager/upload/direct/${user_id}`, mediaData);
+        const response = await api.post(`/api/media-manager/upload/direct/${user_id}`, mediaData);
         savedItems.push(response.data);
       }
       

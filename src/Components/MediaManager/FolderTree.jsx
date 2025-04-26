@@ -154,7 +154,7 @@ const FolderTree = ({
         await onRenameFolder(selectedFolderForMenu._id, newFolderName.trim());
       } else {
         // Fall back to direct API call if no rename function is provided
-        const response = await api.put(`/media-manager/folders/${selectedFolderForMenu._id}/${user_id}`, {
+        const response = await api.put(`/api/media-manager/folders/${selectedFolderForMenu._id}/${user_id}`, {
           name: newFolderName.trim()
         });
         
@@ -224,7 +224,7 @@ const FolderTree = ({
         }
       } else {
         // Otherwise make the API call directly
-        await api.post(`/media-manager/folders/${user_id}`, {
+        await api.post(`/api/media-manager/folders/${user_id}`, {
           name: newFolderName.trim(),
           parentId: newFolderParentId
         });

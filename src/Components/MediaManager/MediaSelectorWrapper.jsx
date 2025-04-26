@@ -34,7 +34,7 @@ const MediaSelectorWrapper = ({ onMediaSelect, onCancel }) => {
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await api.get(`/media-manager/folders/${user_id}`);
+        const response = await api.get(`/api/media-manager/folders/${user_id}`);
         setFolders(response.data);
       } catch (error) {
         console.error("Error fetching folders:", error);
