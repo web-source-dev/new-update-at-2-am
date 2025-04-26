@@ -251,7 +251,7 @@ const MediaUploader = ({
     <Dialog 
       open={open} 
       onClose={handleClose}
-      maxWidth="md" 
+      maxWidth="xl" 
       fullWidth
       scroll="paper"
       PaperProps={{
@@ -260,7 +260,7 @@ const MediaUploader = ({
           height: { xs: '100%', sm: '80vh' },
           maxHeight: { xs: '100%', sm: '80vh' },
           m: { xs: 0, sm: 2 },
-          width: { xs: '100%', sm: 'auto' }
+          width: { xs: '100%', sm: 'auto', md: '80vw', lg: '80vw', xl: '60vw' }
         }
       }}
     >
