@@ -274,10 +274,12 @@ const ViewSingleDeal = () => {
       // If a tier applies, adjust the price with the tier discount
       if (applicableTier) {
         setActiveTier(applicableTier);
-        // Discount is applied to the final price
-        const discountMultiplier = 1 - (applicableTier.tierDiscount / 100);
-        setTotalPrice(newTotalPrice * discountMultiplier);
-        setTotalSavings(newTotalSavings + (newTotalPrice * (applicableTier.tierDiscount / 100)));
+        // Use the fixed price directly from the tier
+        const newTierPrice = newTotalQuantity * applicableTier.tierDiscount;
+        // Calculate additional savings from the tier price
+        const additionalSavings = newTotalPrice - newTierPrice;
+        setTotalPrice(newTierPrice);
+        setTotalSavings(newTotalSavings + additionalSavings);
       } else {
         setActiveTier(null);
       }
@@ -465,8 +467,8 @@ const ViewSingleDeal = () => {
     let appliedDiscountTier = null;
     
     if (activeTier) {
-      const discountMultiplier = 1 - (activeTier.tierDiscount / 100);
-      finalTotalPrice = totalCommitPrice * discountMultiplier;
+      // Use the fixed price from the tier instead of calculating a percentage
+      finalTotalPrice = totalQuantity * activeTier.tierDiscount;
       appliedDiscountTier = {
         tierQuantity: activeTier.tierQuantity,
         tierDiscount: activeTier.tierDiscount
@@ -819,9 +821,13 @@ const ViewSingleDeal = () => {
                 </Typography>
                 {deal?.sizes && deal.sizes.length > 0 && (
                   <Chip 
-                    label={`Save up to ${Math.max(...deal.sizes.map(size => 
-                      Math.round(((size.originalCost - size.discountPrice) / size.originalCost) * 100)
-                    ))}%`}
+                    label={
+                      deal.sizes.length === 1 
+                        ? `Save ${Math.round(((deal.sizes[0].originalCost - deal.sizes[0].discountPrice) / deal.sizes[0].originalCost) * 100)}%`
+                        : `Save up to ${Math.max(...deal.sizes.map(size => 
+                            Math.round(((size.originalCost - size.discountPrice) / size.originalCost) * 100)
+                          ))}%`
+                    }
                     color="error"
                     size="large"
                     sx={{ 
@@ -1007,8 +1013,8 @@ const ViewSingleDeal = () => {
                           ) : (
                             <TrendingUp color="primary" fontSize="small" />
                           )}
-                          <Typography variant="body1" fontWeight={activeTier === tier ? 'bold' : 'medium'}>
-                            {tier.tierDiscount}% off when total quantity reaches {tier.tierQuantity}+ units
+                          <Typography variant="body1">
+                            ${tier.tierDiscount.toFixed(2)} fixed price at {tier.tierQuantity}+ units
                           </Typography>
                         </Box>
                         {activeTier === tier && (
@@ -1398,7 +1404,7 @@ const ViewSingleDeal = () => {
                             <TrendingUp color="primary" fontSize="small" />
                           )}
                           <Typography variant="body1">
-                            {tier.tierDiscount}% discount at {tier.tierQuantity}+ units
+                            ${tier.tierDiscount.toFixed(2)} fixed price at {tier.tierQuantity}+ units
                           </Typography>
                         </Box>
                         {activeTier === tier && (
@@ -1446,7 +1452,7 @@ const ViewSingleDeal = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="body1">Volume Discount:</Typography>
                     <Typography variant="body1" fontWeight="medium" color="success.light">
-                      {activeTier.tierDiscount}% off
+                      Fixed price: ${activeTier.tierDiscount.toFixed(2)}/unit
                     </Typography>
                   </Box>
                 )}

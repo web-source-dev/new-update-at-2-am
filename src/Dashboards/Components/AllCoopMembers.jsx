@@ -128,10 +128,22 @@ const AllCoopMembers = () => {
         // Fetch members who have committed to deals with month filter
         const membersResponse = await axios.get(url);
         
+        // Process and store members data, handling multiple suppliers
+        const membersData = membersResponse.data.members.map(member => {
+          // Use the suppliers array if available, or fall back to the single supplier
+          const memberSuppliers = member.suppliers || (member.supplier ? [member.supplier] : []);
+          return {
+            ...member,
+            suppliers: memberSuppliers,
+            // Keep supplier property for backward compatibility
+            supplier: memberSuppliers.length > 0 ? memberSuppliers[0] : null
+          };
+        });
+        
         // Store all members for later filtering
-        setAllMembers(membersResponse.data.members);
-        setMembers(membersResponse.data.members);
-        setFilteredMembers(membersResponse.data.members);
+        setAllMembers(membersData);
+        setMembers(membersData);
+        setFilteredMembers(membersData);
 
         // Fetch suppliers
         const suppliersResponse = await axios.get(
@@ -178,14 +190,14 @@ const AllCoopMembers = () => {
     // Supplier filter
     if (supplierFilter !== "all") {
       if (supplierFilter === "assigned") {
-        result = result.filter((member) => member.supplier);
+        result = result.filter((member) => member.suppliers && member.suppliers.length > 0);
       } else if (supplierFilter === "unassigned") {
-        result = result.filter((member) => !member.supplier);
+        result = result.filter((member) => !member.suppliers || member.suppliers.length === 0);
       } else {
         // Filter by specific supplier ID
         result = result.filter(
           (member) =>
-            member.supplier && member.supplier._id === supplierFilter
+            member.suppliers && member.suppliers.some(supplier => supplier._id === supplierFilter)
         );
       }
     }
@@ -967,7 +979,7 @@ const AllCoopMembers = () => {
 
   // Count members per supplier for the bulk export dropdown
   const getMembersCountBySupplierId = (supplierId) => {
-    return members.filter(m => m.supplier && m.supplier._id === supplierId).length;
+    return members.filter(m => m.suppliers && m.suppliers.some(supplier => supplier._id === supplierId)).length;
   };
 
   if (loading) {
@@ -1075,13 +1087,13 @@ const AllCoopMembers = () => {
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
-              <Typography color="textSecondary" gutterBottom>Members with Suppliers</Typography>
+              <Typography color="textSecondary" gutterBottom>Members with Sales persons</Typography>
               <Typography variant="h4">
-                {filteredMembers.filter((member) => member.supplier).length}
+                {filteredMembers.filter((member) => member.suppliers && member.suppliers.length > 0).length}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 {filteredMembers.length > 0 
-                  ? ((filteredMembers.filter((member) => member.supplier).length / filteredMembers.length) * 100).toFixed(1) 
+                  ? ((filteredMembers.filter((member) => member.suppliers && member.suppliers.length > 0).length / filteredMembers.length) * 100).toFixed(1) 
                   : 0}% assigned
               </Typography>
             </CardContent>
@@ -1120,12 +1132,12 @@ const AllCoopMembers = () => {
         />
 
         <FormControl sx={{ minWidth: { xs: "100%", md: 300 } }}>
-          <InputLabel id="supplier-filter-label">Filter by supplier</InputLabel>
+          <InputLabel id="supplier-filter-label">Filter by Sales person</InputLabel>
           <MuiSelect
             labelId="supplier-filter-label"
             value={supplierFilter}
             onChange={(e) => setSupplierFilter(e.target.value)}
-            label="Filter by supplier"
+            label="Filter by Sales person"
           >
             <MenuItem value="all">All Members</MenuItem>
             <MenuItem value="assigned">With Supplier</MenuItem>
@@ -1248,20 +1260,20 @@ const AllCoopMembers = () => {
                   <TableCell>${member.totalSpent.toFixed(2)}</TableCell>
                   <TableCell>{member.dealCount}</TableCell>
                   <TableCell>
-                    {member.supplier ? (
-                      <Tooltip title={`${getMembersCountBySupplierId(member.supplier._id)} members assigned to this supplier`}>
-                        <Badge 
-                          badgeContent={getMembersCountBySupplierId(member.supplier._id)} 
-                          color="primary"
-                          sx={{ cursor: 'pointer' }}
-                        >
-                          <Chip 
-                            label={member.supplier.name} 
-                            color="success" 
-                            size="small"
-                            icon={<GroupIcon fontSize="small" />}
-                          />
-                        </Badge>
+                    {member.suppliers && member.suppliers.length > 0 ? (
+                      <Tooltip title={`${member.suppliers.length} sales persons assigned to this member`}>
+                        <Stack direction="column" spacing={1}>
+                          {member.suppliers.map(supplier => (
+                            <Chip 
+                              key={supplier._id}
+                              label={supplier.name} 
+                              color="success" 
+                              size="small"
+                              icon={<GroupIcon fontSize="small" />}
+                              sx={{ mb: 0.5 }}
+                            />
+                          ))}
+                        </Stack>
                       </Tooltip>
                     ) : (
                       <Chip 
@@ -1281,7 +1293,7 @@ const AllCoopMembers = () => {
                         color="primary"
                         startIcon={<ExternalLinkIcon />}
                       >
-                        {member.supplier ? "Manage Supplier" : "Assign Supplier"}
+                        {member.suppliers && member.suppliers.length > 0 ? "Manage Suppliers" : "Assign Suppliers"}
                       </Button>
                       <Button
                         size="small"
@@ -1315,17 +1327,18 @@ const AllCoopMembers = () => {
         >
           Member Data
         </MenuItem>
-        {menuMember?.supplier && (
+        {menuMember?.suppliers && menuMember.suppliers.length > 0 && menuMember.suppliers.map(supplier => (
           <MenuItem
+            key={supplier._id}
             onClick={() => {
-              handleExportSupplierData(menuMember.supplier._id);
+              handleExportSupplierData(supplier._id);
               handleMenuClose();
             }}
             disabled={exportLoading}
           >
-            All Members for {menuMember.supplier.name}
+            All Members for {supplier.name}
           </MenuItem>
-        )}
+        ))}
       </Menu>
 
       {/* Snackbar for notifications */}

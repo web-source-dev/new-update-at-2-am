@@ -421,8 +421,8 @@ const DisplayDeals = () => {
     let appliedDiscountTier = null;
     
     if (activeTier) {
-      const discountMultiplier = 1 - (activeTier.tierDiscount / 100);
-      finalTotalPrice = totalCommitPrice * discountMultiplier;
+      // Use the fixed price from the tier instead of calculating a percentage
+      finalTotalPrice = totalQuantity * activeTier.tierDiscount;
       appliedDiscountTier = {
         tierQuantity: activeTier.tierQuantity,
         tierDiscount: activeTier.tierDiscount
@@ -538,10 +538,12 @@ const DisplayDeals = () => {
       // If a tier applies, adjust the price with the tier discount
       if (applicableTier) {
         setActiveTier(applicableTier);
-        // Discount is applied to the final price
-        const discountMultiplier = 1 - (applicableTier.tierDiscount / 100);
-        setTotalPrice(newTotalPrice * discountMultiplier);
-        setTotalSavings(newTotalSavings + (newTotalPrice * (applicableTier.tierDiscount / 100)));
+        // Use the fixed price directly from the tier
+        const newTierPrice = newTotalQuantity * applicableTier.tierDiscount;
+        // Calculate additional savings from the tier price
+        const additionalSavings = newTotalPrice - newTierPrice;
+        setTotalPrice(newTierPrice);
+        setTotalSavings(newTotalSavings + additionalSavings);
       } else {
         setActiveTier(null);
       }
@@ -669,6 +671,8 @@ const DisplayDeals = () => {
       // Calculate the best savings percentage across all sizes or use legacy fields
       let bestSavingsPercent = '0';
       let lowestPrice = 0;
+      let highestPrice = 0;
+      let singlePriceDisplay = false;
       
       if (hasSizes) {
         const savingsPercentages = deal.sizes.map(size => 
@@ -676,12 +680,17 @@ const DisplayDeals = () => {
         );
         bestSavingsPercent = Math.max(...savingsPercentages).toFixed(0);
         
-        // Get lowest price from available sizes
+        // Get price information from available sizes
         lowestPrice = Math.min(...deal.sizes.map(size => size.discountPrice));
+        highestPrice = Math.max(...deal.sizes.map(size => size.discountPrice));
+        
+        // Determine if we should show single price (when there's only one size or all sizes have same price)
+        singlePriceDisplay = deal.sizes.length === 1 || lowestPrice === highestPrice;
       } else {
         // Fallback to legacy fields
         bestSavingsPercent = deal.avgSavingsPercentage || '0';
         lowestPrice = deal.discountPrice || deal.avgDiscountPrice || 0;
+        singlePriceDisplay = true;
       }
       
       return (
@@ -787,13 +796,13 @@ const DisplayDeals = () => {
                   >
                     ${lowestPrice.toFixed(2)}
                   </Typography>
-                  {hasSizes && deal.sizes.length > 1 && (
+                  {hasSizes && !singlePriceDisplay && (
                     <Typography 
                       variant="body2" 
                       component="span" 
                       sx={{ ml: 0.5, color: 'text.secondary' }}
                     >
-                      and up
+                      - ${highestPrice.toFixed(2)}
                     </Typography>
                   )}
                 </Box>
@@ -920,7 +929,7 @@ const DisplayDeals = () => {
                   py: 0.3
                 }}>
                   <Typography variant="caption" color="info.dark" sx={{ fontWeight: 'medium' }}>
-                    Volume Discount: Up to {Math.max(...deal.discountTiers.map(tier => tier.tierDiscount))}% off
+                    Volume Discount: As low as ${Math.min(...deal.discountTiers.map(tier => tier.tierDiscount)).toFixed(2)} per unit
                   </Typography>
                 </Box>
               )}
@@ -1508,9 +1517,9 @@ const DisplayDeals = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <TrendingUp color={activeTier === tier ? "inherit" : "primary"} fontSize="small" />
                               <Typography variant="body1">
-                                {tier.tierDiscount}% discount at {tier.tierQuantity}+ units
-                    </Typography>
-                  </Box>
+                                ${tier.tierDiscount.toFixed(2)} fixed price at {tier.tierQuantity}+ units
+                              </Typography>
+                            </Box>
                             {activeTier === tier && (
                   <Chip
                                 label="Applied" 
@@ -1556,9 +1565,9 @@ const DisplayDeals = () => {
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">Volume Discount:</Typography>
                         <Typography variant="body1" fontWeight="medium" color="success.light">
-                          {activeTier.tierDiscount}% off
-                  </Typography>
-              </Box>
+                          Fixed price: ${activeTier.tierDiscount.toFixed(2)}/unit
+                        </Typography>
+                      </Box>
                     )}
                     
                     <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />

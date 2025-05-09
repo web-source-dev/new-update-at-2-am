@@ -459,8 +459,8 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
       return;
     }
 
-    if (Number(tierDiscount) <= 0 || Number(tierDiscount) >= 100) {
-      setError('Discount percentage must be between 0 and 100');
+    if (Number(tierDiscount) <= 0) {
+      setError('Discount price must be greater than 0');
       return;
     }
 
@@ -474,8 +474,7 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
   const isValidInput = tierQuantity && 
                      tierDiscount && 
                      Number(tierQuantity) > Number(minQty || 0) &&
-                     Number(tierDiscount) > 0 && 
-                     Number(tierDiscount) < 100;
+                     Number(tierDiscount) > 0;
 
   return (
     <Dialog 
@@ -530,18 +529,18 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
             
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Discount Percentage"
+                label="Discount Price"
                 type="number"
                 InputProps={{
-                  endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                   sx: { borderRadius: 2 }
                 }}
                 value={tierDiscount}
                 onChange={(e) => setTierDiscount(e.target.value)}
                 fullWidth
                 required
-                error={!!error && (!tierDiscount || Number(tierDiscount) <= 0 || Number(tierDiscount) >= 100)}
-                helperText="Enter a value between 1-99%"
+                error={!!error && (!tierDiscount || Number(tierDiscount) <= 0)}
+                helperText="Enter the absolute discount price for this tier"
               />
             </Grid>
             
@@ -559,7 +558,7 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
                 >
                   <Typography variant="body2" color="text.secondary">
                     When total order commitments reach <b>{tierQuantity} units</b> or more, 
-                    all purchases will receive a <b>{tierDiscount}% discount</b> on their orders.
+                    all purchases will be priced at <b>${tierDiscount}</b> per unit.
                   </Typography>
                 </Paper>
               </Grid>
@@ -1236,11 +1235,11 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                                 sx={{ mr: 1.5, fontWeight: 600 }}
                               />
                               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                {tier.tierDiscount}% discount at {tier.tierQuantity}+ units
+                                ${tier.tierDiscount.toFixed(2)} price at {tier.tierQuantity}+ units
                               </Typography>
                             </Box>
                             <Typography variant="body2" color="text.secondary">
-                              All commitments will receive {tier.tierDiscount}% off when total commitments reach {tier.tierQuantity} units
+                              All purchases will be at ${tier.tierDiscount.toFixed(2)} per unit when total commitments reach {tier.tierQuantity} units
                             </Typography>
                           </Box>
                         </TierItem>
@@ -1264,7 +1263,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     <TextField
                       label="Deal Starts At"
                       name="dealStartAt"
-                      type="datetime-local"
+                      type="date"
                       value={formData.dealStartAt}
                       onChange={handleChange}
                       fullWidth
@@ -1285,7 +1284,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     <TextField
                       label="Deal Ends At"
                       name="dealEndsAt"
-                      type="datetime-local"
+                      type="date"
                       value={formData.dealEndsAt}
                       onChange={handleChange}
                       fullWidth

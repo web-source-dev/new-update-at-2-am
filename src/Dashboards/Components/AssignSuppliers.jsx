@@ -187,7 +187,7 @@ const AssignSuppliers = () => {
   const [member, setMember] = useState(null);
   const [commitments, setCommitments] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [assignedSupplier, setAssignedSupplier] = useState(null);
+  const [assignedSuppliers, setAssignedSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -197,6 +197,7 @@ const AssignSuppliers = () => {
   const [selectedSupplierId, setSelectedSupplierId] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
+  const [selectedSupplierToRemove, setSelectedSupplierToRemove] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -229,8 +230,13 @@ const AssignSuppliers = () => {
         setMember(memberResponse.data.data.member);
         setCommitments(memberResponse.data.data.commitments);
         
-        if (memberResponse.data.data.supplier) {
-          setAssignedSupplier(memberResponse.data.data.supplier);
+        // Handle multiple suppliers if available, otherwise fallback to single supplier
+        if (memberResponse.data.data.suppliers && memberResponse.data.data.suppliers.length > 0) {
+          setAssignedSuppliers(memberResponse.data.data.suppliers);
+        } else if (memberResponse.data.data.supplier) {
+          setAssignedSuppliers([memberResponse.data.data.supplier]);
+        } else {
+          setAssignedSuppliers([]);
         }
         
         // Fetch all suppliers
@@ -325,15 +331,21 @@ const AssignSuppliers = () => {
         return;
       }
       
-      await axios.put(`${apiUrl}/api/suppliers/assign/${selectedSupplierId}`, {
+      const response = await axios.put(`${apiUrl}/api/suppliers/assign/${selectedSupplierId}`, {
         memberId,
         distributorId,
         multiMemberAssignment: true // Ensure the same supplier can be assigned to multiple members
       });
       
-      // Find the selected supplier from the list
-      const supplier = suppliers.find(s => s._id === selectedSupplierId);
-      setAssignedSupplier(supplier);
+      // Check if the response contains the updated list of assigned suppliers
+      if (response.data.assignedSuppliers) {
+        setAssignedSuppliers(response.data.assignedSuppliers);
+      } else {
+        // Find the selected supplier from the list
+        const supplier = suppliers.find(s => s._id === selectedSupplierId);
+        // Add the new supplier to the existing list of assigned suppliers
+        setAssignedSuppliers(prev => [...prev, supplier]);
+      }
       
       // Update the member count for this supplier
       setSupplierMemberCounts(prev => ({
@@ -341,9 +353,12 @@ const AssignSuppliers = () => {
         [selectedSupplierId]: (prev[selectedSupplierId] || 0) + 1
       }));
       
+      // Reset the selection
+      setSelectedSupplierId("");
+      
       setSnackbar({
         open: true,
-        message: "Supplier has been assigned successfully",
+        message: "Sales person has been assigned successfully",
         severity: "success"
       });
       
@@ -351,7 +366,7 @@ const AssignSuppliers = () => {
       console.error("Error assigning supplier:", error);
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || "Failed to assign supplier",
+        message: error.response?.data?.message || "Failed to assign sales person",
         severity: "error"
       });
     }
@@ -359,37 +374,38 @@ const AssignSuppliers = () => {
 
   const handleRemoveSupplier = async () => {
     try {
-      if (!assignedSupplier) {
+      if (!selectedSupplierToRemove) {
         return;
       }
       
-      await axios.put(`${apiUrl}/api/suppliers/unassign/${assignedSupplier.id}`, {
+      await axios.put(`${apiUrl}/api/suppliers/unassign/${selectedSupplierToRemove}`, {
         memberId,
         distributorId
       });
       
       // Update the member count for this supplier
-      if (supplierMemberCounts[assignedSupplier.id] > 0) {
+      if (supplierMemberCounts[selectedSupplierToRemove] > 0) {
         setSupplierMemberCounts(prev => ({
           ...prev,
-          [assignedSupplier.id]: prev[assignedSupplier.id] - 1
+          [selectedSupplierToRemove]: prev[selectedSupplierToRemove] - 1
         }));
       }
       
-      setAssignedSupplier(null);
+      // Remove the specific supplier from the list
+      setAssignedSuppliers(prev => prev.filter(s => s._id !== selectedSupplierToRemove));
+      setSelectedSupplierToRemove(null);
       setAlertOpen(false);
       
       setSnackbar({
         open: true,
-        message: "Supplier has been unassigned successfully",
+        message: "Sales person has been unassigned successfully",
         severity: "success"
       });
-      
     } catch (error) {
       console.error("Error removing supplier:", error);
       setSnackbar({
         open: true,
-        message: "Failed to remove supplier",
+        message: "Failed to remove sales person",
         severity: "error"
       });
     }
@@ -411,9 +427,9 @@ const AssignSuppliers = () => {
         ["Phone", member.phone || "N/A"],
         ["Address", member.address || "N/A"],
         [""],
-        ["Supplier Information"],
-        ["Name", assignedSupplier?.name || "Not Assigned"],
-        ["Email", assignedSupplier?.email || "N/A"],
+        ["Sales person Information"],
+        ["Name", assignedSuppliers.length > 0 ? assignedSuppliers[0].name : "Not Assigned"],
+        ["Email", assignedSuppliers.length > 0 ? assignedSuppliers[0].email : "N/A"],
       ];
       const memberSheet = XLSX.utils.aoa_to_sheet(memberData);
       XLSX.utils.book_append_sheet(wb, memberSheet, "Member Info");
@@ -552,14 +568,14 @@ const AssignSuppliers = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            Manage Supplier for {member.businessName || member.name}
+            Manage Sales person for {member.businessName || member.name}
           </Typography>
           <Typography
             variant="body1"
             color="text.secondary"
             sx={{ maxWidth: 800 }}
           >
-            Assign suppliers to manage member orders and view commitment details in one place.
+            Assign sales person to manage member orders and view commitment details in one place.
           </Typography>
         </Box>
 
@@ -696,9 +712,9 @@ const AssignSuppliers = () => {
                     Current Status:
                   </Typography>
                   <StatusChip
-                    label={assignedSupplier ? "Supplier Assigned" : "No Supplier"}
-                    statuscolor={assignedSupplier ? "success" : "warning"}
-                    icon={assignedSupplier ? <CheckCircleIcon fontSize="small" /> : <InfoIcon fontSize="small" />}
+                    label={assignedSuppliers.length > 0 ? "Sales person Assigned" : "No Sales person"}
+                    statuscolor={assignedSuppliers.length > 0 ? "success" : "warning"}
+                    icon={assignedSuppliers.length > 0 ? <CheckCircleIcon fontSize="small" /> : <InfoIcon fontSize="small" />}
                   />
                 </Box>
               </CardContent>
@@ -711,8 +727,8 @@ const AssignSuppliers = () => {
           <Grid item xs={12} component={motion.div} variants={itemVariants}>
             <StyledCard>
               <StyledCardHeader 
-                title="Supplier Assignment" 
-                subheader="Assign this member to a supplier who will handle their committed deals"
+                title="Sales person Assignment" 
+                subheader="Assign this member to a sales person who will handle their committed deals"
                 avatar={
                   <Avatar 
                     sx={{ 
@@ -726,7 +742,7 @@ const AssignSuppliers = () => {
                 }
               />
               <CardContent>
-                {assignedSupplier ? (
+                {assignedSuppliers.length > 0 ? (
                   <AnimatedBox
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -737,10 +753,6 @@ const AssignSuppliers = () => {
                       sx={{
                         p: 4,
                         mb: 4,
-                        display: "flex",
-                        flexDirection: { xs: "column", md: "row" },
-                        alignItems: { xs: "stretch", md: "center" },
-                        justifyContent: "space-between",
                         borderRadius: 3,
                         backgroundColor: alpha(theme.palette.success.main, 0.08),
                         position: 'relative',
@@ -749,87 +761,85 @@ const AssignSuppliers = () => {
                         overflow: 'hidden'
                       }}
                     >
-                      <Stack spacing={2} sx={{ mb: { xs: 4, md: 0 } }}>
-                        <Typography variant="h6" color="success.dark" gutterBottom fontWeight="600">
-                          Current Supplier Assignment
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <Avatar 
+                      <Typography variant="h6" color="success.dark" gutterBottom fontWeight="600">
+                        Assigned Sales Persons ({assignedSuppliers.length})
+                      </Typography>
+                      
+                      {assignedSuppliers.map((supplier, index) => (
+                        <Box
+                          key={supplier._id}
+                          sx={{
+                            display: "flex",
+                            flexDirection: { xs: "column", md: "row" },
+                            alignItems: { xs: "stretch", md: "center" },
+                            justifyContent: "space-between",
+                            mt: index > 0 ? 4 : 0,
+                            pb: index < assignedSuppliers.length - 1 ? 4 : 0,
+                            borderBottom: index < assignedSuppliers.length - 1 ? `1px solid ${alpha(theme.palette.divider, 0.2)}` : 'none'
+                          }}
+                        >
+                          <Stack spacing={2} sx={{ mb: { xs: 4, md: 0 } }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Avatar 
+                                sx={{ 
+                                  bgcolor: 'success.main', 
+                                  mr: 2,
+                                  width: 48,
+                                  height: 48
+                                }}
+                              >
+                                {supplier.name.charAt(0).toUpperCase()}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                  {supplier.name}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {supplier.email}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Tooltip title={`${getSupplierMemberCount(supplier._id)} members are assigned to this supplier`}>
+                                <Chip
+                                  icon={<GroupIcon fontSize="small" />}
+                                  label={`${getSupplierMemberCount(supplier._id)} members assigned`}
+                                  color="success"
+                                  size="small"
+                                  sx={{ mr: 1 }}
+                                />
+                              </Tooltip>
+                            </Box>
+                          </Stack>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => {
+                              setSelectedSupplierToRemove(supplier._id);
+                              setAlertOpen(true);
+                            }}
                             sx={{ 
-                              bgcolor: 'success.main', 
-                              mr: 2,
-                              width: 48,
-                              height: 48
+                              px: 3,
+                              py: 1,
+                              borderRadius: 2,
+                              boxShadow: 'none',
+                              borderWidth: 2,
+                              '&:hover': { 
+                                borderWidth: 2,
+                                backgroundColor: alpha(theme.palette.error.main, 0.04)
+                              }
                             }}
                           >
-                            {assignedSupplier.name.charAt(0).toUpperCase()}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                              {assignedSupplier.name}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {assignedSupplier.email}
-                            </Typography>
-                          </Box>
+                            Remove
+                          </Button>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Tooltip title={`${getSupplierMemberCount(assignedSupplier.id)} members are assigned to this supplier`}>
-                            <Chip
-                              icon={<GroupIcon fontSize="small" />}
-                              label={`${getSupplierMemberCount(assignedSupplier.id)} members assigned`}
-                              color="success"
-                              size="small"
-                              sx={{ mr: 1 }}
-                            />
-                          </Tooltip>
-                        </Box>
-                      </Stack>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => setAlertOpen(true)}
-                        sx={{ 
-                          px: 3,
-                          py: 1,
-                          borderRadius: 2,
-                          boxShadow: 'none',
-                          borderWidth: 2,
-                          '&:hover': { 
-                            borderWidth: 2,
-                            backgroundColor: alpha(theme.palette.error.main, 0.04)
-                          }
-                        }}
-                      >
-                        Remove Supplier
-                      </Button>
+                      ))}
                     </Paper>
-
-                    <Alert 
-                      severity="info" 
-                      variant="outlined"
-                      icon={<InfoIcon />}
-                      sx={{ 
-                        mb: 4,
-                        borderRadius: 3,
-                        padding: 2
-                      }}
-                    >
-                      <AlertTitle>
-                        <Typography fontWeight="bold">To change the supplier for this member:</Typography>
-                      </AlertTitle>
-                      <Typography component="div">
-                        <Box component="ol" sx={{ pl: 2, m: 0 }}>
-                          <li>First remove the current supplier using the "Remove Supplier" button above</li>
-                          <li>Then assign a new supplier from the available options</li>
-                        </Box>
-                      </Typography>
-                    </Alert>
 
                     <Divider sx={{ my: 4 }}>
                       <Chip 
-                        label="CHANGE SUPPLIER" 
+                        label="ADD ANOTHER SALES PERSON" 
                         size="small" 
                         sx={{ 
                           backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -838,40 +848,133 @@ const AssignSuppliers = () => {
                       />
                     </Divider>
 
-                    <Box sx={{ opacity: 0.7, pointerEvents: 'none' }}>
-                      <Typography variant="h6" color="textSecondary" sx={{ mb: 2 }}>
-                        Assign different supplier
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 4,
+                        mb: 4,
+                        borderRadius: 3,
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                        bgcolor: alpha(theme.palette.primary.main, 0.04)
+                      }}
+                    >
+                      <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
+                        Assign Additional Sales Person
                       </Typography>
-                      <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                        You must remove the current supplier before you can assign a new one.
-                      </Typography>
-                      <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
-                        <FormControl fullWidth disabled>
-                          <InputLabel id="supplier-select-label">Select a supplier</InputLabel>
-                          <MuiSelect
-                            labelId="supplier-select-label"
-                            label="Select a supplier"
-                            value=""
-                            disabled
+                      
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} md={8}>
+                          <FormControl fullWidth>
+                            <InputLabel id="sales-person-select-label">Select a sales person</InputLabel>
+                            <MuiSelect
+                              labelId="sales-person-select-label"
+                              label="Select a sales person"
+                              value={selectedSupplierId}
+                              onChange={handleSupplierSelect}
+                              sx={{ 
+                                borderRadius: 2,
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                  borderColor: alpha(theme.palette.primary.main, 0.3),
+                                }
+                              }}
+                            >
+                              {suppliers.length === 0 ? (
+                                <MenuItem value="" disabled>No Sales Person available. Create one first.</MenuItem>
+                              ) : (
+                                suppliers
+                                  // Filter out already assigned suppliers
+                                  .filter(supplier => !assignedSuppliers.some(assigned => assigned._id === supplier._id))
+                                  .map((supplier) => (
+                                    <MenuItem key={supplier._id} value={supplier._id}>
+                                      <Stack direction="row" alignItems="center" spacing={1.5} width="100%">
+                                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                                          {supplier.name.charAt(0).toUpperCase()}
+                                        </Avatar>
+                                        <Box sx={{ flexGrow: 1 }}>
+                                          <Typography>{supplier.name}</Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {supplier.email}
+                                          </Typography>
+                                        </Box>
+                                        <SupplierBadge 
+                                          badgeContent={getSupplierMemberCount(supplier._id)} 
+                                          color="primary"
+                                        >
+                                          <GroupIcon color="action" fontSize="small" />
+                                        </SupplierBadge>
+                                      </Stack>
+                                    </MenuItem>
+                                  ))
+                              )}
+                            </MuiSelect>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleAssignSupplier}
+                            disabled={!selectedSupplierId}
+                            fullWidth
+                            sx={{ 
+                              height: '100%',
+                              borderRadius: 2,
+                              boxShadow: 2,
+                              minHeight: '56px',
+                              fontWeight: 'bold',
+                              '&:hover': { boxShadow: 4 }
+                            }}
+                            endIcon={<ArrowForwardIcon />}
                           >
-                            <MenuItem value="">
-                              <em>Please remove current supplier first</em>
-                            </MenuItem>
-                          </MuiSelect>
-                        </FormControl>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          disabled={true}
-                          sx={{ 
-                            opacity: 0.5,
-                            width: { md: '250px' }
-                          }}
-                        >
-                          Assign New Supplier
-                        </Button>
-                      </Stack>
-                    </Box>
+                            Assign Sales Person
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+
+                    <Divider sx={{ my: 4 }}>
+                      <Chip 
+                        label="OR" 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                          color: 'text.secondary'
+                        }} 
+                      />
+                    </Divider>
+
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 4,
+                        borderRadius: 3,
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.secondary.main, 0.3),
+                        bgcolor: alpha(theme.palette.secondary.main, 0.04)
+                      }}
+                    >
+                      <Typography variant="h6" sx={{ mb: 3, color: 'secondary.main', fontWeight: 600 }}>
+                        Create New Sales Person
+                      </Typography>
+                      <Button
+                        startIcon={<AddIcon />}
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => setModalOpen(true)}
+                        sx={{ 
+                          borderRadius: 2,
+                          borderWidth: 2,
+                          fontWeight: 'bold',
+                          '&:hover': { 
+                            borderWidth: 2,
+                            backgroundColor: alpha(theme.palette.secondary.main, 0.04)
+                          }
+                        }}
+                      >
+                        Create New Sales Person
+                      </Button>
+                    </Paper>
                   </AnimatedBox>
                 ) : (
                   <AnimatedBox
@@ -889,10 +992,10 @@ const AssignSuppliers = () => {
                       }}
                     >
                       <AlertTitle>
-                        <Typography fontWeight="bold">No Supplier Assigned</Typography>
+                        <Typography fontWeight="bold">No Sales Person Assigned</Typography>
                       </AlertTitle>
                       <Typography>
-                        This member is not assigned to any supplier. Assigning a supplier helps you organize which supplier will handle this member's orders.
+                        This member is not assigned to any sales person. Assigning a sales person helps you organize which sales person will handle this member's orders.
                       </Typography>
                     </Alert>
                     <Paper
@@ -907,16 +1010,16 @@ const AssignSuppliers = () => {
                       }}
                     >
                       <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
-                        Assign a Supplier
+                        Assign a Sales Person
                       </Typography>
                       
                       <Grid container spacing={3}>
                         <Grid item xs={12} md={8}>
                           <FormControl fullWidth>
-                            <InputLabel id="supplier-select-label">Select a supplier</InputLabel>
+                            <InputLabel id="sales-person-select-label">Select a sales person</InputLabel>
                             <MuiSelect
-                              labelId="supplier-select-label"
-                              label="Select a supplier"
+                              labelId="sales-person-select-label"
+                              label="Select a sales person"
                               value={selectedSupplierId}
                               onChange={handleSupplierSelect}
                               sx={{ 
@@ -927,7 +1030,7 @@ const AssignSuppliers = () => {
                               }}
                             >
                               {suppliers.length === 0 ? (
-                                <MenuItem value="" disabled>No suppliers available. Create one first.</MenuItem>
+                                <MenuItem value="" disabled>No Sales Person available. Create one first.</MenuItem>
                               ) : (
                                 suppliers.map((supplier) => (
                                   <MenuItem key={supplier._id} value={supplier._id}>
@@ -971,7 +1074,7 @@ const AssignSuppliers = () => {
                             }}
                             endIcon={<ArrowForwardIcon />}
                           >
-                            Assign Supplier
+                            Assign Sales Person
                           </Button>
                         </Grid>
                       </Grid>
@@ -999,7 +1102,7 @@ const AssignSuppliers = () => {
                       }}
                     >
                       <Typography variant="h6" sx={{ mb: 3, color: 'secondary.main', fontWeight: 600 }}>
-                        Create New Supplier
+                        Create New Sales Person
                       </Typography>
                       <Button
                         startIcon={<AddIcon />}
@@ -1016,7 +1119,7 @@ const AssignSuppliers = () => {
                           }
                         }}
                       >
-                        Create New Supplier
+                        Create New Sales Person
                       </Button>
                     </Paper>
                   </AnimatedBox>
@@ -1165,26 +1268,26 @@ const AssignSuppliers = () => {
                 <AddIcon />
               </Avatar>
               <Typography variant="h5" component="h2" fontWeight="bold">
-                Create New Supplier
+                Create New Sales person
               </Typography>
             </Stack>
           </DialogTitle>
           
           <DialogContent sx={{ pt: 3 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Create a new supplier to assign to this member. After creating the supplier, you'll be able to assign them to this member.
-              {assignedSupplier && " Remember to remove the current supplier first before assigning a new one."}
+              Create a new sales person to assign to this member. After creating the sales person, you'll be able to assign them to this member.
+              {assignedSuppliers.length > 0 && " Remember to remove the current sales person first before assigning a new one."}
             </Typography>
             
             <FormControl fullWidth sx={{ mb: 3 }}>
               <FormLabel sx={{ mb: 1, color: 'text.primary', fontWeight: 500 }}>
-                Supplier Name
+                Sales person Name
               </FormLabel>
               <TextField
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Enter supplier name"
+                placeholder="Enter sales person name"
                 fullWidth
                 size="medium"
                 required
@@ -1197,13 +1300,13 @@ const AssignSuppliers = () => {
             </FormControl>
             <FormControl fullWidth sx={{ mb: 4 }}>
               <FormLabel sx={{ mb: 1, color: 'text.primary', fontWeight: 500 }}>
-                Supplier Email
+                Sales person Email
               </FormLabel>
               <TextField
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter supplier email"
+                placeholder="Enter sales person email"
                 type="email"
                 fullWidth
                 size="medium"
@@ -1242,12 +1345,12 @@ const AssignSuppliers = () => {
                 fontWeight: 600
               }}
             >
-              Create Supplier
+              Create Sales person
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Confirmation Dialog for Removing Supplier */}
+        {/* Confirmation Dialog for Removing Sales person */}
         <Dialog
           open={alertOpen}
           onClose={() => setAlertOpen(false)}
@@ -1266,24 +1369,28 @@ const AssignSuppliers = () => {
                 <DeleteIcon />
               </Avatar>
               <Typography variant="h5" fontWeight="bold" color="error.main">
-                Remove Supplier Assignment
+                Remove Sales Person Assignment
               </Typography>
             </Stack>
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description" sx={{ mt: 2 }}>
-              Are you sure you want to remove <b>{assignedSupplier?.name}</b> as a supplier for <b>{member?.name}</b>?
-              <Alert severity="info" sx={{ mt: 3, mb: 1 }}>
-                <Typography variant="body2">
-                  • This will only remove the assignment for this specific member
-                </Typography>
-                <Typography variant="body2">
-                  • Other members assigned to this supplier will not be affected
-                </Typography>
-                <Typography variant="body2">
-                  • You can assign a new supplier after removing this one
-                </Typography>
-              </Alert>
+              {selectedSupplierToRemove && (
+                <>
+                  Are you sure you want to remove <b>{assignedSuppliers.find(s => s._id === selectedSupplierToRemove)?.name}</b> as a sales person for <b>{member?.name}</b>?
+                  <Alert severity="info" sx={{ mt: 3, mb: 1 }}>
+                    <Typography variant="body2">
+                      • This will only remove this specific sales person
+                    </Typography>
+                    <Typography variant="body2">
+                      • Other sales persons assigned to this member will not be affected
+                    </Typography>
+                    <Typography variant="body2">
+                      • You can assign this sales person again later if needed
+                    </Typography>
+                  </Alert>
+                </>
+              )}
             </DialogContentText>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -1312,7 +1419,7 @@ const AssignSuppliers = () => {
                 fontWeight: 600
               }}
             >
-              Remove Supplier
+              Remove Sales Person
             </Button>
           </DialogActions>
         </Dialog>

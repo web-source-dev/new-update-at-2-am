@@ -280,8 +280,12 @@ const ManageDeals = () => {
       // Get price info considering new sizes structure
       const priceInfo = deal.sizes && deal.sizes.length > 0 
         ? {
-            'Original Cost': `${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}`,
-            'Discount Price': `${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}`
+            'Original Cost': deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.originalCost)) === Math.max(...deal.sizes.map(s => s.originalCost))
+              ? `${Math.min(...deal.sizes.map(s => s.originalCost))}` 
+              : `${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}`,
+            'Discount Price': deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.discountPrice)) === Math.max(...deal.sizes.map(s => s.discountPrice))
+              ? `${Math.min(...deal.sizes.map(s => s.discountPrice))}`
+              : `${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}`
           }
         : {
             'Original Cost': deal.avgOriginalCost?.toFixed(2) || deal.originalCost,
@@ -991,10 +995,14 @@ The new deal will be created with the following settings:
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
                                   <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'error.light', fontSize: '0.75rem', mr: 0.5 }}>
-                                    ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                                    {deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.originalCost)) === Math.max(...deal.sizes.map(s => s.originalCost))
+                                      ? `$${Math.min(...deal.sizes.map(s => s.originalCost))}`
+                                      : `$${Math.min(...deal.sizes.map(s => s.originalCost))} - $${Math.max(...deal.sizes.map(s => s.originalCost))}`}
                                   </Typography>
                                   <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold', fontSize: '0.95rem' }}>
-                                    ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                                    {deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.discountPrice)) === Math.max(...deal.sizes.map(s => s.discountPrice))
+                                      ? `$${Math.min(...deal.sizes.map(s => s.discountPrice))}`
+                                      : `$${Math.min(...deal.sizes.map(s => s.discountPrice))} - $${Math.max(...deal.sizes.map(s => s.discountPrice))}`}
                                   </Typography>
                                 </Box>
                               </Box>
@@ -1390,10 +1398,14 @@ The new deal will be created with the following settings:
                             <Typography variant="body2" color="text.secondary">
                               Price Range: 
                               <span style={{ textDecoration: 'line-through', color: '#f44336', marginLeft: '4px' }}>
-                                ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                                {deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.originalCost)) === Math.max(...deal.sizes.map(s => s.originalCost))
+                                  ? `$${Math.min(...deal.sizes.map(s => s.originalCost))}`
+                                  : `$${Math.min(...deal.sizes.map(s => s.originalCost))} - $${Math.max(...deal.sizes.map(s => s.originalCost))}`}
                               </span> | 
                               <span style={{ color: 'green', fontWeight: 'bold', marginLeft: '4px' }}>
-                                ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                                {deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.discountPrice)) === Math.max(...deal.sizes.map(s => s.discountPrice))
+                                  ? `$${Math.min(...deal.sizes.map(s => s.discountPrice))}`
+                                  : `$${Math.min(...deal.sizes.map(s => s.discountPrice))} - $${Math.max(...deal.sizes.map(s => s.discountPrice))}`}
                               </span>
                             </Typography>
                           ) : (
@@ -1579,10 +1591,14 @@ The new deal will be created with the following settings:
                         {deal.sizes && deal.sizes.length > 0 ? (
                           <Box>
                             <Typography variant="body2" color="error.main" sx={{ textDecoration: 'line-through' }}>
-                              ${Math.min(...deal.sizes.map(s => s.originalCost))} - ${Math.max(...deal.sizes.map(s => s.originalCost))}
+                              {deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.originalCost)) === Math.max(...deal.sizes.map(s => s.originalCost))
+                                ? `$${Math.min(...deal.sizes.map(s => s.originalCost))}`
+                                : `$${Math.min(...deal.sizes.map(s => s.originalCost))} - $${Math.max(...deal.sizes.map(s => s.originalCost))}`}
                             </Typography>
                             <Typography variant="body2" color="success.main" sx={{ fontWeight: 'bold' }}>
-                              ${Math.min(...deal.sizes.map(s => s.discountPrice))} - ${Math.max(...deal.sizes.map(s => s.discountPrice))}
+                              {deal.sizes.length === 1 || Math.min(...deal.sizes.map(s => s.discountPrice)) === Math.max(...deal.sizes.map(s => s.discountPrice))
+                                ? `$${Math.min(...deal.sizes.map(s => s.discountPrice))}`
+                                : `$${Math.min(...deal.sizes.map(s => s.discountPrice))} - $${Math.max(...deal.sizes.map(s => s.discountPrice))}`}
                             </Typography>
                           </Box>
                         ) : (
