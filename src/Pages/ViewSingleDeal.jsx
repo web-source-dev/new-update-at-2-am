@@ -168,7 +168,9 @@ const ViewSingleDeal = () => {
           setTimeout(() => navigate(-1), 3000);
           return;
         }
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch-single/deal/${dealId}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch-single/deal/${dealId}`, {
+          params: { userId: user_id }
+        });
         setDeal(response.data);
         console.log(response.data);
         
@@ -1225,6 +1227,70 @@ const ViewSingleDeal = () => {
                   </Grid>
                 )}
               </Grid>
+
+              {/* Supplier Information Section */}
+              {deal?.supplierInfo && deal.supplierInfo.length > 0 && (
+                <>
+                  <Divider sx={{ my: 3 }} />
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    {deal.supplierInfo.length > 1 ? 'Your Assigned Suppliers' : 'Your Assigned Supplier'}
+                  </Typography>
+                  
+                  {/* Add count indicator for multiple suppliers */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="subtitle1" color="text.secondary">
+                      {deal.supplierInfo.length > 1 
+                        ? `This distributor has assigned ${deal.supplierInfo.length} suppliers for you` 
+                        : 'This distributor has assigned a supplier for you'}
+                    </Typography>
+                    {deal.supplierInfo.length > 1 && (
+                      <Chip 
+                        label={deal.supplierInfo.length}
+                        color="secondary"
+                        size="small"
+                        sx={{ ml: 1, fontWeight: 'bold' }}
+                      />
+                    )}
+                  </Box>
+                  
+                  {deal.supplierInfo.map((supplier, index) => (
+                    <Box key={supplier._id || index} sx={{ mb: index < deal.supplierInfo.length - 1 ? 2 : 0 }}>
+                      {index > 0 && <Divider sx={{ my: 2 }} />}
+                      
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Store color="secondary" fontSize="small" />
+                            <Box>
+                              <Typography variant="body2" color="text.secondary">
+                                Supplier Name
+                              </Typography>
+                              <Typography variant="body1" fontWeight="medium">
+                                {supplier.name}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
+                        {supplier.email && (
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Email color="secondary" fontSize="small" />
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  Supplier Email
+                                </Typography>
+                                <Typography variant="body1">
+                                  {supplier.email}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Box>
+                  ))}
+                </>
+              )}
             </Paper>
 
             {/* Action Buttons */}

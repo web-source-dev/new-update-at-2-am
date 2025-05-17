@@ -52,15 +52,22 @@ import {
   HandshakeOutlined,
   People,
   CompareArrows,
+  ContactSupport,
 } from "@mui/icons-material";
 import Links from "../Components/Buttons/Links";
 
-const Sidebar = ({ match, links }) => {
+const Sidebar = ({ match, links, userRole = "admin" }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
   const [openPopupMenu, setOpenPopupMenu] = useState(null);
+
+  // Check if user is distributor or member (not admin)
+
+  const role = localStorage.getItem("user_role")
+
+  const showContactButton = role === "distributor" || role === "member";
 
   const toggleSidebar = () => setIsOpen((prev) => !prev);
   const toggleMobileSidebar = () => setIsMobileOpen((prev) => !prev);
@@ -146,6 +153,8 @@ const Sidebar = ({ match, links }) => {
         return <People />;
       case "Compare Supply":
         return <CompareArrows />;
+      case "Contact":
+        return <ContactSupport />;
       default:
         return <Description />;
     }
@@ -274,6 +283,18 @@ const Sidebar = ({ match, links }) => {
               </Tooltip>
             )
           ))}
+          
+          {/* Contact button - only visible for distributor and member roles */}
+          {showContactButton && (
+            <Tooltip title="Contact" placement="right" disableHoverListener={isOpen}>
+              <ListItem button>
+                <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
+                  <ContactSupport />
+                </ListItemIcon>
+                {isOpen && <ListItemText primary={<Links link={`${match.pathnameBase}/contact`} linkText="Contact" size="0.97em" />} />}
+              </ListItem>
+            </Tooltip>
+          )}
         </List>
       </Drawer>
 
@@ -312,6 +333,14 @@ const Sidebar = ({ match, links }) => {
               </ListItem>
             )
           ))}
+
+          {/* Contact button for mobile - only visible for distributor and member roles */}
+          {showContactButton && (
+            <ListItem button onClick={toggleMobileSidebar}>
+              <ListItemIcon><ContactSupport /></ListItemIcon>
+              <ListItemText primary={<Links link={`${match.pathnameBase}/contact`} linkText="Contact" />} />
+            </ListItem>
+          )}
         </List>
       </Drawer>
     </>

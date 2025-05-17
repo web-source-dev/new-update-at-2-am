@@ -19,6 +19,8 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import AllDealsAdmin from './AdminPages/AllDealsAdmin';
 import AdminContactDisplay from './AdminPages/AdminContactDisplay';
+import MembersnotCommiting from './AdminPages/MembersnotCommiting';
+
 const AdminDashboard = () => {
   let match = useMatch('/dashboard/admin/*');
   const navigate = useNavigate();
@@ -48,12 +50,12 @@ const AdminDashboard = () => {
     { path: 'analytics', label: 'Analytics' },
     { path: 'usermanagement', label: 'User Manage' },
     { path: 'all-deals', label: 'All Committed Deals' },
+    { path: 'inactive-members', label: 'Inactive Members' },
     { path: 'logs', label: 'User Monitoring' },
     { path: 'splash-content', label: 'Splash Content' },
     { path: 'deal-management', label: 'Deal Management' },
     { path: 'announcements', label: 'Announcements' },
     { path: 'request/contact/manage', label: 'Contacts' },
-    
   ];
 
   return (
@@ -84,6 +86,10 @@ const AdminDashboard = () => {
             <Route path="usermanagement" element={<>
               <AnnouncementToast event="user_management" />
               <UserManagment />
+            </>} />
+            <Route path="inactive-members" element={<>
+              <AnnouncementToast event="inactive_members" />
+              <MembersnotCommiting />
             </>} />
             <Route path="logs" element={<>
               <AnnouncementToast event="logs" />

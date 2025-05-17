@@ -316,14 +316,22 @@ const ContactUs = () => {
                   sx={{ mb: 2 }}
                 >
                   <CardContent>
-                    <Box sx={{ color: '#1a237e', mb: 2, display: 'flex', alignItems: 'center',gap:2  }}>
+                    <Box sx={{ color: '#1a237e', mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                       {info.icon}                      
-                    <Typography variant="h6" gutterBottom>
-                      {info.title}
-                    </Typography>
+                      <Typography variant="h6" gutterBottom>
+                        {info.title}
+                      </Typography>
                     </Box>
                     <Typography variant="body1" sx={{ mb: 1 }}>
-                      {info.content}
+                      {info.title === 'Email Us' ? (
+                        <a href={`mailto:${info.content}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          {info.content}
+                        </a>
+                      ) : (
+                        <a href={`tel:${info.content}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          {info.content}
+                        </a>
+                      )}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {info.description}

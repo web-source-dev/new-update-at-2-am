@@ -16,12 +16,13 @@ import { Helmet } from 'react-helmet';
 import DetailedAnalytics from './memberPages/DetailedAnalytics';
 import { Button } from '@mui/material';
 import SplashAgain from '../Components/SplashAgain';
-
+import AddMembers from './memberPages/AddMembers';
 const MemberDashboard = () => {
   let match = useMatch('/dashboard/co-op-member/*');
   const userId = localStorage.getItem('user_id');
   const navigate = useNavigate();
   const [splashContent, setSplashContent] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
@@ -29,6 +30,11 @@ const MemberDashboard = () => {
       navigate('/login');
     }
   }, [navigate]);
+  
+  const userData = async () => {
+    const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/v2/profile/${userId}`);
+      setUser(response.data);
+  }
 
   useEffect(() => {
     const fetchSplashContent = async () => {
@@ -40,17 +46,20 @@ const MemberDashboard = () => {
       console.log('Splash content length:', response.data.length);
       setSplashContent(response.data);
     };
-
+    userData();
     fetchSplashContent();
   }, []);
 
   const links = [
     { path: 'overview', label: 'Overview' },
     { path: 'commitments', label: 'My Commitments' },
-    { path: 'analytics', label: 'Analytics' },
     { path: `profile/${userId}`, label: 'Profile' },
-    { path: 'detailed-analytics', label: 'Detailed Analytics' },
-  ];
+];
+if (!user?.addedBy) {
+ links.push({ path: 'analytics', label: 'Analytics' });
+   links.push({ path: 'add-members', label: 'Add Members' });
+ links.push({ path: 'detailed-analytics', label: 'Detailed Analytics' });
+    }
 
   return (
     <>
@@ -138,9 +147,16 @@ Advertisements
             </>} />
             <Route path="offers/view/splash-content" element={<>
               <SplashAgain />
+
             </>} />
             <Route path="settings" element={<MemberSettings userId={userId} />} />
             <Route path="detailed-analytics" element={<DetailedAnalytics userId={userId} />} />
+            <Route path="add-members" element={
+              <>
+              <AnnouncementToast event="add-members" />
+              {!user?.addedBy && <AddMembers />}
+              </>
+              } />
           </Routes>
         </div>
       </div>
