@@ -50,7 +50,7 @@ const AdminDashboard = () => {
     { path: 'analytics', label: 'Analytics' },
     { path: 'usermanagement', label: 'User Manage' },
     { path: 'all-deals', label: 'All Committed Deals' },
-    { path: 'inactive-members', label: 'Inactive Members' },
+    { path: 'inactive-members', label: 'Members Tracking' },
     { path: 'logs', label: 'User Monitoring' },
     { path: 'splash-content', label: 'Splash Content' },
     { path: 'deal-management', label: 'Deal Management' },
