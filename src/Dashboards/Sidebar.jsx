@@ -184,118 +184,123 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
           },
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: isOpen ? "space-between" : "center",
-            padding: "10px 15px",
-          }}
-        >
-          {isOpen && <Typography variant="h6">Dashboard</Typography>}
-          <IconButton onClick={toggleSidebar}>{isOpen ? <ChevronLeft /> : <Menu />}</IconButton>
-        </div>
-        <Divider />
-        <List>
-          {links.map((link, index) => (
-            link.title ? (
-              <div key={index}>
-                <Tooltip key={index} title={link.title} placement="right" disableHoverListener={isOpen}>
-                <ListItem 
-                  button 
-                  onClick={(e) => handlePopupMenu(e, link.title)}
-                >
-                  <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>{<LocalOffer />}</ListItemIcon>
-                  {isOpen && <ListItemText primary={link.title} />}
-                  {isOpen && (
-                    (openSubmenus[link.title] ? <ExpandLess /> : <ExpandMore />)
-                  )}
-                </ListItem>
-                  </Tooltip>
-
-                {isOpen ? (
-                  <Collapse in={openSubmenus[link.title]} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                      {link.subLinks.map((subLink, subIndex) => (
-                        <Tooltip key={subIndex} title={subLink.label} placement="right" disableHoverListener={isOpen}>
-                          <ListItem button sx={{ pl: 4 }}>
-                            <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
-                              {getIcon(subLink.label)}
-                            </ListItemIcon>
-                            {isOpen && <ListItemText primary={<Links link={`${match.pathnameBase}/${subLink.path}`} linkText={subLink.label} size="0.97em" />} />}
-                          </ListItem>
-                        </Tooltip>
-                      ))}
-                    </List>
-                  </Collapse>
-                ) : (
-                  <Popper
-                    open={openPopupMenu === link.title}
-                    anchorEl={anchorEl}
-                    placement="right-start"
-                    style={{ zIndex: 1400 }}
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: isOpen ? "space-between" : "center",
+              padding: "10px 15px",
+            }}
+          >
+            {isOpen && <Typography variant="h6">Dashboard</Typography>}
+            <IconButton onClick={toggleSidebar}>{isOpen ? <ChevronLeft /> : <Menu />}</IconButton>
+          </div>
+          <Divider />
+          <List>
+            {links.map((link, index) => (
+              link.title ? (
+                <div key={index}>
+                  <Tooltip key={index} title={link.title} placement="right" disableHoverListener={isOpen}>
+                  <ListItem 
+                    button 
+                    onClick={(e) => handlePopupMenu(e, link.title)}
                   >
-                    <ClickAwayListener onClickAway={handleClosePopup}>
-                      <Paper sx={{ p: 1, bgcolor: 'background.paper' }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 1,
-                            minWidth: 180,
-                          }}
-                        >
+                    <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>{<LocalOffer />}</ListItemIcon>
+                    {isOpen && <ListItemText primary={link.title} />}
+                    {isOpen && (
+                      (openSubmenus[link.title] ? <ExpandLess /> : <ExpandMore />)
+                    )}
+                  </ListItem>
+                    </Tooltip>
+
+                    {isOpen ? (
+                      <Collapse in={openSubmenus[link.title]} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
                           {link.subLinks.map((subLink, subIndex) => (
-                            <ListItem 
-                              button 
-                              key={subIndex}
-                              onClick={handleClosePopup}
-                              dense
-                            >
-                              <ListItemIcon sx={{ minWidth: 40 }}>
-                                {getIcon(subLink.label)}
-                              </ListItemIcon>
-                              <ListItemText 
-                                primary={
-                                  <Links 
-                                    link={`${match.pathnameBase}/${subLink.path}`} 
-                                    linkText={subLink.label} 
-                                    size="0.97em" 
-                                  />
-                                } 
-                              />
-                            </ListItem>
+                            <Tooltip key={subIndex} title={subLink.label} placement="right" disableHoverListener={isOpen}>
+                              <ListItem button sx={{ pl: 4 }}>
+                                <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
+                                  {getIcon(subLink.label)}
+                                </ListItemIcon>
+                                {isOpen && <ListItemText primary={<Links link={`${match.pathnameBase}/${subLink.path}`} linkText={subLink.label} size="0.97em" />} />}
+                              </ListItem>
+                            </Tooltip>
                           ))}
-                        </Box>
-                      </Paper>
-                    </ClickAwayListener>
-                  </Popper>
-                )}
-              </div>
-            ) : (
-              <Tooltip key={index} title={link.label} placement="right" disableHoverListener={isOpen}>
+                        </List>
+                      </Collapse>
+                    ) : (
+                      <Popper
+                        open={openPopupMenu === link.title}
+                        anchorEl={anchorEl}
+                        placement="right-start"
+                        style={{ zIndex: 1400 }}
+                      >
+                        <ClickAwayListener onClickAway={handleClosePopup}>
+                          <Paper sx={{ p: 1, bgcolor: 'background.paper' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 1,
+                                minWidth: 180,
+                              }}
+                            >
+                              {link.subLinks.map((subLink, subIndex) => (
+                                <ListItem 
+                                  button 
+                                  key={subIndex}
+                                  onClick={handleClosePopup}
+                                  dense
+                                >
+                                  <ListItemIcon sx={{ minWidth: 40 }}>
+                                    {getIcon(subLink.label)}
+                                  </ListItemIcon>
+                                  <ListItemText 
+                                    primary={
+                                      <Links 
+                                        link={`${match.pathnameBase}/${subLink.path}`} 
+                                        linkText={subLink.label} 
+                                        size="0.97em" 
+                                      />
+                                    } 
+                                  />
+                                </ListItem>
+                              ))}
+                            </Box>
+                          </Paper>
+                        </ClickAwayListener>
+                      </Popper>
+                    )}
+                </div>
+              ) : (
+                <Tooltip key={index} title={link.label} placement="right" disableHoverListener={isOpen}>
+                  <ListItem button>
+                    <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
+                      {getIcon(link.label)}
+                    </ListItemIcon>
+                    {isOpen && <ListItemText primary={<Links link={`${match.pathnameBase}/${link.path}`} linkText={link.label} size="0.97em" />} />}
+                  </ListItem>
+                </Tooltip>
+              )
+            ))}
+          </List>
+          
+          {/* Contact button - only visible for distributor and member roles and positioned at bottom */}
+          {showContactButton && (
+            <List sx={{ marginTop: 'auto' }}>
+              <Divider />
+              <Tooltip title="Contact" placement="right" disableHoverListener={isOpen}>
                 <ListItem button>
                   <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
-                    {getIcon(link.label)}
+                    <ContactSupport />
                   </ListItemIcon>
-                  {isOpen && <ListItemText primary={<Links link={`${match.pathnameBase}/${link.path}`} linkText={link.label} size="0.97em" />} />}
+                  {isOpen && <ListItemText primary={<Links link={`/contact`} linkText="Contact" size="0.97em" />} />}
                 </ListItem>
               </Tooltip>
-            )
-          ))}
-          
-          {/* Contact button - only visible for distributor and member roles */}
-          {showContactButton && (
-            <Tooltip title="Contact" placement="right" disableHoverListener={isOpen}>
-              <ListItem button>
-                <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
-                  <ContactSupport />
-                </ListItemIcon>
-                {isOpen && <ListItemText primary={<Links link={`${match.pathnameBase}/contact`} linkText="Contact" size="0.97em" />} />}
-              </ListItem>
-            </Tooltip>
+            </List>
           )}
-        </List>
+        </Box>
       </Drawer>
 
       {/* Sidebar for Mobile */}
@@ -306,42 +311,47 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
         sx={{ "& .MuiDrawer-paper": { width: 340, pt: "40px" } }}
         anchor="left"
       >
-        <List>
-          {links.map((link, index) => (
-            link.title ? (
-              <div key={index}>
-                <ListItem button onClick={() => toggleSubmenu(link.title)}>
-                  <ListItemIcon>{getIcon(link.title)}</ListItemIcon>
-                  <ListItemText primary={link.title} />
-                  {openSubmenus[link.title] ? <ExpandLess /> : <ExpandMore />}
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <List>
+            {links.map((link, index) => (
+              link.title ? (
+                <div key={index}>
+                  <ListItem button onClick={() => toggleSubmenu(link.title)}>
+                    <ListItemIcon>{getIcon(link.title)}</ListItemIcon>
+                    <ListItemText primary={link.title} />
+                    {openSubmenus[link.title] ? <ExpandLess /> : <ExpandMore />}
+                  </ListItem>
+                  <Collapse in={openSubmenus[link.title]} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {link.subLinks.map((subLink, subIndex) => (
+                        <ListItem button key={subIndex} onClick={toggleMobileSidebar} sx={{ pl: 4 }}>
+                          <ListItemIcon>{getIcon(subLink.label)}</ListItemIcon>
+                          <ListItemText primary={<Links link={`${match.pathnameBase}/${subLink.path}`} linkText={subLink.label} />} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                </div>
+              ) : (
+                <ListItem button key={index} onClick={toggleMobileSidebar}>
+                  <ListItemIcon>{getIcon(link.label)}</ListItemIcon>
+                  <ListItemText primary={<Links link={`${match.pathnameBase}/${link.path}`} linkText={link.label} />} />
                 </ListItem>
-                <Collapse in={openSubmenus[link.title]} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {link.subLinks.map((subLink, subIndex) => (
-                      <ListItem button key={subIndex} onClick={toggleMobileSidebar} sx={{ pl: 4 }}>
-                        <ListItemIcon>{getIcon(subLink.label)}</ListItemIcon>
-                        <ListItemText primary={<Links link={`${match.pathnameBase}/${subLink.path}`} linkText={subLink.label} />} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Collapse>
-              </div>
-            ) : (
-              <ListItem button key={index} onClick={toggleMobileSidebar}>
-                <ListItemIcon>{getIcon(link.label)}</ListItemIcon>
-                <ListItemText primary={<Links link={`${match.pathnameBase}/${link.path}`} linkText={link.label} />} />
-              </ListItem>
-            )
-          ))}
+              )
+            ))}
+          </List>
 
-          {/* Contact button for mobile - only visible for distributor and member roles */}
+          {/* Contact button for mobile - only visible for distributor and member roles and positioned at bottom */}
           {showContactButton && (
-            <ListItem button onClick={toggleMobileSidebar}>
-              <ListItemIcon><ContactSupport /></ListItemIcon>
-              <ListItemText primary={<Links link={`${match.pathnameBase}/contact`} linkText="Contact" />} />
-            </ListItem>
+            <List sx={{ marginTop: 'auto' }}>
+              <Divider />
+              <ListItem button onClick={toggleMobileSidebar}>
+                <ListItemIcon><ContactSupport /></ListItemIcon>
+                <ListItemText primary={<Links link={`/contact`} linkText="Contact" />} />
+              </ListItem>
+            </List>
           )}
-        </List>
+        </Box>
       </Drawer>
     </>
   );
