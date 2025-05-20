@@ -52,7 +52,7 @@ import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
 
 // Get the API URL directly
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
 // Helper function to format currency
 const formatCurrency = (amount) => {
