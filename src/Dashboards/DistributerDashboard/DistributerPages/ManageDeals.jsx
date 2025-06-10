@@ -73,11 +73,17 @@ const ManageDeals = () => {
     const fetchDeals = async () => {
       try {
         setLoading(true);
+        
+        // Prepare params object
+        const params = { ...filter };
+        
+        // Only include month parameter if it has a value
+        if (params.month === "") {
+          delete params.month;
+        }
+        
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/deals/fetch/${userId}`, {
-          params: {
-            ...filter,
-            month: filter.month
-          }
+          params
         });
         console.log('API Response:', response.data);
         
@@ -443,18 +449,53 @@ The new deal will be created with the following settings:
   };
 
   const filteredDeals = deals.filter(deal => {
+    // Handle price filtering properly
+    let priceMatch = true;
+    if (filter.minPrice || filter.maxPrice) {
+      if (deal.sizes && deal.sizes.length > 0) {
+        // If deal has sizes array, find min price among all sizes
+        const minSizePrice = Math.min(...deal.sizes.map(s => s.discountPrice));
+        
+        if (filter.minPrice && minSizePrice < Number(filter.minPrice)) {
+          priceMatch = false;
+        }
+        
+        if (filter.maxPrice && minSizePrice > Number(filter.maxPrice)) {
+          priceMatch = false;
+        }
+      } else {
+        // For deals with traditional pricing structure
+        const price = deal.discountPrice || 0;
+        
+        if (filter.minPrice && price < Number(filter.minPrice)) {
+          priceMatch = false;
+        }
+        
+        if (filter.maxPrice && price > Number(filter.maxPrice)) {
+          priceMatch = false;
+        }
+      }
+    }
+    
     return (
       (filter.category ? deal.category === filter.category : true) &&
       (filter.status ? deal.status === filter.status : true) &&
-      (filter.minPrice ? deal.discountPrice >= filter.minPrice : true) &&
-      (filter.maxPrice ? deal.discountPrice <= filter.maxPrice : true) &&
+      priceMatch &&
       (filter.search ? deal.name.toLowerCase().includes(filter.search.toLowerCase()) : true)
     );
   }).sort((a, b) => {
+    // Get comparable prices for sorting
+    const getComparisonPrice = (deal) => {
+      if (deal.sizes && deal.sizes.length > 0) {
+        return Math.min(...deal.sizes.map(s => s.discountPrice));
+      }
+      return deal.discountPrice || 0;
+    };
+
     if (filter.sortBy === 'priceAsc') {
-      return a.discountPrice - b.discountPrice;
+      return getComparisonPrice(a) - getComparisonPrice(b);
     } else if (filter.sortBy === 'priceDesc') {
-      return b.discountPrice - a.discountPrice;
+      return getComparisonPrice(b) - getComparisonPrice(a);
     } else if (filter.sortBy === 'nameAsc') {
       return a.name.localeCompare(b.name);
     } else if (filter.sortBy === 'nameDesc') {
@@ -605,6 +646,7 @@ The new deal will be created with the following settings:
                         value={filter.minPrice}
                         onChange={handleFilterChange}
                         fullWidth
+                        inputProps={{ min: "0" }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -615,6 +657,7 @@ The new deal will be created with the following settings:
                         value={filter.maxPrice}
                         onChange={handleFilterChange}
                         fullWidth
+                        inputProps={{ min: "0" }}
                       />
                     </Grid>
 
@@ -1501,6 +1544,7 @@ The new deal will be created with the following settings:
                           {deal.status === 'active' ? 'Deactivate' : 'Activate'}
                         </MenuItem>
                       )}
+
                       {!deal.bulkAction && (
                         <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
                           <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete

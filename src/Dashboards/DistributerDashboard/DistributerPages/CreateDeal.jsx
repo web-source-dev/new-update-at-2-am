@@ -382,6 +382,7 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                 }}
                 value={originalCost}
                 onChange={(e) => setOriginalCost(e.target.value)}
+                inputProps={{ min: "0" }}
                 fullWidth
                 required
                 error={!!error && !originalCost}
@@ -398,6 +399,7 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                 }}
                 value={discountPrice}
                 onChange={(e) => setDiscountPrice(e.target.value)}
+                inputProps={{ min: "0" }}
                 fullWidth
                 required
                 error={!!error && (!discountPrice || Number(discountPrice) >= Number(originalCost))}
@@ -702,6 +704,7 @@ const SizeDiscountTierDialog = ({ open, onClose, onSave, initialTier, basePrice 
                   sx: { borderRadius: 2 },
                   endAdornment: <InputAdornment position="end">units</InputAdornment>,
                 }}
+                inputProps={{ min: "1" }}
                 error={!!error && (!tierQuantity || Number(tierQuantity) <= 0)}
                 helperText="Must be greater than 0 units"
               />
@@ -717,6 +720,7 @@ const SizeDiscountTierDialog = ({ open, onClose, onSave, initialTier, basePrice 
                 }}
                 value={tierDiscount}
                 onChange={(e) => setTierDiscount(e.target.value)}
+                inputProps={{ min: "0" }}
                 fullWidth
                 required
                 error={!!error && (!tierDiscount || Number(tierDiscount) <= 0 || Number(tierDiscount) >= basePrice)}
@@ -1316,6 +1320,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                         sx: { borderRadius: 2 },
                         endAdornment: <InputAdornment position="end">units</InputAdornment>,
                       }}
+                      inputProps={{ min: "1" }}
                       helperText="Minimum total quantity required for deal approval"
                     />
                   </Grid>
