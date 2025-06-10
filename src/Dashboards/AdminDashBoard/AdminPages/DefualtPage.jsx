@@ -160,12 +160,14 @@ const DefualtPage = () => {
           averageDiscount: dealStatsRes.data.averageDiscount || 0,
           performance: dealStatsRes.data.performance || {}
         },
-        weeklyMetrics: weeklyMetricsRes.data.map(metric => ({
-          week: metric.week,
-          revenue: metric.revenue || 0,
-          deals: metric.deals || 0,
-          users: metric.users || 0
-        })),
+        weeklyMetrics: weeklyMetricsRes.data && weeklyMetricsRes.data.length > 0 
+          ? weeklyMetricsRes.data.map(metric => ({
+              week: metric.week,
+              revenue: metric.revenue || 0,
+              deals: metric.deals || 0,
+              users: metric.users || 0
+            }))
+          : [], // Return empty array instead of defaultWeeklyMetrics
         recentDeals: recentDealsRes.data.map(deal => ({
           _id: deal._id,
           name: deal.name || 'Unnamed Deal',
@@ -347,19 +349,50 @@ const DefualtPage = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>Weekly Metrics</Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={weeklyMetrics}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="week" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
-                  <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#8884d8" name="Revenue" />
-                  <Line yAxisId="right" type="monotone" dataKey="deals" stroke="#82ca9d" name="Deals" />
-                  <Line yAxisId="right" type="monotone" dataKey="users" stroke="#ffc658" name="Users" />
-                </LineChart>
-              </ResponsiveContainer>
+              {dashboardData.weeklyMetrics && dashboardData.weeklyMetrics.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={dashboardData.weeklyMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip formatter={(value) => value.toLocaleString()} />
+                    <Legend />
+                    <Line 
+                      yAxisId="left" 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="#8884d8" 
+                      name="Revenue ($)" 
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Line 
+                      yAxisId="right" 
+                      type="monotone" 
+                      dataKey="deals" 
+                      stroke="#82ca9d" 
+                      name="Deals" 
+                      strokeWidth={2}
+                    />
+                    <Line 
+                      yAxisId="right" 
+                      type="monotone" 
+                      dataKey="users" 
+                      stroke="#ffc658" 
+                      name="Users" 
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box display="flex" justifyContent="center" alignItems="center" height={300}>
+                  <Typography variant="body1" color="text.secondary">
+                    No weekly metrics data available
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -379,13 +412,18 @@ const DefualtPage = () => {
                     fill="#8884d8"
                     paddingAngle={5}
                     dataKey="value"
+                    nameKey="name"
+                    label={({ name, percent }) => 
+                      dashboardData.categoryStats.length <= 5 ? 
+                      `${name} (${(percent * 100).toFixed(0)}%)` : ''
+                    }
                   >
                     {dashboardData.categoryStats.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip formatter={(value, name, props) => [value, props.payload.name]} />
+                  {dashboardData.categoryStats.length <= 5 ? <Legend /> : null}
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
