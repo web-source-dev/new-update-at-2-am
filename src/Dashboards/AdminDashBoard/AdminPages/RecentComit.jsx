@@ -132,7 +132,25 @@ const RecentComit = () => {
                     <TableCell>
                       {commitment.userId?.businessName || commitment.userId?.name}
                     </TableCell>
-                    <TableCell>{commitment.quantity}</TableCell>
+                    <TableCell>
+                      {commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            Total: {commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {commitment.sizeCommitments.slice(0, 2).map((sc, idx) => (
+                              <span key={idx}>
+                                {sc.size}: {sc.quantity}{idx < Math.min(commitment.sizeCommitments.length - 1, 1) ? ', ' : ''}
+                              </span>
+                            ))}
+                            {commitment.sizeCommitments.length > 2 && ` +${commitment.sizeCommitments.length - 2} more`}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        commitment.quantity
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Chip 
                         label={commitment.status} 

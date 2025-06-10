@@ -46,37 +46,87 @@ const SingleCommitment = ({ commitment, onStatusUpdate, loading }) => {
     };
     
     return (
-        <Card sx={{ mb: 2 }}>
+        <Card>
             <CardContent>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="h6">
-                            {commitment.dealId.name}
+                    <Grid item xs={12} sm={8}>
+                        <Typography variant="h6" gutterBottom>
+                            {commitment.dealId?.name}
                         </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                         <Chip
                             label={commitment.status.toUpperCase()}
                             color={getStatusColor(commitment.status)}
                             size="small"
-                            sx={{ mt: 1 }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" color="textSecondary">
-                            Quantity: {commitment.modifiedQuantity || commitment.quantity}
+                            />
+                            {commitment.sizeCommitments && commitment.sizeCommitments.some(sc => sc.appliedDiscountTier) ? (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                    {commitment.sizeCommitments
+                                        .filter(sc => sc.appliedDiscountTier)
+                                        .map((sc, idx) => (
+                                            <Chip 
+                                                key={idx}
+                                                label={`${sc.size}: $${sc.appliedDiscountTier.tierDiscount}`} 
+                                                color="success" 
+                                                size="small"
+                                                variant="outlined"
+                                            />
+                                        ))}
+                                </Box>
+                            ) : commitment.appliedDiscountTier && (
+                                <Chip 
+                                    label={`${commitment.appliedDiscountTier.tierDiscount}% off`} 
+                                    color="success" 
+                                    size="small"
+                                    variant="outlined"
+                                />
+                            )}
+                        </Box>
+                        
+                        <Typography variant="body2" gutterBottom>
+                            <strong>Distributor:</strong> {commitment.dealId?.distributor?.name || 'N/A'}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                            Total Price: ${commitment.modifiedTotalPrice || commitment.totalPrice}
+                        
+                        <Typography variant="body2" gutterBottom>
+                            <strong>Quantity:</strong> {
+                                commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
+                                    <span>
+                                        {commitment.sizeCommitments.reduce((sum, sc) => sum + sc.quantity, 0)}
+                                        <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                            ({commitment.sizeCommitments.map(sc => `${sc.size}: ${sc.quantity}`).join(', ')})
+                                        </Typography>
+                                    </span>
+                                ) : commitment.modifiedQuantity ? (
+                                    <span>
+                                        <s>{commitment.quantity}</s> → {commitment.modifiedQuantity}
+                                    </span>
+                                ) : (
+                                    commitment.quantity
+                                )
+                            }
+                        </Typography>
+                        
+                        <Typography variant="body2">
+                            <strong>Total Price:</strong> {
+                                commitment.modifiedTotalPrice ? (
+                                    <span>
+                                        <s>${commitment.totalPrice}</s> → ${commitment.modifiedTotalPrice}
+                                    </span>
+                                ) : (
+                                    `$${commitment.totalPrice}`
+                                )
+                            }
                         </Typography>
                     </Grid>
-                </Grid>
-
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <Grid item xs={12} sm={4}>
+                        <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {commitment.status === 'pending' && (
                         <Button
                             variant="contained"
                             color="primary"
                             startIcon={<Edit />}
                             onClick={() => onStatusUpdate(commitment)}
+                                    fullWidth
                         >
                             Review
                         </Button>
@@ -86,10 +136,13 @@ const SingleCommitment = ({ commitment, onStatusUpdate, loading }) => {
                         startIcon={<Visibility />}
                         onClick={() => navigate(`/commitment-details/${commitment._id}`)}
                         color="info"
+                                fullWidth
                     >
                         View Details
                     </Button>
                 </Box>
+                    </Grid>
+                </Grid>
             </CardContent>
         </Card>
     );

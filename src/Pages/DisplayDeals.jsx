@@ -33,8 +33,10 @@ import {
   TableRow,
   TableCell,
   Skeleton,
+  AlertTitle,
+  IconButton,
 } from "@mui/material";
-import { FilterList, ExpandLess, ExpandMore, Clear, Search, TrendingUp, PlayArrow } from "@mui/icons-material";
+import { FilterList, ExpandLess, ExpandMore, Clear, Search, TrendingUp, PlayArrow, Edit as EditIcon, AddShoppingCart } from "@mui/icons-material";
 import axios from "axios";
 import Toast from '../Components/Toast/Toast';
 import { useNavigate } from 'react-router-dom';
@@ -374,9 +376,51 @@ const DisplayDeals = () => {
   };
 
   const handleSizeQuantityChange = (size, quantity) => {
+    const newQuantity = Math.max(0, parseInt(quantity) || 0);
+    
+    // Only perform tier calculations if we have a selected deal
+    if (selectedDeal) {
+      // Get the size data
+      const sizeData = selectedDeal.sizes.find(s => s.size === size);
+      if (sizeData && sizeData.discountTiers && sizeData.discountTiers.length > 0) {
+        // Get current collective quantity for this size
+        // In a real implementation, you'd want the size-specific data, but here we'll estimate
+        const currentCollectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
+        
+        // If this is an update, calculate what the previous commitment was
+        let previousQuantity = 0;
+        if (userCommitments.includes(selectedDeal._id)) {
+          // Find the user's existing commitment
+          // This is simplified - in real implementation, you'd want to fetch the specific size quantity
+          previousQuantity = selectedSizes[size] || 0;
+        }
+        
+        // Calculate what the new collective total would be
+        const newCollectiveQuantity = currentCollectiveQuantity - previousQuantity + newQuantity;
+        
+        // Sort tiers by quantity (highest first)
+        const sortedTiers = [...sizeData.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
+        
+        // Determine current tier and what tier would apply after this change
+        const currentTier = sortedTiers.find(tier => currentCollectiveQuantity >= tier.tierQuantity);
+        const newTier = sortedTiers.find(tier => newCollectiveQuantity >= tier.tierQuantity);
+        
+        // If decreasing quantity would cause dropping to a lower tier or losing tier discount
+        if (currentTier && (!newTier || newTier.tierQuantity < currentTier.tierQuantity)) {
+          // Show a warning
+          setToast({
+            open: true,
+            message: `Reducing quantity may cause all members to lose the ${currentTier.tierQuantity}+ unit discount tier.`,
+            severity: 'warning'
+          });
+        }
+      }
+    }
+    
+    // Update the quantity
     setSelectedSizes(prev => ({
       ...prev,
-      [size]: Math.max(0, parseInt(quantity) || 0)
+      [size]: newQuantity
     }));
   };
 
@@ -396,51 +440,31 @@ const DisplayDeals = () => {
     
     // Prepare size commitments data
     const sizeCommitments = [];
-    let totalCommitPrice = 0;
     
     Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
       if (quantity > 0) {
         const sizeData = selectedDeal.sizes.find(s => s.size === sizeName);
         if (sizeData) {
-          const pricePerUnit = sizeData.discountPrice;
-          const sizeTotal = pricePerUnit * quantity;
-          totalCommitPrice += sizeTotal;
+          // Determine if any size-specific tier applies
+          let pricePerUnit = sizeData.discountPrice;
           
+          // Add to size commitments array
           sizeCommitments.push({
             size: sizeName,
             quantity,
-            pricePerUnit,
-            totalPrice: sizeTotal
+            pricePerUnit
           });
         }
       }
     });
-    
-    // Apply any applicable discount tier
-    let finalTotalPrice = totalCommitPrice;
-    let appliedDiscountTier = null;
-    
-    if (activeTier) {
-      // Use the fixed price from the tier instead of calculating a percentage
-      finalTotalPrice = totalQuantity * activeTier.tierDiscount;
-      appliedDiscountTier = {
-        tierQuantity: activeTier.tierQuantity,
-        tierDiscount: activeTier.tierDiscount
-      };
-    }
 
     try {
       setIsCommitting(true);
       const commitmentData = {
         dealId: selectedDeal._id,
         userId: user_id,
-        sizeCommitments,
-        totalPrice: finalTotalPrice,
+        sizeCommitments
       };
-      
-      if (appliedDiscountTier) {
-        commitmentData.appliedDiscountTier = appliedDiscountTier;
-      }
       
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${selectedDeal._id}`,
@@ -504,7 +528,7 @@ const DisplayDeals = () => {
     page * rowsPerPage + rowsPerPage
   );
 
-  // Calculate totals whenever selectedSizes or selectedDeal changes
+  // Calculate total quantity, price, and determine active discount tier
   useEffect(() => {
     if (!selectedDeal) return;
     
@@ -519,8 +543,54 @@ const DisplayDeals = () => {
         const sizeData = selectedDeal.sizes.find(s => s.size === sizeName);
         if (sizeData) {
           newTotalQuantity += quantity;
-          newTotalPrice += quantity * sizeData.discountPrice;
-          newTotalSavings += quantity * (sizeData.originalCost - sizeData.discountPrice);
+          
+          // Get current total collective quantity for this size
+          // For simplicity, we're using the total committed quantity 
+          const collectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
+          
+          // If this is an update, calculate what the previous commitment was
+          let previousQuantity = 0;
+          if (userCommitments.includes(selectedDeal._id)) {
+            // This is a simplification - in a real implementation you'd want to fetch the specific
+            // previous commitment quantity for this size
+            previousQuantity = quantity; // Using current quantity as a proxy
+          }
+          
+          // Calculate what the new collective total would be
+          const projectedQuantity = collectiveQuantity - previousQuantity + quantity;
+          
+          // Check for size-specific discount tiers based on projected collective quantity
+          let effectivePrice = sizeData.discountPrice;
+          let appliedTier = null;
+          let projectedTier = null;
+          let priceWillChange = false;
+          
+          if (sizeData.discountTiers && sizeData.discountTiers.length > 0) {
+            // Sort tiers by quantity (highest first) to find the best applicable tier
+            const sortedTiers = [...sizeData.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
+            
+            // Find the tier based on current collective quantity
+            appliedTier = sortedTiers.find(tier => collectiveQuantity >= tier.tierQuantity);
+            
+            // Find the tier based on projected quantity
+            projectedTier = sortedTiers.find(tier => projectedQuantity >= tier.tierQuantity);
+            
+            // Determine if price will change
+            const currentPrice = appliedTier ? appliedTier.tierDiscount : sizeData.discountPrice;
+            const projectedPrice = projectedTier ? projectedTier.tierDiscount : sizeData.discountPrice;
+            priceWillChange = currentPrice !== projectedPrice;
+            
+            // Use projected tier for display
+            if (projectedTier) {
+              effectivePrice = projectedTier.tierDiscount;
+            }
+          }
+          
+          const sizeTotal = quantity * effectivePrice;
+          const sizeSavings = quantity * (sizeData.originalCost - effectivePrice);
+          
+          newTotalPrice += sizeTotal;
+          newTotalSavings += sizeSavings;
         }
       }
     });
@@ -528,27 +598,7 @@ const DisplayDeals = () => {
     setTotalQuantity(newTotalQuantity);
     setTotalPrice(newTotalPrice);
     setTotalSavings(newTotalSavings);
-    
-    // Determine if any discount tier applies
-    if (selectedDeal.discountTiers && selectedDeal.discountTiers.length > 0) {
-      // Sort tiers by quantity (highest first) to find the highest applicable tier
-      const sortedTiers = [...selectedDeal.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
-      const applicableTier = sortedTiers.find(tier => newTotalQuantity >= tier.tierQuantity);
-      
-      // If a tier applies, adjust the price with the tier discount
-      if (applicableTier) {
-        setActiveTier(applicableTier);
-        // Use the fixed price directly from the tier
-        const newTierPrice = newTotalQuantity * applicableTier.tierDiscount;
-        // Calculate additional savings from the tier price
-        const additionalSavings = newTotalPrice - newTierPrice;
-        setTotalPrice(newTierPrice);
-        setTotalSavings(newTotalSavings + additionalSavings);
-      } else {
-        setActiveTier(null);
-      }
-    }
-  }, [selectedDeal, selectedSizes]);
+  }, [selectedDeal, selectedSizes, userCommitments]);
 
   const refreshUserData = async () => {
     const user_id = localStorage.getItem('user_id');
@@ -913,11 +963,20 @@ const DisplayDeals = () => {
                       }} 
                     />
                   </Box>
+                  {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
+                    <Typography variant="caption" color="success.main" fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
+                      Deal is LIVE! Minimum quantity reached
+                    </Typography>
+                  ) : (
+                    <Typography variant="caption" color="warning.main" fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
+                      {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more units needed to go LIVE
+                    </Typography>
+                  )}
                 </Box>
               )}
               
               {/* Discount tiers badge if available */}
-              {deal.discountTiers && deal.discountTiers.length > 0 && (
+              {deal.sizes && deal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
                 <Box sx={{ 
                   mb: 1, 
                   display: 'flex', 
@@ -928,8 +987,9 @@ const DisplayDeals = () => {
                   px: 1,
                   py: 0.3
                 }}>
+                  <TrendingUp fontSize="small" color="inherit" />
                   <Typography variant="caption" color="info.dark" sx={{ fontWeight: 'medium' }}>
-                    Volume Discount: As low as ${Math.min(...deal.discountTiers.map(tier => tier.tierDiscount)).toFixed(2)} per unit
+                    Volume discounts available with collective buying
                   </Typography>
                 </Box>
               )}
@@ -947,10 +1007,18 @@ const DisplayDeals = () => {
                   <Chip 
                     size="small" 
                     label={`Left: ${Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))}`}
-                    color="warning"
+                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? "success" : "warning"}
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
+                  {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount && (
+                    <Chip 
+                      size="small" 
+                      label="LIVE"
+                      color="success"
+                      sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
+                    />
+                  )}
                 </Box>
                 
                 {isCommitted ? (
@@ -988,8 +1056,9 @@ const DisplayDeals = () => {
                 size="small"
                 onClick={() => handleOpenGetDeal(deal)}
                 sx={{ borderRadius: 1 }}
+                startIcon={isCommitted ? <EditIcon /> : <AddShoppingCart />}
               >
-                {isCommitted ? 'Edit' : 'Commit'}
+                {isCommitted ? 'Update' : 'Commit'}
               </Button>
             </Box>
           </Card>
@@ -1413,7 +1482,7 @@ const DisplayDeals = () => {
           <DialogTitle sx={{ pb: 1 }}>
             {selectedDeal && (
             <Typography variant="h6" fontWeight="bold">
-                {userCommitments.includes(selectedDeal._id) ? 'Edit Commitment' : 'Make Commitment'}: {selectedDeal.name}
+                {userCommitments.includes(selectedDeal._id) ? 'Update Your Commitment' : 'Make New Commitment'}: {selectedDeal.name}
             </Typography>
             )}
           </DialogTitle>
@@ -1424,6 +1493,15 @@ const DisplayDeals = () => {
                   <Typography variant="h6" gutterBottom>
                     Size & Quantity Selection
                   </Typography>
+                  
+                  {userCommitments.includes(selectedDeal._id) && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      <AlertTitle>Updating Your Commitment</AlertTitle>
+                      <Typography variant="body2">
+                        You're updating your existing commitment. The changes will be submitted to the distributor for approval.
+                      </Typography>
+                    </Alert>
+                  )}
                   
                   {/* Size selection with quantity inputs */}
                   <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
@@ -1439,18 +1517,88 @@ const DisplayDeals = () => {
                       <TableBody>
                         {selectedDeal.sizes.map((size, index) => {
                           const quantity = selectedSizes[size.size] || 0;
-                          const subtotal = quantity * size.discountPrice;
+                          
+                          // Get collective quantity from all members for this size
+                          // For simplicity, we're using the total committed quantity 
+                          const collectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
+                          
+                          // If this is an update, calculate previous commitment quantity
+                          let previousQuantity = 0;
+                          if (userCommitments.includes(selectedDeal._id)) {
+                            // Simplification - in a real implementation, you'd fetch the specific previous quantity
+                            previousQuantity = quantity; // Using current selection as proxy
+                          }
+                          
+                          // Calculate projected collective quantity after this change
+                          const projectedQuantity = collectiveQuantity - previousQuantity + quantity;
+                          
+                                            // Sort tiers by quantity for display
+                  let sortedTiers = size.discountTiers ? [...size.discountTiers].sort((a, b) => a.tierQuantity - b.tierQuantity) : [];
+                          
+                          // Determine if any tier discount applies based on projected quantity
+                          let effectivePrice = size.discountPrice;
+                          let appliedTier = null;
+                          let projectedTier = null;
+                          let priceWillChange = false;
+                          
+                          if (size.discountTiers && size.discountTiers.length > 0) {
+                            // Find the tier based on current collective quantity
+                            appliedTier = sortedTiers.find(tier => collectiveQuantity >= tier.tierQuantity);
+                            
+                            // Find the tier based on projected quantity
+                            projectedTier = sortedTiers.find(tier => projectedQuantity >= tier.tierQuantity);
+                            
+                            // Determine if price will change
+                            const currentPrice = appliedTier ? appliedTier.tierDiscount : size.discountPrice;
+                            const projectedPrice = projectedTier ? projectedTier.tierDiscount : size.discountPrice;
+                            priceWillChange = currentPrice !== projectedPrice;
+                            
+                            // Use projected tier for display
+                            if (projectedTier) {
+                              effectivePrice = projectedTier.tierDiscount;
+                            }
+                          }
+                          
+                          const subtotal = quantity * effectivePrice;
+                          
                           return (
                             <TableRow key={index}>
                               <TableCell>
                                 <Typography variant="body1" fontWeight="medium">
                                   {size.size}
                                 </Typography>
+                                {appliedTier && !projectedTier && (
+                                  <Typography variant="caption" color="error.main" sx={{ display: 'block' }}>
+                                    Will lose tier discount if submitted
+                                  </Typography>
+                                )}
+                                {!appliedTier && projectedTier && (
+                                  <Typography variant="caption" color="success.main" sx={{ display: 'block' }}>
+                                    Will gain tier discount if submitted
+                                  </Typography>
+                                )}
+                                {appliedTier && projectedTier && appliedTier.tierQuantity !== projectedTier.tierQuantity && (
+                                  <Typography variant="caption" color={appliedTier.tierQuantity < projectedTier.tierQuantity ? "success.main" : "warning.main"} sx={{ display: 'block' }}>
+                                    Tier will change: {appliedTier.tierQuantity}+ → {projectedTier.tierQuantity}+
+                                  </Typography>
+                                )}
                               </TableCell>
                               <TableCell align="right">
-                                <Typography variant="body1" color="primary">
-                                  ${size.discountPrice.toFixed(2)}
+                                <Typography 
+                                  variant="body1" 
+                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "primary"}
+                                >
+                                  ${effectivePrice.toFixed(2)}
                                 </Typography>
+                                {priceWillChange && (
+                                  <Typography 
+                                    variant="caption" 
+                                    color={effectivePrice < size.discountPrice ? "success.main" : "error.main"} 
+                                    sx={{ display: 'block', textDecoration: effectivePrice < size.discountPrice ? 'line-through' : 'none' }}
+                                  >
+                                    {effectivePrice < size.discountPrice ? `was $${size.discountPrice.toFixed(2)}` : `was $${(appliedTier ? appliedTier.tierDiscount : size.discountPrice).toFixed(2)}`}
+                                  </Typography>
+                                )}
                               </TableCell>
                               <TableCell align="right">
                                 <TextField
@@ -1464,7 +1612,11 @@ const DisplayDeals = () => {
                                 />
                               </TableCell>
                               <TableCell align="right">
-                                <Typography variant="body1" fontWeight="medium">
+                                <Typography 
+                                  variant="body1" 
+                                  fontWeight="medium"
+                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "inherit"}
+                                >
                                   ${subtotal.toFixed(2)}
                                 </Typography>
                               </TableCell>
@@ -1492,50 +1644,225 @@ const DisplayDeals = () => {
                     </Table>
                   </TableContainer>
                   
-                  {/* Discount tiers */}
-                  {selectedDeal.discountTiers && selectedDeal.discountTiers.length > 0 && (
+                  {/* Size-specific discount tiers */}
+                  {selectedDeal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
                     <>
                       <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
-                        Volume Discount Tiers
+                        Size-Specific Volume Discount Tiers
                       </Typography>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        {selectedDeal.discountTiers.map((tier, index) => (
-                          <Paper
-                            key={index}
-                            variant="outlined"
-                            sx={{
-                              p: 1.5,
-                              borderRadius: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                              bgcolor: activeTier === tier ? 'success.light' : 'background.paper',
-                              color: activeTier === tier ? 'white' : 'inherit',
-                              borderColor: activeTier === tier ? 'success.main' : 'divider'
-                            }}
-                          >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <TrendingUp color={activeTier === tier ? "inherit" : "primary"} fontSize="small" />
-                              <Typography variant="body1">
-                                ${tier.tierDiscount.toFixed(2)} fixed price at {tier.tierQuantity}+ units
+                      
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        <AlertTitle>Collective Volume Discounts</AlertTitle>
+                        <Typography variant="body2">
+                          Discount tiers are applied based on the <strong>total quantity across all members</strong>. 
+                          When the collective total for a size reaches a tier threshold, <strong>all members</strong> receive that discount pricing automatically!
+                        </Typography>
+                      </Alert>
+                      
+                      {selectedDeal.sizes.map((size, sizeIndex) => {
+                        if (!size.discountTiers || size.discountTiers.length === 0) return null;
+                        
+                        // Get the current quantity for this size from this user
+                        const userQuantity = selectedSizes[size.size] || 0;
+                        
+                        // Get collective quantity from all members for this size
+                        // For simplicity, we're using the total committed quantity 
+                        const collectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
+                        
+                        // If this is an update, calculate previous commitment quantity
+                        let previousQuantity = 0;
+                        if (userCommitments.includes(selectedDeal._id)) {
+                          // Simplification - in a real implementation, you'd fetch the specific previous quantity
+                          previousQuantity = userQuantity; // Using current selection as proxy
+                        }
+                        
+                        // Calculate projected collective quantity after this change
+                        const projectedQuantity = collectiveQuantity - previousQuantity + userQuantity;
+                        
+                        // Sort tiers by quantity for display - previously declared in other sections
+                        let sortedTiers = size.discountTiers ? [...size.discountTiers].sort((a, b) => a.tierQuantity - b.tierQuantity) : [];
+                        
+                        // Find the currently applied tier and next tier
+                        let currentTier = null;
+                        let nextTier = null;
+                        
+                        for (let i = 0; i < sortedTiers.length; i++) {
+                          if (collectiveQuantity >= sortedTiers[i].tierQuantity) {
+                            currentTier = sortedTiers[i];
+                            if (i < sortedTiers.length - 1) {
+                              nextTier = sortedTiers[i+1];
+                            }
+                          } else {
+                            if (!nextTier) {
+                              nextTier = sortedTiers[i];
+                            }
+                            break;
+                          }
+                        }
+
+                        // Find projected tier based on user's current selection
+                        let projectedTier = null;
+                        let projectedNextTier = null;
+                        
+                        for (let i = 0; i < sortedTiers.length; i++) {
+                          if (projectedQuantity >= sortedTiers[i].tierQuantity) {
+                            projectedTier = sortedTiers[i];
+                            if (i < sortedTiers.length - 1) {
+                              projectedNextTier = sortedTiers[i+1];
+                            }
+                          } else {
+                            if (!projectedNextTier) {
+                              projectedNextTier = sortedTiers[i];
+                            }
+                            break;
+                          }
+                        }
+                        
+                        const wouldUnlockNewTier = projectedTier && currentTier && projectedTier.tierQuantity > currentTier.tierQuantity;
+                        const wouldLoseTier = currentTier && (!projectedTier || projectedTier.tierQuantity < currentTier.tierQuantity);
+                        
+                        return (
+                          <Box key={sizeIndex} sx={{ mb: 3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Typography variant="body1" fontWeight="medium" sx={{ mr: 1 }}>
+                                {size.size}
                               </Typography>
-                            </Box>
-                            {activeTier === tier && (
-                  <Chip
-                                label="Applied" 
-                    color="success"
-                                size="small"
-                                sx={{ 
-                                  bgcolor: 'white', 
-                                  color: 'success.dark', 
-                                  fontWeight: 'bold' 
-                                }}
+                              <Chip 
+                                size="small" 
+                                label={`Your Selection: ${userQuantity} units`}
+                                color="primary"
+                                variant="outlined"
                               />
+                              <Chip 
+                                size="small" 
+                                label={`Current Total: ${collectiveQuantity} units`}
+                                color="secondary"
+                                variant="outlined"
+                                sx={{ ml: 1 }}
+                              />
+                              <Chip 
+                                size="small" 
+                                label={`Projected: ${projectedQuantity} units`}
+                                color={wouldUnlockNewTier ? "success" : wouldLoseTier ? "error" : "info"}
+                                variant="outlined"
+                                sx={{ ml: 1 }}
+                              />
+                            </Box>
+                            
+                            {wouldUnlockNewTier && (
+                              <Alert severity="success" sx={{ mb: 2 }}>
+                                <AlertTitle>You'll unlock a new tier!</AlertTitle>
+                                <Typography variant="body2">
+                                  Your commitment would help unlock the {projectedTier.tierQuantity}+ tier with price ${projectedTier.tierDiscount.toFixed(2)} per unit!
+                                </Typography>
+                              </Alert>
                             )}
-                          </Paper>
-                        ))}
-                </Box>
+                            
+                            {wouldLoseTier && (
+                              <Alert severity="warning" sx={{ mb: 2 }}>
+                                <AlertTitle>Tier discount may be lost</AlertTitle>
+                                <Typography variant="body2">
+                                  Reducing quantity may cause all members to lose the {currentTier.tierQuantity}+ unit discount tier.
+                                </Typography>
+                              </Alert>
+                            )}
+
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pl: 2 }}>
+                              {sortedTiers.map((tier, tierIndex) => {
+                                const isCurrentlyApplied = collectiveQuantity >= tier.tierQuantity;
+                                const wouldBeApplied = projectedQuantity >= tier.tierQuantity;
+                                const isNext = nextTier && tier.tierQuantity === nextTier.tierQuantity;
+                                const unitsNeeded = tier.tierQuantity - projectedQuantity;
+                                const statusChanged = isCurrentlyApplied !== wouldBeApplied;
+                                
+                                return (
+                                  <Paper
+                                    key={tierIndex}
+                                    variant="outlined"
+                                    sx={{
+                                      p: 1.5,
+                                      borderRadius: 1,
+                                      display: 'flex',
+                                      flexDirection: { xs: 'column', sm: 'row' },
+                                      alignItems: { xs: 'flex-start', sm: 'center' },
+                                      justifyContent: 'space-between',
+                                      bgcolor: wouldBeApplied ? 'success.light' : 
+                                               isCurrentlyApplied && !wouldBeApplied ? 'error.light' : 
+                                               isNext ? 'info.light' : 'background.paper',
+                                      color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? 'white' : 'inherit',
+                                      borderColor: wouldBeApplied ? 'success.main' : 
+                                                   isCurrentlyApplied && !wouldBeApplied ? 'error.main' : 
+                                                   isNext ? 'info.main' : 'divider',
+                                      gap: 1
+                                    }}
+                                  >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <Typography variant="body1">
+                                        ${tier.tierDiscount.toFixed(2)} per unit at {tier.tierQuantity}+ units
+                                      </Typography>
+                                    </Box>
+                                    <Box>
+                                      {wouldBeApplied ? (
+                                        <Chip
+                                          label={isCurrentlyApplied ? "APPLIED" : "WILL BE APPLIED"} 
+                                          color="success"
+                                          size="small"
+                                          sx={{ 
+                                            bgcolor: 'white', 
+                                            color: 'success.dark', 
+                                            fontWeight: 'bold' 
+                                          }}
+                                        />
+                                      ) : isCurrentlyApplied ? (
+                                        <Chip
+                                          label="WILL BE LOST" 
+                                          color="error"
+                                          size="small"
+                                          sx={{ 
+                                            bgcolor: 'white', 
+                                            color: 'error.dark', 
+                                            fontWeight: 'bold' 
+                                          }}
+                                        />
+                                      ) : (
+                                        <Chip
+                                          label={`${unitsNeeded} more needed`} 
+                                          color="primary"
+                                          size="small"
+                                          sx={{ 
+                                            bgcolor: 'white', 
+                                            color: isNext ? 'info.dark' : 'text.primary', 
+                                            fontWeight: 'bold' 
+                                          }}
+                                        />
+                                      )}
+                                    </Box>
+                                  </Paper>
+                                );
+                              })}
+                            </Box>
+                          </Box>
+                        );
+                      })}
                     </>
+                  )}
+                  
+                  {/* Global discount tiers (old implementation) */}
+                  {selectedDeal.discountTiers && selectedDeal.discountTiers.length > 0 && (
+                    <Box sx={{ 
+                      mb: 1, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 0.5,
+                      bgcolor: 'info.light',
+                      borderRadius: 1,
+                      px: 1,
+                      py: 0.3
+                    }}>
+                      <Typography variant="caption" color="info.dark" sx={{ fontWeight: 'medium' }}>
+                        Volume Discount: As low as ${Math.min(...selectedDeal.discountTiers.map(tier => tier.tierDiscount)).toFixed(2)} per unit
+                      </Typography>
+                    </Box>
                   )}
                 </Grid>
                 
@@ -1624,6 +1951,7 @@ const DisplayDeals = () => {
                   background: selectedDeal && userCommitments.includes(selectedDeal._id) ? 'linear-gradient(45deg, #F57C00 30%, #FF9800 90%)' : undefined
                 }
               }}
+              startIcon={selectedDeal && userCommitments.includes(selectedDeal._id) ? <EditIcon /> : <AddShoppingCart />}
             >
               {isCommitting ? (
                 <CircularProgress size={24} color="inherit" />

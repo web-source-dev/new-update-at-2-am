@@ -4,7 +4,7 @@ import {
   CircularProgress, IconButton, Divider, Card, CardContent, List, ListItem, 
   ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, 
   InputAdornment, Select, MenuItem, FormControl, InputLabel, FormHelperText,
-  Avatar, Chip, Fade, Tooltip, Zoom, alpha
+  Avatar, Chip, Fade, Tooltip, Zoom, alpha, Alert, AlertTitle
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -211,6 +211,9 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
   const [originalCost, setOriginalCost] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
   const [error, setError] = useState('');
+  const [discountTiers, setDiscountTiers] = useState([]);
+  const [tierDialogOpen, setTierDialogOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState(null);
   
   // Common bottle sizes
   const bottleSizes = [
@@ -222,10 +225,12 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
       setSize(initialSize.size);
       setOriginalCost(initialSize.originalCost);
       setDiscountPrice(initialSize.discountPrice);
+      setDiscountTiers(initialSize.discountTiers || []);
     } else {
       setSize('');
       setOriginalCost('');
       setDiscountPrice('');
+      setDiscountTiers([]);
     }
     setError('');
   }, [initialSize, open]);
@@ -245,7 +250,8 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
     onSave({
       size,
       originalCost: Number(originalCost),
-      discountPrice: Number(discountPrice)
+      discountPrice: Number(discountPrice),
+      discountTiers: discountTiers
     });
     onClose();
   };
@@ -265,6 +271,45 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
     const savingsPercent = ((savingsAmount / original) * 100).toFixed(2);
     
     return { percent: savingsPercent, amount: savingsAmount.toFixed(2) };
+  };
+  
+  // Handle tier dialog open for adding a new tier
+  const handleAddTier = () => {
+    setSelectedTier(null);
+    setTierDialogOpen(true);
+  };
+  
+  // Handle tier dialog open for editing an existing tier
+  const handleEditTier = (index) => {
+    setSelectedTier({ ...discountTiers[index], index });
+    setTierDialogOpen(true);
+  };
+  
+  // Handle saving a tier from the tier dialog
+  const handleSaveTier = (tierData) => {
+    if (selectedTier && selectedTier.index !== undefined) {
+      // Edit existing tier
+      const updatedTiers = [...discountTiers];
+      updatedTiers[selectedTier.index] = tierData;
+      
+      // Sort by quantity
+      const sortedTiers = updatedTiers.sort((a, b) => a.tierQuantity - b.tierQuantity);
+      
+      setDiscountTiers(sortedTiers);
+    } else {
+      // Add new tier
+      const newTiers = [...discountTiers, tierData];
+      
+      // Sort by quantity
+      const sortedTiers = newTiers.sort((a, b) => a.tierQuantity - b.tierQuantity);
+      
+      setDiscountTiers(sortedTiers);
+    }
+  };
+  
+  // Handle deleting a tier
+  const handleDeleteTier = (index) => {
+    setDiscountTiers(prevTiers => prevTiers.filter((_, i) => i !== index));
   };
   
   const savings = calculateSavings();
@@ -393,6 +438,106 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
               </Grid>
             )}
             
+            {/* Discount Tiers Section */}
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                  Volume Discount Tiers for this Size
+                </Typography>
+                <ActionButton 
+                  variant="outlined" 
+                  color="primary" 
+                  startIcon={<AddIcon />}
+                  onClick={handleAddTier}
+                  disabled={!isValidInput}
+                  size="small"
+                >
+                  Add Tier
+                </ActionButton>
+              </Box>
+              
+              {!isValidInput && (
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 2, 
+                    mb: 2, 
+                    borderRadius: 2,
+                    backgroundColor: (theme) => alpha(theme.palette.warning.light, 0.1),
+                    border: '1px dashed rgba(255, 152, 0, 0.3)'
+                  }}
+                >
+                  <Typography variant="body2" color="warning.dark">
+                    Please complete the size information above before adding discount tiers.
+                  </Typography>
+                </Paper>
+              )}
+              
+              {isValidInput && discountTiers.length === 0 ? (
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    textAlign: 'center', 
+                    py: 3, 
+                    px: 2, 
+                    backgroundColor: (theme) => alpha(theme.palette.primary.light, 0.05),
+                    border: '1px dashed rgba(0, 0, 0, 0.12)',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    No discount tiers added yet for this size. Tiers allow for greater discounts at higher quantities.
+                  </Typography>
+                  <ActionButton 
+                    variant="outlined" 
+                    onClick={handleAddTier}
+                    startIcon={<AddIcon />}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  >
+                    Add First Tier
+                  </ActionButton>
+                </Paper>
+              ) : (
+                <List sx={{ mt: 1 }}>
+                  {discountTiers.map((tier, index) => (
+                    <TierItem 
+                      key={index}
+                      secondaryAction={
+                        <Box>
+                          <StyledIconButton edge="end" aria-label="edit" onClick={() => handleEditTier(index)}>
+                            <EditIcon fontSize="small" />
+                          </StyledIconButton>
+                          <StyledIconButton edge="end" aria-label="delete" onClick={() => handleDeleteTier(index)} color="error">
+                            <DeleteIcon fontSize="small" />
+                          </StyledIconButton>
+                        </Box>
+                      }
+                      disablePadding
+                      sx={{ p: 2 }}
+                    >
+                      <Box sx={{ width: '100%' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                          <Chip 
+                            label={`Tier ${index + 1}`} 
+                            size="small" 
+                            color="primary" 
+                            sx={{ mr: 1.5, fontWeight: 600 }}
+                          />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            ${tier.tierDiscount.toFixed(2)} price at {tier.tierQuantity}+ units
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary">
+                          When total commitments for this size reach {tier.tierQuantity} units, all purchases of this size will be at ${tier.tierDiscount.toFixed(2)} per unit
+                        </Typography>
+                      </Box>
+                    </TierItem>
+                  ))}
+                </List>
+              )}
+            </Grid>
+            
             {error && (
               <Grid item xs={12}>
                 <Typography color="error" variant="body2" sx={{ mt: 1 }}>{error}</Typography>
@@ -426,12 +571,21 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
           Save Size
         </Button>
       </DialogActions>
+      
+      {/* Size-Specific Tier Dialog */}
+      <SizeDiscountTierDialog
+        open={tierDialogOpen}
+        onClose={() => setTierDialogOpen(false)}
+        onSave={handleSaveTier}
+        initialTier={selectedTier}
+        basePrice={Number(discountPrice)}
+      />
     </Dialog>
   );
 };
 
-// Discount tier dialog component
-const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
+// Size-specific discount tier dialog
+const SizeDiscountTierDialog = ({ open, onClose, onSave, initialTier, basePrice }) => {
   const [tierQuantity, setTierQuantity] = useState('');
   const [tierDiscount, setTierDiscount] = useState('');
   const [error, setError] = useState('');
@@ -454,13 +608,18 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
       return;
     }
 
-    if (Number(tierQuantity) <= Number(minQty || 0)) {
-      setError(`Tier quantity must be greater than minimum quantity (${minQty})`);
+    if (Number(tierQuantity) <= 0) {
+      setError('Quantity threshold must be greater than 0');
       return;
     }
 
     if (Number(tierDiscount) <= 0) {
       setError('Discount price must be greater than 0');
+      return;
+    }
+
+    if (Number(tierDiscount) >= basePrice) {
+      setError(`Discount price must be less than base price ($${basePrice})`);
       return;
     }
 
@@ -473,8 +632,21 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
 
   const isValidInput = tierQuantity && 
                      tierDiscount && 
-                     Number(tierQuantity) > Number(minQty || 0) &&
-                     Number(tierDiscount) > 0;
+                     Number(tierQuantity) > 0 &&
+                     Number(tierDiscount) > 0 &&
+                     Number(tierDiscount) < basePrice;
+
+  // Calculate savings from base price
+  const calculateSavings = () => {
+    if (!basePrice || !tierDiscount) return { percent: 0, amount: 0 };
+    
+    const discountAmount = basePrice - Number(tierDiscount);
+    const savingsPercent = ((discountAmount / basePrice) * 100).toFixed(2);
+    
+    return { percent: savingsPercent, amount: discountAmount.toFixed(2) };
+  };
+  
+  const savings = calculateSavings();
 
   return (
     <Dialog 
@@ -499,14 +671,22 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
       }}>
         <LocalOfferIcon color="primary" />
         <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
-          {initialTier ? 'Edit Discount Tier' : 'Add Volume Discount Tier'}
+          {initialTier ? 'Edit Size Discount Tier' : 'Add Size Volume Discount Tier'}
         </Typography>
       </DialogTitle>
       
       <DialogContent sx={{ pt: 3, pb: 1 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Volume discount tiers provide additional discounts when total order commitments reach specified quantities.
+          Size-specific volume discount tiers provide additional discounts when commitments for this size reach specified quantities.
         </Typography>
+        
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <AlertTitle>Collective Volume Discount Tiers</AlertTitle>
+          <Typography variant="body2">
+            The discount tiers you set will be applied <strong>collectively</strong> - when the combined quantity of all member commitments 
+            for this size reaches a tier threshold, <strong>all members</strong> will automatically receive the discount price!
+          </Typography>
+        </Alert>
         
         <Box component="form" sx={{ mt: 2 }}>
           <Grid container spacing={3}>
@@ -522,8 +702,8 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
                   sx: { borderRadius: 2 },
                   endAdornment: <InputAdornment position="end">units</InputAdornment>,
                 }}
-                error={!!error && (!tierQuantity || Number(tierQuantity) <= Number(minQty || 0))}
-                helperText={`Must be greater than ${minQty || 0} units`}
+                error={!!error && (!tierQuantity || Number(tierQuantity) <= 0)}
+                helperText="Must be greater than 0 units"
               />
             </Grid>
             
@@ -539,8 +719,8 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
                 onChange={(e) => setTierDiscount(e.target.value)}
                 fullWidth
                 required
-                error={!!error && (!tierDiscount || Number(tierDiscount) <= 0)}
-                helperText="Enter the absolute discount price for this tier"
+                error={!!error && (!tierDiscount || Number(tierDiscount) <= 0 || Number(tierDiscount) >= basePrice)}
+                helperText={`Enter the absolute discount price for this tier (less than $${basePrice})`}
               />
             </Grid>
             
@@ -556,10 +736,31 @@ const DiscountTierDialog = ({ open, onClose, onSave, initialTier, minQty }) => {
                     border: (theme) => `1px dashed ${alpha(theme.palette.info.main, 0.3)}`,
                   }}
                 >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', gap: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    When total order commitments reach <b>{tierQuantity} units</b> or more, 
-                    all purchases will be priced at <b>${tierDiscount}</b> per unit.
+                      When total commitments for this size reach <b>{tierQuantity} units</b> or more, 
+                      all purchases will be priced at <b>${tierDiscount}</b> per unit instead of ${basePrice}.
                   </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Customer Savings at Tier:
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <SavingsChip 
+                          label={`${savings.percent}%`} 
+                          saving={Number(savings.percent)}
+                          size="small"
+                          icon={<PriceChangeIcon />}
+                        />
+                        <SavingsChip 
+                          label={`$${savings.amount} per unit`} 
+                          saving={Number(savings.percent)}
+                          size="small"
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
                 </Paper>
               </Grid>
             )}
@@ -612,7 +813,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     category: '',
     dealEndsAt: '',
     minQtyForDiscount: '',
-    discountTiers: [],
     dealStartAt: '',
     singleStoreDeals: '',
     images: [],
@@ -632,8 +832,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   // Dialogs state
   const [sizeDialogOpen, setSizeDialogOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
-  const [tierDialogOpen, setTierDialogOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState(null);
 
   // Define categories
   const categories = [
@@ -649,7 +847,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
         dealEndsAt: initialData.dealEndsAt ? new Date(initialData.dealEndsAt).toISOString().slice(0, 16) : '',
         dealStartAt: initialData.dealStartAt ? new Date(initialData.dealStartAt).toISOString().slice(0, 16) : '',
         sizes: initialData.sizes || [],
-        discountTiers: initialData.discountTiers || []
       });
       
       // Set min end date if we have a start date from initialData
@@ -737,51 +934,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
       setFormData(prevState => ({
         ...prevState,
         sizes: [...prevState.sizes, sizeData]
-      }));
-    }
-  };
-
-  // Discount tier management
-  const handleAddTier = () => {
-    setSelectedTier(null);
-    setTierDialogOpen(true);
-  };
-
-  const handleEditTier = (index) => {
-    setSelectedTier({ ...formData.discountTiers[index], index });
-    setTierDialogOpen(true);
-  };
-
-  const handleDeleteTier = (index) => {
-    setFormData(prevState => ({
-      ...prevState,
-      discountTiers: prevState.discountTiers.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleSaveTier = (tierData) => {
-    if (selectedTier && selectedTier.index !== undefined) {
-      // Edit existing tier
-      const updatedTiers = [...formData.discountTiers];
-      updatedTiers[selectedTier.index] = tierData;
-      
-      // Sort by quantity
-      const sortedTiers = updatedTiers.sort((a, b) => a.tierQuantity - b.tierQuantity);
-      
-      setFormData(prevState => ({
-        ...prevState,
-        discountTiers: sortedTiers
-      }));
-    } else {
-      // Add new tier
-      const newTiers = [...formData.discountTiers, tierData];
-      
-      // Sort by quantity
-      const sortedTiers = newTiers.sort((a, b) => a.tierQuantity - b.tierQuantity);
-      
-      setFormData(prevState => ({
-        ...prevState,
-        discountTiers: sortedTiers
       }));
     }
   };
@@ -1023,6 +1175,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     {formData.sizes.map((sizeObj, index) => {
                       const savingsPercent = (((sizeObj.originalCost - sizeObj.discountPrice) / sizeObj.originalCost) * 100).toFixed(2);
                       const savingsAmount = (sizeObj.originalCost - sizeObj.discountPrice).toFixed(2);
+                      const hasTiers = sizeObj.discountTiers && sizeObj.discountTiers.length > 0;
                       
                       return (
                         <Grid item xs={12} sm={6} md={4} key={index}>
@@ -1071,6 +1224,37 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                                   </Typography>
                                 </Box>
                               </Box>
+                              
+                              {/* Display volume discount tiers if available */}
+                              {hasTiers && (
+                                <>
+                                  <Divider sx={{ my: 1.5 }} />
+                                  
+                                  <Typography variant="subtitle2" color="primary.main" sx={{ mb: 1 }}>
+                                    Volume Discounts:
+                                  </Typography>
+                                  
+                                  {sizeObj.discountTiers.map((tier, tierIndex) => (
+                                    <Box key={tierIndex} sx={{ 
+                                      display: 'flex', 
+                                      justifyContent: 'space-between',
+                                      mb: 0.5,
+                                      py: 0.5,
+                                      px: 1,
+                                      bgcolor: 'rgba(0, 0, 0, 0.02)',
+                                      borderRadius: 1,
+                                      '&:last-child': { mb: 0 }
+                                    }}>
+                                      <Typography variant="caption" fontWeight="medium">
+                                        {tier.tierQuantity}+ units:
+                                      </Typography>
+                                      <Typography variant="caption" color="success.main" fontWeight="bold">
+                                        ${tier.tierDiscount}
+                                      </Typography>
+                                    </Box>
+                                  ))}
+                                </>
+                              )}
                             </CardContent>
                           </StyledCard>
                         </Grid>
@@ -1114,7 +1298,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                 <SectionHeading>
                   <SectionTitle variant="h6">
                     <StorefrontIcon />
-                    Volume Requirements & Tiers
+                    Volume Requirements
                   </SectionTitle>
                 </SectionHeading>
                 
@@ -1148,105 +1332,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     />
                   </Grid>
                 </Grid>
-              
-                {/* Discount Tiers Section */}
-                <Box sx={{ mt: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                      Volume Discount Tiers
-                    </Typography>
-                    <ActionButton 
-                      variant="outlined" 
-                      color="primary" 
-                      startIcon={<AddIcon />}
-                      onClick={handleAddTier}
-                      disabled={!formData.minQtyForDiscount}
-                    >
-                      Add Tier
-                    </ActionButton>
-                  </Box>
-                  
-                  {!formData.minQtyForDiscount && (
-                    <Paper 
-                      elevation={0} 
-                      sx={{ 
-                        p: 2, 
-                        mb: 2, 
-                        borderRadius: 2,
-                        backgroundColor: (theme) => alpha(theme.palette.warning.light, 0.1),
-                        border: '1px dashed rgba(255, 152, 0, 0.3)'
-                      }}
-                    >
-                      <Typography variant="body2" color="warning.dark">
-                        Please set a minimum quantity first before adding discount tiers.
-                      </Typography>
-                    </Paper>
-                  )}
-                  
-                  {formData.minQtyForDiscount && formData.discountTiers.length === 0 ? (
-                    <Paper 
-                      elevation={0} 
-                      sx={{ 
-                        textAlign: 'center', 
-                        py: 3, 
-                        px: 2, 
-                        backgroundColor: (theme) => alpha(theme.palette.primary.light, 0.05),
-                        border: '1px dashed rgba(0, 0, 0, 0.12)',
-                        borderRadius: 2
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        No discount tiers added yet. Tiers allow for greater discounts at higher total commitment quantities.
-                      </Typography>
-                      <ActionButton 
-                        variant="outlined" 
-                        onClick={handleAddTier}
-                        startIcon={<AddIcon />}
-                        size="small"
-                        sx={{ mt: 1 }}
-                      >
-                        Add First Tier
-                      </ActionButton>
-                    </Paper>
-                  ) : (
-                    <List sx={{ mt: 1 }}>
-                      {formData.discountTiers.map((tier, index) => (
-                        <TierItem 
-                          key={index}
-                          secondaryAction={
-                            <Box>
-                              <StyledIconButton edge="end" aria-label="edit" onClick={() => handleEditTier(index)}>
-                                <EditIcon fontSize="small" />
-                              </StyledIconButton>
-                              <StyledIconButton edge="end" aria-label="delete" onClick={() => handleDeleteTier(index)} color="error">
-                                <DeleteIcon fontSize="small" />
-                              </StyledIconButton>
-                            </Box>
-                          }
-                          disablePadding
-                          sx={{ p: 2 }}
-                        >
-                          <Box sx={{ width: '100%' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                              <Chip 
-                                label={`Tier ${index + 1}`} 
-                                size="small" 
-                                color="primary" 
-                                sx={{ mr: 1.5, fontWeight: 600 }}
-                              />
-                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                ${tier.tierDiscount.toFixed(2)} price at {tier.tierQuantity}+ units
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" color="text.secondary">
-                              All purchases will be at ${tier.tierDiscount.toFixed(2)} per unit when total commitments reach {tier.tierQuantity} units
-                            </Typography>
-                          </Box>
-                        </TierItem>
-                      ))}
-                    </List>
-                  )}
-                </Box>
               </Grid>
 
               {/* Deal Timeframe Section */}
@@ -1353,15 +1438,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
         onClose={() => setSizeDialogOpen(false)}
         onSave={handleSaveSize}
         initialSize={selectedSize}
-      />
-      
-      {/* Discount Tier Dialog */}
-      <DiscountTierDialog 
-        open={tierDialogOpen}
-        onClose={() => setTierDialogOpen(false)}
-        onSave={handleSaveTier}
-        initialTier={selectedTier}
-        minQty={formData.minQtyForDiscount}
       />
       
       <Toast

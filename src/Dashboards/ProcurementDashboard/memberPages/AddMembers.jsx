@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Box,
   Button,
   TextField,
@@ -61,11 +61,11 @@ const AddMembers = () => {
     phone: '',
     address: ''
   });
-  const [addedMembers, setAddedMembers] = useState([]);
+  const [addedStores, setAddedStores] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState('');
   const [userRole, setUserRole] = useState('');
-  
+
   useEffect(() => {
     // Get user data from localStorage
     const userId = localStorage.getItem('user_id');
@@ -74,29 +74,29 @@ const AddMembers = () => {
     if (userId) {
       setUserId(userId);
       setUserRole(userRole);
-      
-      // Load added members
-      fetchAddedMembers(userId);
+
+      // Load added stores
+      fetchAddedStores(userId);
     }
   }, []);
-  
-  const fetchAddedMembers = async (userId) => {
+
+  const fetchAddedStores = async (userId) => {
     try {
       setIsLoading(true);
       const response = await axios.get(`${API_URL}/newmembers/members/${userId}`);
       if (response.data.success) {
-        setAddedMembers(response.data.members);
+        setAddedStores(response.data.members);
       }
     } catch (error) {
-      console.error('Error fetching members:', error);
-      enqueueSnackbar('Failed to load added members', {
+      console.error('Error fetching stores:', error);
+      enqueueSnackbar('Failed to load added stores', {
         variant: 'error',
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -104,36 +104,36 @@ const AddMembers = () => {
       [name]: value
     }));
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.email) {
       enqueueSnackbar('Name and email are required', {
         variant: 'error',
       });
       return;
     }
-    
+
     try {
       setIsLoading(true);
-      
+
       const payload = {
         ...formData,
         parentUserId: userId // Send the parent user ID from localStorage
       };
-      
+
       console.log("Making API call to:", `${API_URL}/newmembers/add`);
       console.log("With payload:", payload);
-      
+
       const response = await axios.post(`${API_URL}/newmembers/add`, payload);
-      
+
       if (response.data.success) {
-        enqueueSnackbar('Member added successfully and invitation sent', {
+        enqueueSnackbar('Store added successfully and invitation sent', {
           variant: 'success',
         });
-        
-        // Reset form
+
+        // Reset formUpdate 
         setFormData({
           name: '',
           email: '',
@@ -142,53 +142,53 @@ const AddMembers = () => {
           phone: '',
           address: ''
         });
-        
-        // Refresh member list
-        fetchAddedMembers(userId);
-        
+
+        // Refresh store list
+        fetchAddedStores(userId);
+
         // Close modal
         setOpen(false);
       }
     } catch (error) {
-      console.error('Error adding member:', error);
-      enqueueSnackbar(error.response?.data?.message || 'Failed to add member', {
+      console.error('Error adding store:', error);
+      enqueueSnackbar(error.response?.data?.message || 'Failed to add store', {
         variant: 'error',
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  // Handle viewing member details
-  const handleViewMember = (memberId) => {
-    navigate(`/member-commitment-details/${memberId}`);
+
+  // Handle viewing store details
+  const handleViewStore = (storeId) => {
+    navigate(`/dashboard/co-op-member/store-commitment-details/${storeId}`);
   };
-  
-  // Only allow adding members if the user is a distributor or admin
-  const canAddMembers = userRole === 'distributor' || userRole === 'admin';
-  
+
+  // Only allow adding stores if the user is a distributor or admin
+  const canAddStores = userRole === 'distributor' || userRole === 'admin';
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">Manage Members</Typography>
+        <Typography variant="h4" component="h1">Manage Stores</Typography>
         <Box sx={{ flexGrow: 1 }} />
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<PersonAddIcon />} 
-            onClick={() => setOpen(true)}
-          >
-            Add New Member
-          </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<PersonAddIcon />}
+          onClick={() => setOpen(true)}
+        >
+          Add New Store
+        </Button>
       </Box>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-            Your Added Members
+            Your Added Stores
           </Typography>
-          
-          {addedMembers.length === 0 ? (
-            <Typography variant="body1">You haven't added any members yet.</Typography>
+
+          {addedStores.length === 0 ? (
+            <Typography variant="body1">You haven't added any stores yet.</Typography>
           ) : (
             <Paper>
               <Table>
@@ -196,25 +196,25 @@ const AddMembers = () => {
                   <TableRow>
                     <TableCell>Name</TableCell>
                     <TableCell>Email</TableCell>
-                    <TableCell>Business</TableCell>
+                    <TableCell>Store Name</TableCell>
                     <TableCell>Phone</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {addedMembers.map((member) => (
-                    <TableRow key={member._id}>
-                      <TableCell>{member.name}</TableCell>
-                      <TableCell>{member.email}</TableCell>
-                      <TableCell>{member.businessName}</TableCell>
-                      <TableCell>{member.phone}</TableCell>
+                  {addedStores.map((store) => (
+                    <TableRow key={store._id}>
+                      <TableCell>{store.name}</TableCell>
+                      <TableCell>{store.email}</TableCell>
+                      <TableCell>{store.businessName}</TableCell>
+                      <TableCell>{store.phone}</TableCell>
                       <TableCell>
                         <Tooltip title="View Commitments">
                           <IconButton
                             size="small"
                             color="primary"
-                            aria-label="View member commitments"
-                            onClick={() => handleViewMember(member._id)}
+                            aria-label="View store commitments"
+                            onClick={() => handleViewStore(store._id)}
                           >
                             <VisibilityIcon />
                           </IconButton>
@@ -228,8 +228,8 @@ const AddMembers = () => {
           )}
         </CardContent>
       </Card>
-      
-      {/* Add Member Modal */}
+
+      {/* Add Store Modal */}
       <Modal
         open={open}
         onClose={() => setOpen(false)}
@@ -243,11 +243,11 @@ const AddMembers = () => {
           <Box sx={modalStyle}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" component="h2">
-                Add New Member
+                Add New Store
               </Typography>
               <Box sx={{ flexGrow: 1 }} />
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => setOpen(false)}
                 aria-label="close"
               >
@@ -255,7 +255,7 @@ const AddMembers = () => {
               </IconButton>
             </Box>
             <Divider sx={{ mb: 3 }} />
-            
+
             <Stack spacing={3} component="form" onSubmit={handleSubmit}>
               <TextField
                 label="Name"
@@ -266,7 +266,7 @@ const AddMembers = () => {
                 fullWidth
                 required
               />
-              
+
               <TextField
                 label="Email"
                 name="email"
@@ -277,16 +277,16 @@ const AddMembers = () => {
                 fullWidth
                 required
               />
-              
+
               <TextField
-                label="Business Name"
+                label="Store Name"
                 name="businessName"
                 value={formData.businessName}
                 onChange={handleChange}
-                placeholder="Business Name"
+                placeholder="Store Name"
                 fullWidth
               />
-              
+
               <TextField
                 label="Contact Person"
                 name="contactPerson"
@@ -295,16 +295,16 @@ const AddMembers = () => {
                 placeholder="Contact Person"
                 fullWidth
               />
-              
+
               <TextField
-                label="Phone"
+                label="Phone Number"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="Phone Number"
                 fullWidth
               />
-              
+
               <TextField
                 label="Address"
                 name="address"
@@ -313,21 +313,21 @@ const AddMembers = () => {
                 placeholder="Address"
                 fullWidth
               />
-              
+
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                <Button 
-                  onClick={() => setOpen(false)} 
+                <Button
+                  onClick={() => setOpen(false)}
                   sx={{ mr: 1 }}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
+                <Button
+                  variant="contained"
+                  color="primary"
                   onClick={handleSubmit}
                   disabled={isLoading}
                 >
-                  Add Member
+                  Add Store
                 </Button>
               </Box>
             </Stack>

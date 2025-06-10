@@ -32,7 +32,8 @@ import {
   IconButton,
   ListItemIcon,
   Divider,
-  Chip
+  Chip,
+  LinearProgress
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -856,58 +857,85 @@ const AllDealsAdmin = () => {
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
                 <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
                 <StyledTableCell>
-  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
-</StyledTableCell>
-<StyledTableCell>
-  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
-</StyledTableCell>
-<StyledTableCell>
-  <Box sx={{display:'flex',gap:2}}>
-{deal.bulkAction ? (
-     <Chip 
-      label={deal.bulkStatus} 
-      color={deal.bulkStatus === "approved" ? "success" : "error"} 
-      variant="outlined" 
-    />
-) : (
-                  <Box 
-                    display="flex" 
-                    gap={1}
-                    sx={{
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      '.MuiButton-root': {
-                        minWidth: { xs: '70px', sm: 'auto' },
-                        padding: { xs: '4px 8px', sm: '6px 16px' },
-                      }
-                    }}
-                  >
-                    {/* Show buttons on larger screens */}
-                    <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleBulkAction(deal._id, 'approve')}
-                        disabled={actionInProgress || deal.pendingCommitments === 0}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleBulkAction(deal._id, 'decline')}
-                        disabled={actionInProgress || deal.pendingCommitments === 0}
-                      >
-                        Decline
-                      </Button>
+                  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
+                  {deal.minimumQuantity > 0 && (
+                    <Box sx={{ mt: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box sx={{ width: '100%', mr: 1 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={Math.min(100, ((deal.totalQuantity || deal.totalPQuantity || 0) / deal.minimumQuantity) * 100)}
+                            color={(deal.totalQuantity || deal.totalPQuantity || 0) >= deal.minimumQuantity ? 'success' : 'primary'}
+                            sx={{ height: 4, borderRadius: 5 }}
+                          />
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          {Math.min(100, Math.round(((deal.totalQuantity || deal.totalPQuantity || 0) / deal.minimumQuantity) * 100))}%
+                        </Typography>
+                      </Box>
+                      {(deal.totalQuantity || deal.totalPQuantity || 0) >= deal.minimumQuantity ? (
+                        <Chip 
+                          label="LIVE" 
+                          color="success" 
+                          size="small"
+                          sx={{ fontSize: '0.625rem', height: 18, mt: 0.5 }}
+                        />
+                      ) : (
+                        <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
+                          {Math.max(0, deal.minimumQuantity - (deal.totalQuantity || deal.totalPQuantity || 0))} more to go live
+                        </Typography>
+                      )}
                     </Box>
-                   
-                  </Box>
-                
-)}
- {/* Show only menu on mobile */}
- <IconButton
+                  )}
+                </StyledTableCell>
+                <StyledTableCell>
+                  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
+                </StyledTableCell>
+                <StyledTableCell>
+                  <Box sx={{display:'flex',gap:2}}>
+                    {deal.bulkAction ? (
+                      <Chip 
+                        label={deal.bulkStatus} 
+                        color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                        variant="outlined" 
+                      />
+                    ) : (
+                      <Box 
+                        display="flex" 
+                        gap={1}
+                        sx={{
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          '.MuiButton-root': {
+                            minWidth: { xs: '70px', sm: 'auto' },
+                            padding: { xs: '4px 8px', sm: '6px 16px' },
+                          }
+                        }}
+                      >
+                        {/* Show buttons on larger screens */}
+                        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleBulkAction(deal._id, 'approve')}
+                            disabled={actionInProgress || deal.pendingCommitments === 0}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleBulkAction(deal._id, 'decline')}
+                            disabled={actionInProgress || deal.pendingCommitments === 0}
+                          >
+                            Decline
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
+                    {/* Show only menu on mobile */}
+                    <IconButton
                       size="small"
                       onClick={(event) => handleMenuClick(event, deal)}
                       sx={{ 
@@ -925,8 +953,8 @@ const AllDealsAdmin = () => {
                     >
                       <MoreVertIcon />
                     </IconButton>
-</Box>
-            </StyledTableCell>
+                  </Box>
+                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -1026,7 +1054,7 @@ const AllDealsAdmin = () => {
                   <TableRow>
                     <TableCell>Member</TableCell>
                     <TableCell>Size Details</TableCell>
-                    <TableCell>Total Quantity</TableCell>
+                    <TableCell>Quantity</TableCell>
                     <TableCell>Discount Tier</TableCell>
                     <TableCell>Total Price</TableCell>
                     <TableCell>Status</TableCell>
@@ -1056,9 +1084,24 @@ const AllDealsAdmin = () => {
                           0)
                       }</TableCell>
                       <TableCell>
-                        {commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
+                        {commitment.sizeCommitments && commitment.sizeCommitments.some(sc => sc.appliedDiscountTier) ? (
+                          <Box>
+                            {commitment.sizeCommitments
+                              .filter(sc => sc.appliedDiscountTier)
+                              .map((sizeCommit, idx) => (
+                                <Chip 
+                                  key={idx}
+                                  label={`${sizeCommit.size}: $${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+ units`} 
+                                  color="primary" 
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ mb: 0.5, fontSize: '0.7rem' }}
+                                />
+                              ))}
+                          </Box>
+                        ) : commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
                           <Chip 
-                            label={`${commitment.appliedDiscountTier.tierDiscount}% off at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
+                            label={`$${commitment.appliedDiscountTier.tierDiscount} at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
                             color="primary" 
                             size="small"
                             variant="outlined"

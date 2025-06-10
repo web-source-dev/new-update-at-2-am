@@ -949,9 +949,20 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                         {commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
                           <Box>
                             {commitment.sizeCommitments.map((sizeCommit, idx) => (
-                              <Typography variant="body2" key={idx} sx={{ mb: 0.5 }}>
+                              <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                <Typography variant="body2">
                                 {sizeCommit.size}: {sizeCommit.quantity} × ${sizeCommit.pricePerUnit.toFixed(2)}
+                                  {sizeCommit.appliedDiscountTier && (
+                                    <Chip 
+                                      label={`$${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+`}
+                                      size="small"
+                                      color="success"
+                                      variant="outlined"
+                                      sx={{ ml: 1, height: 20, fontSize: '0.6rem' }}
+                                    />
+                                  )}
                               </Typography>
+                              </Box>
                             ))}
                           </Box>
                         ) : (
@@ -964,9 +975,24 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                           0)
                       }</TableCell>
                       <TableCell>
-                        {commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
+                        {commitment.sizeCommitments && commitment.sizeCommitments.some(sc => sc.appliedDiscountTier) ? (
+                          <Box>
+                            {commitment.sizeCommitments
+                              .filter(sc => sc.appliedDiscountTier)
+                              .map((sizeCommit, idx) => (
                           <Chip 
-                            label={`${commitment.appliedDiscountTier.tierDiscount}% off at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
+                                  key={idx}
+                                  label={`${sizeCommit.size}: $${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+ units`} 
+                                  color="primary" 
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ mb: 0.5, fontSize: '0.7rem' }}
+                                />
+                              ))}
+                          </Box>
+                        ) : commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
+                          <Chip 
+                            label={`$${commitment.appliedDiscountTier.tierDiscount} at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
                             color="primary" 
                             size="small"
                             variant="outlined"

@@ -755,6 +755,54 @@ const AllCommitments = () => {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>Review Commitment</DialogTitle>
         <DialogContent>
+          {selectedCommitment && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                {selectedCommitment.dealId?.name} - {selectedCommitment.userId?.name}
+              </Typography>
+              
+              {/* Size Commitments Details */}
+              {selectedCommitment.sizeCommitments && selectedCommitment.sizeCommitments.length > 0 && (
+                <Box sx={{ mt: 2, mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                    Size Breakdown:
+                  </Typography>
+                  <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Size</TableCell>
+                          <TableCell align="right">Quantity</TableCell>
+                          <TableCell align="right">Price Per Unit</TableCell>
+                          <TableCell align="right">Total</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedCommitment.sizeCommitments.map((sizeCommit, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>{sizeCommit.size}</TableCell>
+                            <TableCell align="right">{sizeCommit.quantity}</TableCell>
+                            <TableCell align="right">${sizeCommit.pricePerUnit?.toFixed(2)}</TableCell>
+                            <TableCell align="right">${(sizeCommit.quantity * sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  
+                  {/* Display applied discount tiers information */}
+                  {selectedCommitment.appliedDiscountTier && (
+                    <Paper sx={{ p: 1.5, bgcolor: 'success.light', color: 'success.dark', mb: 2, borderRadius: 1 }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        Applied Discount Tier: ${selectedCommitment.appliedDiscountTier.tierDiscount} at {selectedCommitment.appliedDiscountTier.tierQuantity}+ units
+                      </Typography>
+                    </Paper>
+                  )}
+                </Box>
+              )}
+            </Box>
+          )}
+
           <TextField
             fullWidth
             label="Response Message"

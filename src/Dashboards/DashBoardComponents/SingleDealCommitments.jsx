@@ -172,7 +172,27 @@ const SingleDealCommitments = () => {
                           <Typography variant="caption" color="textSecondary">
                             {commitment.userId.businessName}
                           </Typography>
-                          {commitment.appliedDiscountTier && (
+                          {commitment.sizeCommitments && commitment.sizeCommitments.some(sc => sc.appliedDiscountTier) ? (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                              {commitment.sizeCommitments
+                                .filter(sc => sc.appliedDiscountTier)
+                                .map((sc, idx) => (
+                                  <Tooltip 
+                                    key={idx} 
+                                    title={`${sc.size}: $${sc.appliedDiscountTier.tierDiscount} at ${sc.appliedDiscountTier.tierQuantity}+ units`}
+                                  >
+                                    <Chip 
+                                      icon={<Discount fontSize="small" />} 
+                                      label={`${sc.size}: $${sc.appliedDiscountTier.tierDiscount}`} 
+                                      size="small" 
+                                      color="success" 
+                                      variant="outlined"
+                                      sx={{ '& .MuiChip-label': { fontSize: '0.7rem' } }}
+                                    />
+                                  </Tooltip>
+                                ))}
+                            </Box>
+                          ) : commitment.appliedDiscountTier && (
                             <Tooltip title={`${commitment.appliedDiscountTier.tierDiscount}% discount activated at ${commitment.appliedDiscountTier.tierQuantity}+ units`}>
                               <Chip 
                                 icon={<Discount fontSize="small" />} 
@@ -248,6 +268,7 @@ const SingleDealCommitments = () => {
                                     <TableCell>Size</TableCell>
                                     <TableCell align="right">Quantity</TableCell>
                                     <TableCell align="right">Price Per Unit ($)</TableCell>
+                                    <TableCell align="right">Discount Tier</TableCell>
                                     <TableCell align="right">Total ($)</TableCell>
                                   </TableRow>
                                 </TableHead>
@@ -262,6 +283,18 @@ const SingleDealCommitments = () => {
                                       </TableCell>
                                       <TableCell align="right">{size.quantity}</TableCell>
                                       <TableCell align="right">${Number(size.pricePerUnit).toFixed(2)}</TableCell>
+                                      <TableCell align="right">
+                                        {size.appliedDiscountTier ? (
+                                          <Chip 
+                                            label={`$${size.appliedDiscountTier.tierDiscount} at ${size.appliedDiscountTier.tierQuantity}+`}
+                                            size="small"
+                                            color="success"
+                                            variant="outlined"
+                                          />
+                                        ) : (
+                                          <Typography variant="caption" color="text.secondary">None</Typography>
+                                        )}
+                                      </TableCell>
                                       <TableCell align="right">${Number(size.totalPrice || (size.quantity * size.pricePerUnit)).toFixed(2)}</TableCell>
                                     </TableRow>
                                   ))}
@@ -270,6 +303,7 @@ const SingleDealCommitments = () => {
                                   <TableRow sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}>
                                     <TableCell><strong>Total</strong></TableCell>
                                     <TableCell align="right"><strong>{totalQuantity}</strong></TableCell>
+                                    <TableCell></TableCell>
                                     <TableCell></TableCell>
                                     <TableCell align="right"><strong>${Number(totalPrice).toFixed(2)}</strong></TableCell>
                                   </TableRow>
@@ -288,6 +322,7 @@ const SingleDealCommitments = () => {
                                         <TableCell>Size</TableCell>
                                         <TableCell align="right">Quantity</TableCell>
                                         <TableCell align="right">Price Per Unit ($)</TableCell>
+                                        <TableCell align="right">Discount Tier</TableCell>
                                         <TableCell align="right">Total ($)</TableCell>
                                       </TableRow>
                                     </TableHead>
@@ -299,6 +334,18 @@ const SingleDealCommitments = () => {
                                           </TableCell>
                                           <TableCell align="right">{size.quantity}</TableCell>
                                           <TableCell align="right">${Number(size.pricePerUnit).toFixed(2)}</TableCell>
+                                          <TableCell align="right">
+                                            {size.appliedDiscountTier ? (
+                                              <Chip 
+                                                label={`$${size.appliedDiscountTier.tierDiscount} at ${size.appliedDiscountTier.tierQuantity}+`}
+                                                size="small"
+                                                color="success"
+                                                variant="outlined"
+                                              />
+                                            ) : (
+                                              <Typography variant="caption" color="text.secondary">None</Typography>
+                                            )}
+                                          </TableCell>
                                           <TableCell align="right">${Number(size.totalPrice || (size.quantity * size.pricePerUnit)).toFixed(2)}</TableCell>
                                         </TableRow>
                                       ))}
@@ -307,6 +354,7 @@ const SingleDealCommitments = () => {
                                       <TableRow sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}>
                                         <TableCell><strong>Total</strong></TableCell>
                                         <TableCell align="right"><strong>{calculateTotalQuantity(commitment.sizeCommitments)}</strong></TableCell>
+                                        <TableCell></TableCell>
                                         <TableCell></TableCell>
                                         <TableCell align="right"><strong>${Number(commitment.totalPrice).toFixed(2)}</strong></TableCell>
                                       </TableRow>

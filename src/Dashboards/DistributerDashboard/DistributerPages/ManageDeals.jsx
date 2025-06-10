@@ -389,11 +389,6 @@ The new deal will be created with the following settings:
 - All statistics (views, sales, etc.) will be reset to zero`,
       async () => {
         try {
-          // Clone discount tiers if they exist
-          const clonedDiscountTiers = deal.discountTiers && deal.discountTiers.length > 0 
-            ? JSON.parse(JSON.stringify(deal.discountTiers)) 
-            : [];
-          
           // Create a clean duplicate deal with only the required fields
           const duplicatedDeal = {
             name: `${deal.name} (Copy)`,
@@ -406,7 +401,6 @@ The new deal will be created with the following settings:
             dealEndsAt: newEndDate.toISOString(),
             singleStoreDeals: deal.singleStoreDeals,
             minQtyForDiscount: deal.minQtyForDiscount,
-            discountTiers: clonedDiscountTiers,
             images: [...(deal.images || [])], // Clone array to avoid reference issues
             // Clear all statistics and tracking data
             views: 0,
@@ -1419,17 +1413,24 @@ The new deal will be created with the following settings:
                           </Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          {/* Discount Tiers Section */}
-                          {deal.discountTiers && deal.discountTiers.length > 0 && (
+                          {/* Size-specific Discount Tiers Section */}
+                          {deal.sizes && deal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
                             <Box sx={{ mb: 2 }}>
                               <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
-                                Volume Discounts:
+                                Size-Specific Volume Discounts:
                               </Typography>
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                {deal.discountTiers.map((tier, idx) => (
-                                  <Typography key={idx} variant="body2" color="text.secondary">
-                                    {tier.tierQuantity}+ units: {tier.tierDiscount}% off
+                                {deal.sizes.filter(size => size.discountTiers && size.discountTiers.length > 0).map((size, sizeIdx) => (
+                                  <Box key={sizeIdx} sx={{ mb: 1 }}>
+                                    <Typography variant="caption" fontWeight="bold" color="primary.main">
+                                      {size.size}:
+                                    </Typography>
+                                    {size.discountTiers.map((tier, tierIdx) => (
+                                      <Typography key={tierIdx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                                        {tier.tierQuantity}+ units: ${tier.tierDiscount} each
                                   </Typography>
+                                    ))}
+                                  </Box>
                                 ))}
                               </Box>
                             </Box>

@@ -17,6 +17,7 @@ import DetailedAnalytics from './memberPages/DetailedAnalytics';
 import { Button } from '@mui/material';
 import SplashAgain from '../Components/SplashAgain';
 import AddMembers from './memberPages/AddMembers';
+import MemberCommitmentDetails from './memberPages/MemberCommitmentDetails';
 const MemberDashboard = () => {
   let match = useMatch('/dashboard/co-op-member/*');
   const userId = localStorage.getItem('user_id');
@@ -57,7 +58,7 @@ const MemberDashboard = () => {
 ];
 if (!user?.addedBy) {
  links.push({ path: 'analytics', label: 'Analytics' });
-   links.push({ path: 'add-members', label: 'Add Members' });
+   links.push({ path: 'add-members', label: 'Add Stores' });
  links.push({ path: 'detailed-analytics', label: 'Detailed Analytics' });
     }
 
@@ -157,6 +158,7 @@ Advertisements
               {!user?.addedBy && <AddMembers />}
               </>
               } />
+              <Route path="/store-commitment-details/:memberId" element={<MemberCommitmentDetails />} />
           </Routes>
         </div>
       </div>

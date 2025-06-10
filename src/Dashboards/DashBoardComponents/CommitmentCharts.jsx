@@ -16,6 +16,13 @@ import {
   TextField,
   Tooltip,
   Skeleton,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from '@mui/material';
 import {
   LineChart,
@@ -46,7 +53,8 @@ import {
     Pending as PendingIcon,
     TrendingUp as TrendingUpIcon,
     TrendingDown as TrendingDownIcon,
-    ArrowBack
+    ArrowBack,
+    LocalOffer as LocalOfferIcon,
 } from '@mui/icons-material';
 import { subMonths, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { AnalyticsSkeleton } from '../../Components/Skeletons/LoadingSkeletons';
@@ -149,8 +157,50 @@ const CommitmentCharts = () => {
         return sum + (originalTotal - discountTotal);
     }, 0);
 
+    // Track volume discounts from size-specific tiers
+    const volumeDiscountSavings = commitments.reduce((sum, commitment) => {
+      if (!commitment.sizeCommitments || commitment.sizeCommitments.length === 0) return sum;
+      
+      return sum + commitment.sizeCommitments.reduce((sizeSum, sc) => {
+        if (sc.appliedDiscountTier) {
+          // Calculate the difference between regular price and tier discount price
+          const regularPrice = sc.originalPricePerUnit || sc.pricePerUnit;
+          const tierPrice = sc.appliedDiscountTier.tierDiscount;
+          return sizeSum + ((regularPrice - tierPrice) * sc.quantity);
+        }
+        return sizeSum;
+      }, 0);
+    }, 0);
+    
     // Calculate average price per unit
     const avgPricePerUnit = totalQuantity > 0 ? totalAmount / totalQuantity : 0;
+
+    // Get sizes with discount tiers
+    const sizesWithTiers = commitments.reduce((acc, commitment) => {
+      if (!commitment.sizeCommitments) return acc;
+      
+      commitment.sizeCommitments.forEach(sc => {
+        if (sc.appliedDiscountTier) {
+          if (!acc[sc.size]) {
+            acc[sc.size] = {
+              size: sc.size,
+              totalQuantity: 0,
+              totalSavings: 0,
+              commitmentCount: 0
+            };
+          }
+          
+          acc[sc.size].totalQuantity += sc.quantity;
+          acc[sc.size].totalSavings += (sc.originalPricePerUnit - sc.appliedDiscountTier.tierDiscount) * sc.quantity;
+          acc[sc.size].commitmentCount += 1;
+        }
+      });
+      
+      return acc;
+    }, {});
+
+    // Convert to array and sort by total savings
+    const sizeDiscountStats = Object.values(sizesWithTiers).sort((a, b) => b.totalSavings - a.totalSavings);
 
     // Group commitments by date
     const groupedData = commitments.reduce((acc, commitment) => {
@@ -229,7 +279,9 @@ const CommitmentCharts = () => {
         approved: totals.approvedAmount || 0,
         declined: totals.declinedAmount || 0,
         cancelled: totals.cancelledAmount || 0
-      }
+      },
+      volumeDiscountSavings,
+      sizeDiscountStats
     };
   };
 
@@ -753,6 +805,74 @@ const CommitmentCharts = () => {
     return ((currentData - previousData) / previousData * 100).toFixed(1);
   };
 
+  // Add this new component to display size-specific discount information
+  const SizeDiscountCard = ({ data }) => {
+    if (!data || data.length === 0) {
+      return (
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: 3, 
+            height: '100%', 
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Typography variant="subtitle1" color="text.secondary" align="center">
+            No size-specific discount tiers applied yet
+          </Typography>
+        </Paper>
+      );
+    }
+
+    return (
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 3, 
+          height: '100%', 
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Typography variant="h6" gutterBottom fontWeight="500">
+          Size-Specific Volume Discounts
+        </Typography>
+        
+        <TableContainer sx={{ maxHeight: 240 }}>
+          <Table size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Size</TableCell>
+                <TableCell align="right">Total Qty</TableCell>
+                <TableCell align="right">Commitments</TableCell>
+                <TableCell align="right">Savings</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.map((size, index) => (
+                <TableRow key={index} hover>
+                  <TableCell component="th" scope="row">{size.size}</TableCell>
+                  <TableCell align="right">{formatNumber(size.totalQuantity)}</TableCell>
+                  <TableCell align="right">{size.commitmentCount}</TableCell>
+                  <TableCell align="right">{formatCurrency(size.totalSavings)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    );
+  };
+
   if (loading) {
     return (
       <Box sx={{ width: '100%' }}>
@@ -1031,6 +1151,36 @@ const CommitmentCharts = () => {
               </Card>
             </Grid>
           </Grid>
+
+          {/* Volume Discount Analysis */}
+          {filteredData.volumeDiscountSavings > 0 && (
+            <>
+              <Grid item xs={12}>
+                <Box sx={{ mt: 4, mb: 2 }}>
+                  <Typography variant="h5" fontWeight="medium">
+                    Volume Discount Analysis
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Details of savings from size-specific volume discount tiers
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12} md={4}>
+                <StatCard 
+                  title="Volume Discount Savings" 
+                  value={formatCurrency(filteredData.volumeDiscountSavings)} 
+                  subtitle="Total savings from volume discount tiers"
+                  icon={<LocalOfferIcon />} 
+                  color="success.main"
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={8}>
+                <SizeDiscountCard data={filteredData.sizeDiscountStats || []} />
+              </Grid>
+            </>
+          )}
         </Box>
       </Container>
     </Box>

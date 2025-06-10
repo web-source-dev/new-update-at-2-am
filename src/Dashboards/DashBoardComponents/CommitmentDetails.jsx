@@ -313,7 +313,46 @@ const CommitmentDetails = () => {
                             </Card>
 
                             {/* Discount Tier Information (if applied) */}
-                            {commitment.appliedDiscountTier && (
+                            {commitment.sizeCommitments && commitment.sizeCommitments.some(sc => sc.appliedDiscountTier) ? (
+                                <Card elevation={0} sx={{
+                                    ...cardStyle,
+                                    bgcolor: 'rgba(76, 175, 80, 0.04)'
+                                }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Box display="flex" alignItems="center" mb={2}>
+                                            <Box sx={{
+                                                mr: 2,
+                                                p: 1,
+                                                borderRadius: 2,
+                                                bgcolor: 'rgba(76, 175, 80, 0.12)'
+                                            }}>
+                                                <Discount sx={{ color: 'success.main' }} />
+                                            </Box>
+                                            <Typography variant="h6" color="success.main" fontWeight="600">
+                                                Applied Size-Specific Discount Tiers
+                                            </Typography>
+                                        </Box>
+                                        <Divider sx={{ mb: 3, opacity: 0.1 }} />
+                                        <Box sx={{ ml: 4 }}>
+                                            {commitment.sizeCommitments
+                                                .filter(sc => sc.appliedDiscountTier)
+                                                .map((sc, idx) => (
+                                                    <Box key={idx} sx={{ mb: 2 }}>
+                                                        <Typography variant="body1" color="text.primary" fontWeight="500">
+                                                            {sc.size}:
+                                                        </Typography>
+                                                        <Typography variant="body2" color="success.main" sx={{ ml: 2 }}>
+                                                            <strong>${sc.appliedDiscountTier.tierDiscount}</strong> price at {sc.appliedDiscountTier.tierQuantity}+ units
+                                                        </Typography>
+                                                        <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                                                            Saved ${((sc.originalPricePerUnit - sc.pricePerUnit) * sc.quantity).toFixed(2)} with this discount
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            ) : commitment.appliedDiscountTier && (
                                 <Card elevation={0} sx={{
                                     ...cardStyle,
                                     bgcolor: 'rgba(76, 175, 80, 0.04)'
@@ -372,6 +411,7 @@ const CommitmentDetails = () => {
                                                     <TableCell>Size</TableCell>
                                                     <TableCell align="right">Quantity</TableCell>
                                                     <TableCell align="right">Price Per Unit</TableCell>
+                                                    <TableCell align="right">Discount Tier</TableCell>
                                                     <TableCell align="right">Total Price</TableCell>
                                                 </TableRow>
                                             </TableHead>
@@ -381,12 +421,25 @@ const CommitmentDetails = () => {
                                                         <TableCell component="th" scope="row">{sizeCommit.size}</TableCell>
                                                         <TableCell align="right">{sizeCommit.quantity}</TableCell>
                                                         <TableCell align="right">${Number(sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
+                                                        <TableCell align="right">
+                                                            {sizeCommit.appliedDiscountTier ? (
+                                                                <Chip 
+                                                                    label={`$${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+`}
+                                                                    size="small"
+                                                                    color="success"
+                                                                    variant="outlined"
+                                                                />
+                                                            ) : (
+                                                                <Typography variant="caption" color="text.secondary">None</Typography>
+                                                            )}
+                                                        </TableCell>
                                                         <TableCell align="right">${Number(sizeCommit.totalPrice || sizeCommit.quantity * sizeCommit.pricePerUnit).toFixed(2)}</TableCell>
                                                     </TableRow>
                                                 ))}
                                                 <TableRow sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}>
                                                     <TableCell colSpan={1}><strong>Total</strong></TableCell>
                                                     <TableCell align="right"><strong>{originalTotalQuantity}</strong></TableCell>
+                                                    <TableCell align="right"></TableCell>
                                                     <TableCell align="right"></TableCell>
                                                     <TableCell align="right"><strong>${Number(commitment.totalPrice).toFixed(2)}</strong></TableCell>
                                                 </TableRow>

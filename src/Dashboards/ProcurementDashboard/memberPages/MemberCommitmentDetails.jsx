@@ -110,7 +110,7 @@ const MemberCommitmentDetails = () => {
   const { memberId } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const [member, setMember] = useState(null);
+  const [store, setStore] = useState(null);
   const [commitments, setCommitments] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -122,10 +122,10 @@ const MemberCommitmentDetails = () => {
   const [selectedCommitment, setSelectedCommitment] = useState(null);
   
   useEffect(() => {
-    fetchMemberDetails();
+    fetchStoreDetails();
   }, [memberId]);
   
-  const fetchMemberDetails = async () => {
+  const fetchStoreDetails = async () => {
     try {
       setLoading(true);
       const parentId = localStorage.getItem('user_id');
@@ -138,16 +138,16 @@ const MemberCommitmentDetails = () => {
       const response = await axios.get(`${API_URL}/newmembers/member-details/${memberId}?parentId=${parentId}`);
       
       if (response.data.success) {
-        setMember(response.data.member);
+        setStore(response.data.member);
         setCommitments(response.data.commitments);
         setStats(response.data.stats);
       } else {
-        setError('Failed to load member details.');
+        setError('Failed to load store details.');
       }
     } catch (error) {
-      console.error('Error fetching member details:', error);
-      setError(error.response?.data?.message || 'An error occurred while fetching member details');
-      enqueueSnackbar(error.response?.data?.message || 'Failed to load member details', {
+      console.error('Error fetching store details:', error);
+      setError(error.response?.data?.message || 'An error occurred while fetching store details');
+      enqueueSnackbar(error.response?.data?.message || 'Failed to load store details', {
         variant: 'error',
       });
     } finally {
@@ -185,48 +185,48 @@ const MemberCommitmentDetails = () => {
         <Button 
           startIcon={<ArrowBackIcon />} 
           variant="outlined" 
-          onClick={() => navigate('/add-members')}
+          onClick={() => navigate(-1)}
         >
-          Back to Members
+          Back to Stores
         </Button>
       </Container>
     );
   }
   
-  if (!member) {
+  if (!store) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="warning">Member not found or you don't have permission to view this member.</Alert>
+        <Alert severity="warning">Store not found or you don't have permission to view this store.</Alert>
         <Button 
           startIcon={<ArrowBackIcon />} 
           variant="outlined" 
-          onClick={() => navigate('/add-members')}
+          onClick={() => navigate(-1)}
           sx={{ mt: 2 }}
         >
-          Back to Members
+          Back to Stores
         </Button>
       </Container>
     );
   }
   
-  // Format the member's registration date
-  const registrationDate = member.createdAt 
-    ? format(new Date(member.createdAt), 'MMMM dd, yyyy') 
+  // Format the store's registration date
+  const registrationDate = store.createdAt 
+    ? format(new Date(store.createdAt), 'MMMM dd, yyyy') 
     : 'N/A';
   
   return (
-    <Container maxWidth="xl" sx={{ py: 8, mb:6 }}>
+    <Container maxWidth="xl" sx={{ pb: 8, mb:6 }}>
       <Button 
         startIcon={<ArrowBackIcon />} 
         variant="outlined" 
         onClick={() => navigate(-1)}
         sx={{ mb: 3 }}
       >
-        Back to Members
+        Back to Stores
       </Button>
       
       <Grid container spacing={3}>
-        {/* Member Profile Section */}
+        {/* Store Profile Section */}
         <Grid item xs={12} md={4}>
           <Card sx={{ mb: 3 }}>
             <CardContent>
@@ -240,17 +240,17 @@ const MemberCommitmentDetails = () => {
                     mb: 2
                   }}
                 >
-                  {member.name?.charAt(0).toUpperCase() || 'M'}
+                  {store.name?.charAt(0).toUpperCase() || 'M'}
                 </Avatar>
-                <Typography variant="h5" gutterBottom>{member.name}</Typography>
+                <Typography variant="h5" gutterBottom>{store.name}</Typography>
                 <Chip 
-                  icon={member.isVerified ? <CheckIcon /> : <CloseIcon />}
-                  label={member.isVerified ? "Verified Account" : "Unverified Account"} 
-                  color={member.isVerified ? "success" : "default"}
+                  icon={store.isVerified ? <CheckIcon /> : <CloseIcon />}
+                  label={store.isVerified ? "Verified Account" : "Unverified Account"} 
+                  color={store.isVerified ? "success" : "default"}
                   sx={{ mb: 1 }}
                 />
                 <Typography variant="body2" color="text.secondary">
-                  Member since {registrationDate}
+                  Store since {registrationDate}
                 </Typography>
               </Box>
               
@@ -260,28 +260,28 @@ const MemberCommitmentDetails = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <BusinessIcon color="action" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    <strong>Business:</strong> {member.businessName || 'Not specified'}
+                    <strong>Store Name:</strong> {store.businessName || 'Not specified'}
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   <EmailIcon color="action" sx={{ mr: 1, mt: 0.5 }} />
                   <Typography variant="body1">
-                    <strong>Email:</strong> {member.email}
+                    <strong>Email:</strong> {store.email}
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <PhoneIcon color="action" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    <strong>Phone:</strong> {member.phone || 'Not specified'}
+                    <strong>Phone Number:</strong> {store.phone || 'Not specified'}
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                   <LocationIcon color="action" sx={{ mr: 1, mt: 0.5 }} />
                   <Typography variant="body1">
-                    <strong>Address:</strong> {member.address || 'Not specified'}
+                    <strong>Address:</strong> {store.address || 'Not specified'}
                   </Typography>
                 </Box>
               </Stack>
@@ -337,7 +337,7 @@ const MemberCommitmentDetails = () => {
             
             {commitments.length === 0 ? (
               <Alert severity="info" sx={{ mt: 2 }}>
-                This member hasn't made any commitments yet.
+                This store hasn't made any commitments yet.
               </Alert>
             ) : (
               <>
@@ -411,6 +411,15 @@ const MemberCommitmentDetails = () => {
                                         >
                                           ({formatCurrency(sizeCommit.pricePerUnit)} each)
                                         </Typography>
+                                        {sizeCommit.appliedDiscountTier && (
+                                          <Chip 
+                                            label={`$${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+`}
+                                            size="small"
+                                            color="success"
+                                            variant="outlined"
+                                            sx={{ ml: 1, height: 20, fontSize: '0.6rem' }}
+                                          />
+                                        )}
                                       </Typography>
                                     </Box>
                                   ))}
@@ -536,6 +545,32 @@ const MemberCommitmentDetails = () => {
                       </Typography>
                     )}
                   </Grid>
+                  
+                  {/* Display size-specific discount tiers if available */}
+                  {selectedCommitment.sizeCommitments && selectedCommitment.sizeCommitments.some(sc => sc.appliedDiscountTier) && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Applied Discount Tiers
+                      </Typography>
+                      <List dense component={Paper} variant="outlined" sx={{ bgcolor: 'success.light' }}>
+                        {selectedCommitment.sizeCommitments
+                          .filter(sc => sc.appliedDiscountTier)
+                          .map((sizeCommit, idx) => (
+                            <ListItem key={idx}>
+                              <ListItemText
+                                primary={
+                                  <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                    {sizeCommit.size}: ${sizeCommit.appliedDiscountTier.tierDiscount} price at {sizeCommit.appliedDiscountTier.tierQuantity}+ units
+                                  </Typography>
+                                }
+                                secondary={`Saved ${formatCurrency((sizeCommit.originalPricePerUnit - sizeCommit.pricePerUnit) * sizeCommit.quantity)} with this discount`}
+                              />
+                            </ListItem>
+                          ))
+                        }
+                      </List>
+                    </Box>
+                  )}
                   
                   {selectedCommitment.distributorResponse && (
                     <Grid item xs={12}>

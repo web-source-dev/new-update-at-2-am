@@ -128,7 +128,6 @@ const App = () => {
             <Route path="/admin/deal-analytics/:dealId" element={<DealAnalytics />} />
             <Route path="/coop-members" element={<AllCoopMembers />} />
             <Route path="/assign-supplier/:memberId" element={<AssignSupplierPage />} />
-            <Route path="/member-commitment-details/:memberId" element={<MemberCommitmentDetails />} />
             <Route path="/create-password/:token" element={<CreateAddedMembersPassword />} />
           </Routes>
         </Router>

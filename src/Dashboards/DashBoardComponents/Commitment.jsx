@@ -37,7 +37,6 @@ import { FilterTextField, FilterSelect, FilterFormControl } from './FilterStyles
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import PaymentsForm from '../../Payments/paymentsForm';
 
 const Commitments = () => {
     const { userId } = useParams();
@@ -353,7 +352,21 @@ const Commitments = () => {
                       <strong>Quantity</strong>
                     </Typography>
                     <Typography variant="body1">
-                      {commitment.modifiedQuantity ? (
+                      {commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            Total: {commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {commitment.sizeCommitments.slice(0, 2).map((sc, idx) => (
+                              <span key={idx}>
+                                {sc.size}: {sc.quantity}{idx < Math.min(commitment.sizeCommitments.length - 1, 1) ? ', ' : ''}
+                              </span>
+                            ))}
+                            {commitment.sizeCommitments.length > 2 && ` +${commitment.sizeCommitments.length - 2} more`}
+                          </Typography>
+                        </Box>
+                      ) : commitment.modifiedQuantity ? (
                         <span>
                           <s style={{ color: 'text.secondary' }}>{commitment.quantity}</s>
                           {' → '}
@@ -384,6 +397,30 @@ const Commitments = () => {
                   </Box>
                 </Grid>
               </Grid>
+              
+              {/* Display size-specific discount tier information if available */}
+              {commitment.sizeCommitments && commitment.sizeCommitments.some(sc => sc.appliedDiscountTier) && (
+                <Box sx={{ 
+                  bgcolor: 'success.light', 
+                  color: 'success.dark', 
+                  p: 1.5, 
+                  borderRadius: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 0.5
+                }}>
+                  <Typography variant="body2" fontWeight="medium">
+                    Applied Discount Tiers:
+                  </Typography>
+                  {commitment.sizeCommitments
+                    .filter(sc => sc.appliedDiscountTier)
+                    .map((sc, idx) => (
+                      <Typography key={idx} variant="body2">
+                        {sc.size}: ${sc.appliedDiscountTier.tierDiscount} at {sc.appliedDiscountTier.tierQuantity}+ units
+                      </Typography>
+                    ))}
+                </Box>
+              )}
               
               <Box sx={{ 
                 display: 'flex', 
@@ -588,7 +625,21 @@ const Commitments = () => {
                       </>
                     )}
                     <TableCell>
-                      {commitment.modifiedQuantity ? (
+                      {commitment.sizeCommitments && commitment.sizeCommitments.length > 0 ? (
+                        <Box>
+                          <Typography variant="body2" fontWeight="medium">
+                            Total: {commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {commitment.sizeCommitments.slice(0, 2).map((sc, idx) => (
+                              <span key={idx}>
+                                {sc.size}: {sc.quantity}{idx < Math.min(commitment.sizeCommitments.length - 1, 1) ? ', ' : ''}
+                              </span>
+                            ))}
+                            {commitment.sizeCommitments.length > 2 && ` +${commitment.sizeCommitments.length - 2} more`}
+                          </Typography>
+                        </Box>
+                      ) : commitment.modifiedQuantity ? (
                         <span>
                           <s>{commitment.quantity}</s> → {commitment.modifiedQuantity}
                         </span>

@@ -693,7 +693,29 @@ const DealsManagment = () => {
                   </Box>
 
                   {/* Discount Tiers Section */}
-                  {deal.discountTiers && deal.discountTiers.length > 0 && (
+                  {deal.sizes && deal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) ? (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                        Volume Discounts:
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {deal.sizes.map((size, sizeIdx) => 
+                          size.discountTiers && size.discountTiers.length > 0 ? (
+                            <Box key={sizeIdx} sx={{ mb: 1 }}>
+                              <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                                {size.size}:
+                              </Typography>
+                              {size.discountTiers.map((tier, tierIdx) => (
+                                <Typography key={tierIdx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                                  {tier.tierQuantity}+ units: ${tier.tierDiscount}
+                                </Typography>
+                              ))}
+                            </Box>
+                          ) : null
+                        )}
+                      </Box>
+                    </Box>
+                  ) : deal.discountTiers && deal.discountTiers.length > 0 ? (
                     <Box sx={{ mb: 2 }}>
                       <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
                         Volume Discounts:
@@ -706,7 +728,7 @@ const DealsManagment = () => {
                         ))}
                       </Box>
                     </Box>
-                  )}
+                  ) : null}
 
                   {/* Extra Deal Info */}
                   <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2 }}>
@@ -848,6 +870,60 @@ const DealsManagment = () => {
                     Min Qty: {deal.minQtyForDiscount} | Members: {deal.totalCommitments}
                   </Typography>
 
+                  {/* Deal progress indicator for list view */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, mb: 0.5 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ width: '40%' }}>
+                      Deal Progress: {deal.totalCommittedQuantity || 0} of {deal.minQtyForDiscount}
+                    </Typography>
+                    <Box sx={{ width: '50%', mr: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min(100, ((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                        sx={{ height: 6, borderRadius: 5 }}
+                        color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? 'success' : 'primary'}
+                      />
+                    </Box>
+                    {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
+                      <Chip 
+                        label="LIVE" 
+                        color="success" 
+                        size="small"
+                        sx={{ fontSize: '0.75rem' }}
+                      />
+                    ) : (
+                      <Typography variant="caption" color="warning.main">
+                        {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {deal.sizes && deal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                        Size-specific volume discounts:
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                        {deal.sizes.filter(size => size.discountTiers && size.discountTiers.length > 0)
+                          .slice(0, 2) // Limit to first 2 sizes to avoid crowding
+                          .map((size, idx) => (
+                            <Chip
+                              key={idx}
+                              label={`${size.size}: ${size.discountTiers.length} tier${size.discountTiers.length !== 1 ? 's' : ''}`}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                            />
+                          ))}
+                        {deal.sizes.filter(size => size.discountTiers && size.discountTiers.length > 0).length > 2 && (
+                          <Chip
+                            label={`+${deal.sizes.filter(size => size.discountTiers && size.discountTiers.length > 0).length - 2} more`}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '250px', gap: 1 }}>
@@ -996,19 +1072,26 @@ const DealsManagment = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
                       <LinearProgress
                         variant="determinate"
-                        value={Math.min(100, ((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100)}
+                        value={Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}
                         sx={{ height: 6, borderRadius: 2, width: '90%' }}
+                        color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? 'success' : 'primary'}
                       />
                       <Typography variant="body2" color="text.secondary">
-                        {((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100 >= 100 && (
-                          <CheckCircleIcon
-                            sx={{
-                              color: 'success.main'
-                            }}
-                          />
-                        )}
+                        {Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}%
                       </Typography>
                     </Box>
+                    {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
+                      <Chip 
+                        label="LIVE" 
+                        color="success" 
+                        size="small"
+                        sx={{ fontSize: '0.75rem', mt: 0.5 }}
+                      />
+                    ) : (
+                      <Typography variant="caption" color="warning.main">
+                        {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more to go live
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{new Date(deal.dealEndsAt).toLocaleString()}</TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
