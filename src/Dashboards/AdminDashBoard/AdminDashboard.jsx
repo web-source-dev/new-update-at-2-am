@@ -55,7 +55,7 @@ const AdminDashboard = () => {
     { path: 'splash-content', label: 'Splash Content' },
     { path: 'deal-management', label: 'Deal Management' },
     { path: 'announcements', label: 'Announcements' },
-    { path: 'request/contact/manage', label: 'Contacts' },
+    { path: 'request/contact/manage', label: 'Contact' },
   ];
 
   return (

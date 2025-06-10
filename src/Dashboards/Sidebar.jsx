@@ -100,7 +100,7 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
       case "User Monitoring":
         return <MonitorHeart />;
       case "Overview":
-        return <Assessment />;
+        return <Home />;
       case "Splash Content":
         return <ContentPaste />;
       case "Deal Management":
@@ -155,6 +155,14 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
         return <CompareArrows />;
       case "Contact":
         return <ContactSupport />;
+      case "My Commitments":
+        return <AssignmentIcon />;
+      case "Add Stores":
+        return <Store />;
+      case "Detailed Analytics":
+        return <Assessment />;
+      case "Members Tracking":
+        return <TrackChanges />;
       default:
         return <Description />;
     }
