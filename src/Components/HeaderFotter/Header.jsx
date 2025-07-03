@@ -39,9 +39,9 @@ import 'typeface-poppins'; // Requires npm install typeface-poppins
 
 // Add styled components for consistent styling
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-  borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+  background: theme.palette.background.default,
+  boxShadow: theme.shadows[2],
+  borderBottom: `1px solid ${theme.palette.grey[200]}`,
   backdropFilter: 'blur(10px)',
 }));
 
@@ -53,7 +53,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 const NavButton = styled(Button)(({ theme, active }) => ({
   my: 1,
   mx: 1.5,
-  color: active ? '#1a237e' : '#4a5568',
+  color: active ? theme.palette.secondary.main : theme.palette.primary.contrastText,
   fontWeight: active ? 600 : 500,
   fontSize: '0.95rem',
   letterSpacing: '0.02em',
@@ -61,7 +61,7 @@ const NavButton = styled(Button)(({ theme, active }) => ({
   padding: '8px 16px',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: 'rgba(100, 255, 218, 0.15)',
+    backgroundColor: theme.palette.secondary.contrastText,
     transform: 'translateY(-1px)',
   },
   '&::after': active ? {
@@ -69,7 +69,7 @@ const NavButton = styled(Button)(({ theme, active }) => ({
     display: 'block',
     width: '100%',
     height: '2px',
-    backgroundColor: '#1a237e',
+    backgroundColor: theme.palette.secondary.contrastText,
     position: 'absolute',
     bottom: '-4px',
     left: 0,
@@ -77,28 +77,9 @@ const NavButton = styled(Button)(({ theme, active }) => ({
 }));
 
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  bgcolor: '#64ffda',
-  color: '#1a237e',
+  bgcolor: theme.palette.secondary.main,
+  color: theme.palette.secondary.contrastText,
 }));
-
-const UserMenuPaperProps = {
-  elevation: 3,
-  sx: {
-    borderRadius: '12px',
-    marginTop: '8px',
-    minWidth: '200px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-    '& .MuiMenuItem-root': {
-      padding: '10px 16px',
-      borderRadius: '8px',
-      margin: '4px 8px',
-      transition: 'all 0.2s ease',
-      '&:hover': {
-        backgroundColor: 'rgba(100, 255, 218, 0.1)',
-      }
-    }
-  }
-};
 
 const Header = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
@@ -120,6 +101,25 @@ const Header = () => {
     { title: 'Login', path: '/login', icon: <LoginIcon /> },
     { title: 'Register', path: '/register', icon: <PersonAddIcon /> },
   ];
+
+  const UserMenuPaperProps = {
+    elevation: 3,
+    sx: {
+      borderRadius: '12px',
+      marginTop: '8px',
+      minWidth: '200px',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+      '& .MuiMenuItem-root': {
+        padding: '10px 16px',
+        borderRadius: '8px',
+        margin: '4px 8px',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+          backgroundColor: theme.palette.background.light,
+        }
+      }
+    }
+  };
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -183,19 +183,19 @@ const Header = () => {
             component={Link} 
             to={page.path}
             sx={{
-              bgcolor: isActive(page.path) ? 'rgba(100, 255, 218, 0.1)' : 'transparent',
+              bgcolor: isActive(page.path) ? 'background.light' : 'transparent',
               '&:hover': {
-                bgcolor: 'rgba(100, 255, 218, 0.2)',
+                bgcolor: 'background.light',
               }
             }}
           >
-            <ListItemIcon sx={{ color: isActive(page.path) ? '#1a237e' : 'inherit' }}>
+            <ListItemIcon sx={{ color: isActive(page.path) ? 'primary.main' : 'inherit' }}>
               {page.icon}
             </ListItemIcon>
             <ListItemText 
               primary={page.title} 
               sx={{ 
-                color: isActive(page.path) ? '#1a237e' : 'inherit',
+                color: isActive(page.path) ? 'primary.main' : 'inherit',
                 fontWeight: isActive(page.path) ? 'bold' : 'normal'
               }}
             />
@@ -218,7 +218,7 @@ const Header = () => {
               display: 'flex',
               alignItems: 'center',
               fontWeight: 800,
-              color: '#1a237e',
+              color: 'text.primary',
               textDecoration: 'none',
               fontFamily: "'Poppins', sans-serif",
               '&:hover': {
@@ -249,10 +249,10 @@ const Header = () => {
           <IconButton
             onClick={handleDrawerToggle}
             sx={{
-              color: '#1a237e',
+              color: 'text.primary',
               display: { xs: 'flex', md: 'none' },
               '&:hover': {
-                backgroundColor: 'rgba(100, 255, 218, 0.1)'
+                backgroundColor: 'background.light'
               }
             }}
           >
@@ -302,7 +302,7 @@ const Header = () => {
                     right: -8, 
                     bottom: -8, 
                     fontSize: '1.2rem', 
-                    bgcolor: 'white', 
+                    bgcolor: 'background.paper', 
                     borderRadius: '50%' 
                   }} />
                 </Box>
@@ -335,7 +335,7 @@ const Header = () => {
                     navigate(`/dashboard/${role === 'member' ? 'co-op-member' : role}/profile/${user._id}`) 
                   }}>
                     <ListItemIcon sx={{ minWidth: '36px !important' }}>
-                      <InfoIcon sx={{ color: '#4a5568', fontSize: '1.2rem' }} />
+                      <InfoIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
                     </ListItemIcon>
                     <Typography variant="body2" fontWeight={500}>Profile</Typography>
                   </MenuItem>
@@ -345,7 +345,7 @@ const Header = () => {
                     navigate(`/dashboard/${role === 'member' ? 'co-op-member' : role}/profile/${user._id}?tab=settings`) 
                   }}>
                     <ListItemIcon sx={{ minWidth: '36px !important' }}>
-                      <SettingsIcon sx={{ color: '#4a5568', fontSize: '1.2rem' }} />
+                      <SettingsIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
                     </ListItemIcon>
                     <Typography variant="body2" fontWeight={500}>Settings</Typography>
                   </MenuItem>
@@ -355,13 +355,13 @@ const Header = () => {
                     navigate(`/dashboard/${role === 'member' ? 'co-op-member' : role}`) 
                   }}>
                     <ListItemIcon sx={{ minWidth: '36px !important' }}>
-                      <DashboardIcon sx={{ color: '#4a5568', fontSize: '1.2rem' }} />
+                      <DashboardIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
                     </ListItemIcon>
                     <Typography variant="body2" fontWeight={500}>Dashboard</Typography>
                   </MenuItem>
                   <MenuItem onClick={() => { handleCloseUserMenu(); handleLogout() }}>
                     <ListItemIcon sx={{ minWidth: '36px !important' }}>
-                      <LogoutIcon sx={{ color: '#4a5568', fontSize: '1.2rem' }} />
+                      <LogoutIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
                     </ListItemIcon>
                     <Typography variant="body2" fontWeight={500}>Logout</Typography>
                   </MenuItem>
@@ -370,7 +370,7 @@ const Header = () => {
                 <>
                   <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/login') }}>
                     <ListItemIcon sx={{ minWidth: '36px !important' }}>
-                      <LoginIcon sx={{ color: '#4a5568', fontSize: '1.2rem' }} />
+                      <LoginIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
                     </ListItemIcon>
                     <Box>
                       <Typography variant="body2" fontWeight={600}>Sign In</Typography>
@@ -379,7 +379,7 @@ const Header = () => {
                   </MenuItem>
                   <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/register') }}>
                     <ListItemIcon sx={{ minWidth: '36px !important' }}>
-                      <PersonAddIcon sx={{ color: '#4a5568', fontSize: '1.2rem' }} />
+                      <PersonAddIcon sx={{ color: 'text.secondary', fontSize: '1.2rem' }} />
                     </ListItemIcon>
                     <Box>
                       <Typography variant="body2" fontWeight={600}>Register</Typography>
@@ -405,8 +405,8 @@ const Header = () => {
               '& .MuiDrawer-paper': { 
                 boxSizing: 'border-box', 
                 width: 250,
-                bgcolor: 'white',
-                borderRight: '1px solid rgba(0, 0, 0, 0.12)',
+                bgcolor: 'background.paper',
+                borderRight: `1px solid ${theme.palette.grey[200]}`,
                 transition: 'transform 0.3s ease-in-out',
               },
             }}

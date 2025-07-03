@@ -115,6 +115,7 @@ const DetailedAnalytics = ({ userId }) => {
 
   const fetchDetailedAnalytics = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/member/detailed-analytics/${userId}?timeRange=${timeRange}`
       );
@@ -123,6 +124,7 @@ const DetailedAnalytics = ({ userId }) => {
     } catch (error) {
       console.error('Error fetching detailed analytics:', error);
       setLoading(false);
+      setData(null);
       setSnackbar({
         open: true,
         message: 'Error loading analytics data',
@@ -164,16 +166,19 @@ const DetailedAnalytics = ({ userId }) => {
           <Button 
             variant={timeRange === 'month' ? 'contained' : 'outlined'}
             onClick={() => setTimeRange('month')}
+            color={timeRange === 'month' ? 'primary.main' : 'primary.contrastText'}
           >
             Month
           </Button>
           <Button 
             variant={timeRange === 'quarter' ? 'contained' : 'outlined'}
             onClick={() => setTimeRange('quarter')}
+            color={timeRange === 'quarter' ? 'primary.main' : 'primary.contrastText'}
           >
             Quarter
           </Button>
           <Button 
+            color={timeRange === 'year' ? 'primary.main' : 'primary.contrastText'}
             variant={timeRange === 'year' ? 'contained' : 'outlined'}
             onClick={() => setTimeRange('year')}
           >
@@ -181,41 +186,47 @@ const DetailedAnalytics = ({ userId }) => {
           </Button>
         </ButtonGroup>
       </Box>
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={data.yearlySpending}>
-          <defs>
-            <linearGradient id="colorSpending" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="_id.month" />
-          <YAxis />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Area
-            type="monotone"
-            dataKey="totalSpent"
-            stroke="#8884d8"
-            fillOpacity={1}
-            fill="url(#colorSpending)"
-            name="Total Spent"
-          />
-          <Area
-            type="monotone"
-            dataKey="savings"
-            stroke="#82ca9d"
-            fillOpacity={1}
-            fill="url(#colorSavings)"
-            name="Savings"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      {!data || !data.yearlySpending || data.yearlySpending.length === 0 ? (
+        <Box sx={{ py: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h6" color="text.secondary">No spending data available</Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height={400}>
+          <AreaChart data={data.yearlySpending}>
+            <defs>
+              <linearGradient id="colorSpending" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="_id.month" />
+            <YAxis />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+            <Area
+              type="monotone"
+              dataKey="totalSpent"
+              stroke="#8884d8"
+              fillOpacity={1}
+              fill="url(#colorSpending)"
+              name="Total Spent"
+            />
+            <Area
+              type="monotone"
+              dataKey="savings"
+              stroke="#82ca9d"
+              fillOpacity={1}
+              fill="url(#colorSavings)"
+              name="Savings"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
     </Paper>
   );
 
@@ -224,41 +235,47 @@ const DetailedAnalytics = ({ userId }) => {
       <Typography variant="h6" gutterBottom>
         Category Analysis
       </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={data.categoryPreferences}
-                dataKey="totalSpent"
-                nameKey="_id"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-              >
-                {data.categoryPreferences.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+      {!data || !data.categoryPreferences || data.categoryPreferences.length === 0 ? (
+        <Box sx={{ py: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h6" color="text.secondary">No category data available</Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={data.categoryPreferences}
+                  dataKey="totalSpent"
+                  nameKey="_id"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                >
+                  {data.categoryPreferences.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <List>
+              {data.categoryPreferences.map((category, index) => (
+                <ListItem key={index}>
+                  <ListItemText
+                    primary={category._id}
+                    secondary={`Total Spent: ${formatCurrency(category.totalSpent)}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <List>
-            {data.categoryPreferences.map((category, index) => (
-              <ListItem key={index}>
-                <ListItemText
-                  primary={category._id}
-                  secondary={`Total Spent: ${formatCurrency(category.totalSpent)}`}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Grid>
-      </Grid>
+      )}
     </Paper>
   );
 
@@ -267,45 +284,63 @@ const DetailedAnalytics = ({ userId }) => {
       <Typography variant="h6" gutterBottom>
         Savings Analysis
       </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="textSecondary">
-                Total Savings
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {formatCurrency(data.savingsAnalysis.totalSavings)}
-              </Typography>
-            </CardContent>
-          </Card>
+      {!data || !data.savingsAnalysis ? (
+        <Box sx={{ py: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h6" color="text.secondary">No savings data available</Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary">
+                  Total Savings
+                </Typography>
+                <Typography variant="h4" color="primary.contrastText">
+                  {formatCurrency(data.savingsAnalysis.totalSavings || 0)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary">
+                  Average Savings per Deal
+                </Typography>
+                <Typography variant="h4" color="primary.contrastText">
+                  {formatCurrency(data.savingsAnalysis.averageSavings || 0)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary">
+                  Savings Rate
+                </Typography>
+                <Typography variant="h4" color="primary.contrastText">
+                  {(() => {
+                    // Safe calculation of savings rate
+                    const totalSavings = data.savingsAnalysis.totalSavings || 0;
+                    const totalSpent = data.yearlySpending && Array.isArray(data.yearlySpending) 
+                      ? data.yearlySpending.reduce((acc, curr) => acc + (curr.totalSpent || 0), 0) 
+                      : 0;
+                    
+                    // Avoid division by zero
+                    if (totalSavings === 0 || (totalSavings + totalSpent) === 0) {
+                      return '0.0%';
+                    }
+                    
+                    return ((totalSavings / (totalSavings + totalSpent)) * 100).toFixed(1) + '%';
+                  })()}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="textSecondary">
-                Average Savings per Deal
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {formatCurrency(data.savingsAnalysis.averageSavings)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="textSecondary">
-                Savings Rate
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {((data.savingsAnalysis.totalSavings / 
-                  (data.savingsAnalysis.totalSavings + data.yearlySpending.reduce((acc, curr) => acc + curr.totalSpent, 0))) * 100).toFixed(1)}%
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      )}
     </Paper>
   );
 
@@ -543,12 +578,13 @@ const DetailedAnalytics = ({ userId }) => {
       />
       <Stack direction="row" spacing={1}>
         <IconButton onClick={() => setFilterDialogOpen(true)}>
-          <FilterList />
+          <FilterList color='primary.contrastText' />
         </IconButton>
         <Button
           variant="outlined"
-          startIcon={<FileDownload />}
+          startIcon={<FileDownload color='primary.contrastText' />}
           onClick={(e) => setFilterMenuAnchor(e.currentTarget)}
+          color='primary.contrastText'
         >
           Export
         </Button>
@@ -596,13 +632,27 @@ const DetailedAnalytics = ({ userId }) => {
       <Tabs
         value={currentTab}
         onChange={(e, newValue) => setCurrentTab(newValue)}
-        sx={{ mb: 3 }}
+        sx={{ 
+          mb: 2, 
+          width: '100%',
+          "& .MuiTabs-indicator": {
+            backgroundColor: "yellow",
+            height: 3
+          },
+          "& .MuiTab-root": {
+            color: "black",
+            "&.Mui-selected": {
+              color: "black",
+              fontWeight: "bold"
+            }
+          }
+        }}
         variant="scrollable"
         scrollButtons="auto"
       >
-        <Tab icon={<Timeline />} label="Spending Trends" />
-        <Tab icon={<Category />} label="Category Analysis" />
-        <Tab icon={<SaveAlt />} label="Savings Analysis" />
+        <Tab icon={<Timeline color='primary.contrastText' />} label="Spending Trends" />
+        <Tab icon={<Category color='primary.contrastText'/>} label="Category Analysis" />
+        <Tab icon={<SaveAlt color='primary.contrastText'/>} label="Savings Analysis" />
       </Tabs>
 
       <Box sx={{ mt: 2 }}>

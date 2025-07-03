@@ -48,7 +48,8 @@ import {
   ExpandMore,
   ExpandLess,
   FormatListBulleted,
-  Discount as DiscountIcon
+  Discount as DiscountIcon,
+  RestartAlt as RestartAltIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { saveAs } from 'file-saver';
@@ -70,7 +71,7 @@ const MemberCommitments = ({ userId }) => {
   const [filters, setFilters] = useState({
     dealName: '',
     quantity: '',
-    startDate: new Date(new Date().setDate(1)), // First day of current month
+    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // First day of current month with time set to 00:00:00
     endDate: new Date(),
     status: 'all'
   });
@@ -120,14 +121,33 @@ const MemberCommitments = ({ userId }) => {
     }
 
     if (filters.startDate && filters.endDate) {
+      // Adjust the start date to have time 00:00:00 and end date to have time 23:59:59
+      const adjustedStartDate = new Date(filters.startDate);
+      adjustedStartDate.setHours(0, 0, 0, 0);
+      
+      const adjustedEndDate = new Date(filters.endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
+      
       filtered = filtered.filter(c => {
         const commitmentDate = new Date(c.createdAt);
-        return commitmentDate >= filters.startDate && 
-               commitmentDate <= filters.endDate;
+        return commitmentDate >= adjustedStartDate && 
+               commitmentDate <= adjustedEndDate;
       });
     }
 
     setFilteredCommitments(filtered);
+  };
+
+  // Reset filters to show all commitments
+  const showAllCommitments = () => {
+    setFilters({
+      dealName: '',
+      quantity: '',
+      startDate: null,
+      endDate: null,
+      status: 'all'
+    });
+    setFilteredCommitments([...commitments]);
   };
 
   const handleSizeQuantityChange = (index, newQuantity) => {
@@ -479,7 +499,7 @@ const MemberCommitments = ({ userId }) => {
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, mr: 2 }}>
-      <Button variant="outlined" color="primary" onClick={handleClick}>
+      <Button variant="outlined" color="primary.contrastText" onClick={handleClick}>
         Download
       </Button>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -508,7 +528,8 @@ const MemberCommitments = ({ userId }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredCommitments
+              {filteredCommitments.length > 0 ? (
+                filteredCommitments
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((commitment) => {
                   // Calculate totals
@@ -636,7 +657,7 @@ const MemberCommitments = ({ userId }) => {
                             <>
                               <Button
                                 variant="outlined"
-                                color="primary"
+                                color="primary.contrastText"
                                 size="small"
                                 onClick={() => {
                                   setSelectedCommitment(commitment);
@@ -644,7 +665,7 @@ const MemberCommitments = ({ userId }) => {
                                   setModifiedSizeCommitments([...commitment.sizeCommitments]);
                                   setModifyDialogOpen(true);
                                 }}
-                                startIcon={<EditIcon />}
+                                startIcon={<EditIcon color="primary.contrastText" />}
                               >
                                 Modify
                               </Button>
@@ -656,7 +677,7 @@ const MemberCommitments = ({ userId }) => {
                                   setSelectedCommitment(commitment);
                                   setCancelDialogOpen(true);
                                 }}
-                                startIcon={<CancelIcon />}
+                                startIcon={<CancelIcon color="error" />}
                               >
                                 Cancel
                               </Button>
@@ -664,10 +685,10 @@ const MemberCommitments = ({ userId }) => {
                           )}
                             <Button
                               variant="outlined"
-                              color="primary"
+                              color="primary.contrastText"
                               size="small"
                               onClick={() => handleViewCommitment(commitment)}
-                              startIcon={<VisibilityIcon />}
+                              startIcon={<VisibilityIcon color="primary.contrastText" />}
                             >
                               View
                             </Button>
@@ -774,7 +795,24 @@ const MemberCommitments = ({ userId }) => {
                       </TableRow>
                     </React.Fragment>
                   );
-                })}
+                  })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">
+                    <Box sx={{ py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="body1">No commitments found with the current filters.</Typography>
+                      <Button 
+                        variant="contained" 
+                        color="primary" 
+                        startIcon={<RestartAltIcon />}
+                        onClick={showAllCommitments}
+                      >
+                        Show All Commitments
+                      </Button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

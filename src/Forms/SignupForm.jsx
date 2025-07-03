@@ -451,7 +451,7 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Person />
+                      <Person  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                 }}
@@ -471,7 +471,7 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email />
+                      <Email  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                 }}
@@ -491,13 +491,13 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock />
+                      <Lock  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff  color='primary.contrastText'/> : <Visibility  color='primary.contrastText'/>}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -521,13 +521,13 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock />
+                      <Lock  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        {showConfirmPassword ? <VisibilityOff  color='primary.contrastText'/> : <Visibility  color='primary.contrastText'/>}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -552,7 +552,7 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Business />
+                      <Business  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                 }}
@@ -571,7 +571,7 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Person />
+                      <Person  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                 }}
@@ -590,7 +590,7 @@ const SignupForm = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Phone />
+                      <Phone  color='primary.contrastText'/>
                     </InputAdornment>
                   ),
                 }}
@@ -652,7 +652,7 @@ const SignupForm = () => {
                   fontWeight: 600,
                   textAlign: 'center',
                   mb: 3,
-                  color: theme.palette.primary.main
+                  color: theme.palette.primary.contrastText
                 }}
               >
                 Create Account
@@ -748,7 +748,7 @@ const SignupForm = () => {
           }}
         >
           <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-            <CheckCircleOutline color="primary" sx={{ fontSize: 48, mb: 1 }} />
+            <CheckCircleOutline color="primary.contrastText" sx={{ fontSize: 48, mb: 1 }} />
             <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
               Verify Your Email
             </Typography>
@@ -780,7 +780,7 @@ const SignupForm = () => {
             <Button
               fullWidth
               variant="contained"
-              color="primary"
+              color="primary.contrastText"
               onClick={handleVerifyOTP}
               disabled={verificationLoading}
               sx={{ mb: 2 }}
@@ -790,7 +790,7 @@ const SignupForm = () => {
             
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
               <Button
-                color="primary"
+                color="primary.contrastText"
                 disabled={resendDisabled}
                 onClick={handleResendOTP}
                 sx={{ textTransform: 'none' }}

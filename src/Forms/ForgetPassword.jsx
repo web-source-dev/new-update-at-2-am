@@ -149,7 +149,7 @@ const ForgetPassword = () => {
                   fontWeight: 600,
                   textAlign: 'center',
                   mb: 1,
-                  color: theme.palette.primary.main
+                  color: theme.palette.primary.contrastText
                 }}
               >
                 Forgot Password
@@ -189,7 +189,7 @@ const ForgetPassword = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Email />
+                            <Email  color='primary.contrastText'/>
                           </InputAdornment>
                         ),
                       }}

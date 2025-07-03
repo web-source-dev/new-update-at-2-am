@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, ThemeProvider } from "@mui/material";
 import { Helmet } from 'react-helmet';
 import { SnackbarProvider } from 'notistack';
+import customTheme from './theme/customTheme';
 import AllDashboard from './Dashboards/AllDashboard';
 import './Components/Buttons/buttons.css';
 import './Components/Inputs/input.css';
@@ -75,14 +76,14 @@ const Layout = ({ children }) => {
 
 const App = () => {
   return (
-    <>
+    <ThemeProvider theme={customTheme}>
       <SnackbarProvider maxSnack={3}>
         <Router>
           <Helmet>
             <title>NMGA - Next Generation Market Access</title>
             <meta name="description" content="NMGA - Your platform for next generation market access and business solutions" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <meta name="theme-color" content="#000000" />
+            <meta name="theme-color" content="#5ac9cd" />
           </Helmet>
           <Routes>
             {/* Public pages with header and footer */}
@@ -151,7 +152,7 @@ const App = () => {
           <img src="/RTNLOGO.jpg" width="200px" alt="RTN Global Logo" />
         </a>
       </Box>
-    </>
+    </ThemeProvider>
   );
 }
 

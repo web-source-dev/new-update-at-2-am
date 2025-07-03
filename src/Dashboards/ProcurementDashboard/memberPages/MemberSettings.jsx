@@ -283,6 +283,10 @@ const MemberSettings = ({ userId }) => {
     return <SettingsSkeleton />;
   }
 
+  const getInitials = (name) => {
+    return name.split(' ').map(word => word[0]).join('').toUpperCase();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Typography variant="h4" gutterBottom>
@@ -302,8 +306,18 @@ const MemberSettings = ({ userId }) => {
               <AvatarContainer>
                 <Avatar
                   src={initialValues.logo}
-                  sx={{ width: 100, height: 100, mr: 2 }}
-                />
+                  sx={{ 
+                    width: 100, 
+                    height: 100, 
+                    mr: 2, 
+                    bgcolor: 'primary.main', 
+                    color: 'primary.contrastText',
+                    fontSize: '2.5rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {!initialValues.logo && getInitials(initialValues.name)}
+                </Avatar>
                 <label htmlFor="avatar-input">
                   <input
                     accept="image/*"
@@ -313,10 +327,10 @@ const MemberSettings = ({ userId }) => {
                     onChange={handleAvatarChange}
                   />
                   <IconButton
-                    color="primary"
+                    color="primary.contrastText"
                     component="span"
                   >
-                    <PhotoCamera />
+                    <PhotoCamera color='primary.contrastText'/>
                   </IconButton>
                 </label>
               </AvatarContainer>
@@ -435,6 +449,7 @@ const MemberSettings = ({ userId }) => {
                       ))}
                       <Button
                         variant="outlined"
+                        color='primary.contrastText'
                         onClick={handleAddEmail}
                       >
                         Add Email
@@ -477,11 +492,13 @@ const MemberSettings = ({ userId }) => {
                       <Button
                         variant="outlined"
                         onClick={handleAddPhone}
+                        color='primary.contrastText'
+                        sx={{ mb: 2 }}
                       >
                         Add Phone Number
                       </Button>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid item xs={12} sx={{ borderTop: 1, borderColor: 'primary.main' }}> 
                       <StyledButton color="primary" variant="contained" type="submit">
                         Update Profile
                       </StyledButton>

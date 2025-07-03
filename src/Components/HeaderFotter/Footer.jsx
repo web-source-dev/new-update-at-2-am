@@ -9,7 +9,8 @@ import {
   Stack,
   Divider,
   Button,
-  TextField
+  TextField,
+  useTheme
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -21,6 +22,8 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 
 const Footer = () => {
+  const theme = useTheme();
+  
   const footerLinks = {
     company: [
       { title: 'About Us', path: '/about' },
@@ -49,8 +52,8 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        bgcolor: '#1a237e',
-        color: 'white',
+        bgcolor: 'primary.main',
+        color: 'primary.contrastText',
         py: 6,
         mt: 'auto'
       }}
@@ -74,9 +77,9 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    color: 'white',
+                    color: 'primary.contrastText',
                     '&:hover': {
-                      bgcolor: 'rgba(100, 255, 218, 0.2)',
+                      bgcolor: 'rgba(255, 255, 255, 0.2)',
                     }
                   }}
                 >
@@ -100,12 +103,12 @@ const Footer = () => {
                       component={Link}
                       to={link.path}
                       sx={{
-                        color: 'white',
+                        color: 'primary.contrastText',
                         opacity: 0.8,
                         textDecoration: 'none',
                         '&:hover': {
                           opacity: 1,
-                          color: '#64ffda'
+                          color: 'secondary.main'
                         }
                       }}
                     >
@@ -125,12 +128,12 @@ const Footer = () => {
                       component={Link}
                       to={link.path}
                       sx={{
-                        color: 'white',
+                        color: 'primary.contrastText',
                         opacity: 0.8,
                         textDecoration: 'none',
                         '&:hover': {
                           opacity: 1,
-                          color: '#64ffda'
+                          color: 'secondary.main'
                         }
                       }}
                     >
@@ -150,12 +153,12 @@ const Footer = () => {
                       component={Link}
                       to={link.path}
                       sx={{
-                        color: 'white',
+                        color: 'primary.contrastText',
                         opacity: 0.8,
                         textDecoration: 'none',
                         '&:hover': {
                           opacity: 1,
-                          color: '#64ffda'
+                          color: 'secondary.main'
                         }
                       }}
                     >
@@ -185,7 +188,7 @@ const Footer = () => {
                   mb: 2,
                   bgcolor: 'rgba(255, 255, 255, 0.1)',
                   '& .MuiOutlinedInput-root': {
-                    color: 'white',
+                    color: 'primary.contrastText',
                     '& fieldset': {
                       borderColor: 'rgba(255, 255, 255, 0.3)',
                     },
@@ -193,7 +196,7 @@ const Footer = () => {
                       borderColor: 'rgba(255, 255, 255, 0.5)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#64ffda',
+                      borderColor: 'secondary.main',
                     },
                   },
                 }}
@@ -202,10 +205,10 @@ const Footer = () => {
                 fullWidth
                 variant="contained"
                 sx={{
-                  bgcolor: '#64ffda',
-                  color: '#1a237e',
+                  bgcolor: 'secondary.main',
+                  color: 'secondary.contrastText',
                   '&:hover': {
-                    bgcolor: '#00bfa5'
+                    bgcolor: 'secondary.dark'
                   }
                 }}
               >

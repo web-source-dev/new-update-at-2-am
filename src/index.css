@@ -1,80 +1,11 @@
 :root {
-  /* Primary Colors */
-  --primary-color: #000; /* Black */
-  --secondary-color: #fff; /* White */
-  --accent-color: #ff6600; /* Accent Orange */
-
-  /* Neutral Colors */
-  --background-color: #f8f8f8; /* Light Gray */
-  --text-color: #333; /* Dark Gray */
-  --border-color: #ddd; /* Light Border */
-  --muted-color: #6c757d; /* Muted Gray */
-  --light-color: #f1f1f1; /* Lighter Gray */
-  --dark-color: #222; /* Dark Background */
-  --button-color: #282936; /* Dark Button */
-
-  /* Extended Theme Colors */
-  --primary-light: #333; /* Soft Black */
-  --primary-dark: #111; /* Deep Black */
-  --secondary-light: #f5f5f5; /* Almost White */
-  --secondary-dark: #ccc; /* Soft Gray */
-
-  /* UI Colors */
-  --success-color: #28a745; /* Success Green */
-  --success-light: #5dd68e; /* Light Success */
-  --success-dark: #1e7e34; /* Dark Success */
-
-  --warning-color: #ffc107; /* Warning Yellow */
-  --warning-light: #ffe083; /* Light Warning */
-  --warning-dark: #e0a800; /* Dark Warning */
-
-  --error-color: #dc3545; /* Error Red */
-  --error-light: #f08080; /* Light Error */
-  --error-dark: #c82333; /* Dark Error */
-
-  --info-color: #17a2b8; /* Info Blue */
-  --info-light: #63c2de; /* Light Info */
-  --info-dark: #117a8b; /* Dark Info */
-
-  /* Additional Accent Colors */
-  --purple-color: #6f42c1; /* Purple */
-  --purple-light: #a073e3;
-  --purple-dark: #5936a6;
-
-  --pink-color: #e83e8c; /* Pink */
-  --pink-light: #f78eb6;
-  --pink-dark: #d2176c;
-
-  --blue-color: #007bff; /* Blue */
-  --blue-light: #69b3ff;
-  --blue-dark: #0056b3;
-
-  --teal-color: #20c997; /* Teal */
-  --teal-light: #66d6b2;
-  --teal-dark: #1b9c77;
-
-  --cyan-color: #17a2b8; /* Cyan */
-  --cyan-light: #5cc9de;
-  --cyan-dark: #117a8b;
-
-  --brown-color: #795548; /* Brown */
-  --brown-light: #a98274;
-  --brown-dark: #5d4037;
-
-  --gold-color: #daa520; /* Gold */
-  --gold-light: #f4c542;
-  --gold-dark: #b8860b;
-
-  /* Gradient Colors */
-  --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-  --gradient-secondary: linear-gradient(135deg, var(--secondary-dark), var(--secondary-color));
-  --gradient-accent: linear-gradient(135deg, var(--accent-color), #ff4500);
-  --gradient-info: linear-gradient(135deg, var(--info-light), var(--info-dark));
-  --gradient-success: linear-gradient(135deg, var(--success-light), var(--success-dark));
-  --gradient-warning: linear-gradient(135deg, var(--warning-light), var(--warning-dark));
-  --gradient-error: linear-gradient(135deg, var(--error-light), var(--error-dark));
+  --primary-color: #5ac9cd;
+  --secondary-color: #fbde59;
+  --text-color: #333333;
+  --background-color: #ffffff;
+  --light-background: #e5f0fe;
+  --inherit-color: #fbde59;
 }
-
 
 body {
   margin: 0;
@@ -86,13 +17,14 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
 }
+
 ::selection {
-  background: var(--blue-color);
-  color: var(--secondary-color);
+  background: var(--primary-color);
+  color: #ffffff;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
-    color: var(--muted-color);
+  color: var(--text-color);
 }

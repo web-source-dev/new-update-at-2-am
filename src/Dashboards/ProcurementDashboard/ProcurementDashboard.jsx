@@ -77,8 +77,9 @@ if (!user?.addedBy) {
           <Button 
   onClick={() => navigate(`offers/view/splash-content?id=${userId}&session=${userId}&role=distributor?offer=true`)}
   sx={{
-    border: '2px solid #007bff',
-    color: '#007bff',
+    border: '2px solid',
+    borderColor : 'primary.contrastText',
+    color: 'primary.contrastText',
     backgroundColor: 'white',
     padding: { xs: '4px 4px', md: '10px 10px' },
     cursor: 'pointer',
@@ -89,8 +90,8 @@ if (!user?.addedBy) {
     transition: 'background-color 0.3s ease',
     marginRight: '4px',
     '&:hover': {
-      backgroundColor: '#0056b3',
-      color: 'white',
+      backgroundColor: 'primary.main',
+      color: 'primary.contrastText',
     },
   }}
 >
@@ -100,8 +101,9 @@ Advertisements
 <Button 
   onClick={() => navigate('/deals-catlog')}
   sx={{
-    border: '2px solid #007bff',
-    color: '#007bff',
+    border: '2px solid',
+    borderColor : 'primary.contrastText',
+    color: 'primary.contrastText',
     backgroundColor: 'white',
     padding: { xs: '4px 4px', md: '10px 10px' },
     cursor: 'pointer',
@@ -112,8 +114,8 @@ Advertisements
     transition: 'background-color 0.3s ease',
     marginRight: '4px',
     '&:hover': {
-      backgroundColor: '#0056b3',
-      color: 'white',
+      backgroundColor: 'primary.main',
+      color: 'primary.contrastText',
     },
   }}
 >

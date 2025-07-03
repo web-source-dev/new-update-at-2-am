@@ -258,11 +258,11 @@ const UserManagment = () => {
 
       <Button
         variant="contained"
-        color="primary"
+        color="primary.main"
         onClick={handleOpenAddUser}
-        sx={{ mb: 2  ,borderRadius: '50%', width: '40px', height: '40px'}}
+        sx={{bgcolor:"primary.main",mb: 2  ,borderRadius: '50%', width: '40px', height: '40px'}}
       >
-        <Add />
+        <Add color='primary.contrastText' />
       </Button>
       </Box>
 
@@ -271,20 +271,21 @@ const UserManagment = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Button
               onClick={() => setShowFilters(!showFilters)}
-              startIcon={<FilterAlt />}
-              endIcon={showFilters ? <ExpandLess /> : <ExpandMore />}
-              color="primary"
+              startIcon={<FilterAlt color="primary.contrastText" />}
+              endIcon={showFilters ? <ExpandLess color="primary.contrastText" /> : <ExpandMore color="primary.contrastText" />}
+              color="primary.contrastText"
             >
-              <Badge badgeContent={activeFilters} color="primary" sx={{ mr: 1 }}>
+              <Badge badgeContent={activeFilters} color="primary.contrastText" sx={{ mr: 1 }}>
                 Filters
               </Badge>
             </Button>
             {activeFilters > 0 && (
               <Button
                 variant="text"
-                startIcon={<Clear />}
+                startIcon={<Clear color="primary.contrastText" />}
                 onClick={handleClearFilters}
                 size="small"
+                color="primary.contrastText"
               >
                 Clear All
               </Button>
@@ -318,7 +319,7 @@ const UserManagment = () => {
                             }
                           }}
                           variant="outlined"
-                          color="primary"
+                          color="primary.contrastText"
                           sx={{
                             '&:hover': {
                               backgroundColor: 'primary.light',
@@ -342,7 +343,7 @@ const UserManagment = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Search fontSize="small" />
+                          <Search fontSize="small" color="primary.contrastText" />
                         </InputAdornment>
                       ),
                     }}
@@ -489,12 +490,13 @@ const UserManagment = () => {
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={(event) => handleMenuClick(event, user)}>
-                        <MoreVert />
+                        <MoreVert color="primary.contrastText" />
                       </IconButton>
                       <Menu
                         anchorEl={menuAnchorEl}
                         open={Boolean(menuAnchorEl)}
                         onClose={handleMenuClose}
+                        color="primary.contrastText"
                         anchorOrigin={{
                           vertical: 'top',
                           horizontal: 'left',
@@ -505,7 +507,7 @@ const UserManagment = () => {
                         }}
                       >
                         <MenuItem onClick={() => handleViewUser(selectedUser._id)}>
-                          <Visibility /> View
+                          <Visibility color="primary.contrastText" /> View
                         </MenuItem>
                         {selectedUser?.isBlocked ? (
                           <MenuItem onClick={() => handleUnblockUser(selectedUser._id)}>
@@ -517,7 +519,7 @@ const UserManagment = () => {
                           </MenuItem>
                         )}
                         <MenuItem onClick={() => handleLoginAsUser(selectedUser.email, selectedUser.login_key)}>
-                          <Login /> Login as User
+                          <Login  color="primary.contrastText"/> Login as User
                         </MenuItem>
                       </Menu>
                     </TableCell>
@@ -550,10 +552,11 @@ const UserManagment = () => {
             sx={{
               '.MuiTablePagination-select': {
                 borderRadius: 1,
-                bgcolor: 'background.paper',
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
               },
               '.MuiTablePagination-selectIcon': {
-                color: 'primary.main',
+                color: 'primary.contrastText',
               },
             }}
           />
@@ -561,16 +564,16 @@ const UserManagment = () => {
             count={Math.ceil(filteredUsers.length / rowsPerPage)}
             page={page + 1}
             onChange={(e, p) => setPage(p - 1)}
-            color="primary"
+            color="primary.contrastText"
             size={isMobile ? "small" : "medium"}
             sx={{
               '& .MuiPaginationItem-root': {
                 borderRadius: 1,
                 '&.Mui-selected': {
-                  bgcolor: 'primary.main',
+                  bgcolor: 'primary.contrastText',
                   color: 'white',
                   '&:hover': {
-                    bgcolor: 'primary.dark',
+                    bgcolor: 'primary.contrastText',
                   },
                 },
               },

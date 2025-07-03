@@ -20,7 +20,13 @@ const Logout = () => {
   };
 
   return (
-    <Button onClick={handleLogout} color="secondary">
+    <Button onClick={handleLogout} color="primary.contrastText" sx={{
+      fontSize:'16px',
+      fontWeight:'500',
+      borderLeft:'4px solid',
+      borderColor:'primary.contrastText',
+      borderRadius:0
+    }}>
       Logout
     </Button>
   );

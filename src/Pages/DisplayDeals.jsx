@@ -744,7 +744,7 @@ const DisplayDeals = () => {
       }
       
       return (
-        <Grid item xs={12} sm={6} md={4} lg={3} key={deal._id}>
+        <Grid item xs={12} sm={6} md={4} lg={4} key={deal._id}>
           <Card 
             sx={{
               height: '100%', 
@@ -766,8 +766,8 @@ const DisplayDeals = () => {
                   position: 'absolute',
                   top: 10,
                   right: 10,
-                  bgcolor: 'error.main',
-                  color: 'white',
+                  bgcolor: theme.palette.secondary.main,
+                  color: theme.palette.background.default,
                   fontWeight: 'bold',
                   py: 0.5,
                   px: 1.5,
@@ -782,7 +782,7 @@ const DisplayDeals = () => {
             )}
             
             {deal.images && deal.images.length > 0 && (
-              <Box sx={{ position: 'relative', height: 200, bgcolor: 'grey.50' }}>
+              <Box sx={{ position: 'relative', height: 200, bgcolor: theme.palette.background.default }}>
                 {isVideoUrl(deal.images[0]) ? (
                   <Box
                     component="video"
@@ -803,7 +803,7 @@ const DisplayDeals = () => {
                     height="200"
                     image={deal.images[0]}
                     alt={deal.name}
-                    sx={{ objectFit: 'contain', bgcolor: 'grey.50', p: 2 }}
+                    sx={{ objectFit: 'contain', bgcolor: theme.palette.background.default, p: 2 }}
                   />
                 )}
                 {isVideoUrl(deal.images[0]) && (
@@ -813,7 +813,7 @@ const DisplayDeals = () => {
                       bottom: 5,
                       right: 5,
                       bgcolor: 'rgba(0,0,0,0.6)',
-                      color: 'white',
+                      color: theme.palette.background.default,
                       borderRadius: '50%',
                       p: 0.5,
                     }}
@@ -840,7 +840,7 @@ const DisplayDeals = () => {
                 <Box>
                   <Typography 
                     variant="body1" 
-                    color="primary.main" 
+                    color={theme.palette.primary.contrastText} 
                     component="span"
                     sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}
                   >
@@ -850,7 +850,7 @@ const DisplayDeals = () => {
                     <Typography 
                       variant="body2" 
                       component="span" 
-                      sx={{ ml: 0.5, color: 'text.secondary' }}
+                      sx={{ ml: 0.5, color: theme.palette.primary.contrastText }}
                     >
                       - ${highestPrice.toFixed(2)}
                     </Typography>
@@ -861,8 +861,7 @@ const DisplayDeals = () => {
                     label={deal.category} 
                     size="small" 
                     variant="outlined"
-                    color="primary"
-                    sx={{ borderRadius: '4px' }}
+                    sx={{ borderRadius: '4px', color: theme.palette.error.dark ,borderColor: theme.palette.error.light }}
                   />
                   {deal.sizes && deal.sizes.length > 1 && (
                     <Chip 
@@ -883,7 +882,7 @@ const DisplayDeals = () => {
               {/* Size options */}
               <Typography 
                 variant="body2" 
-                color="text.secondary"
+                color={theme.palette.text.secondary}
                 sx={{
                   mb: 1,
                   height: '1.5rem',
@@ -907,7 +906,7 @@ const DisplayDeals = () => {
                           px: 0.5,
                           mr: 0.5,
                           fontSize: '0.7rem',
-                          bgcolor: 'grey.100',
+                          bgcolor: theme.palette.grey[100],
                           borderRadius: 0.5,
                           whiteSpace: 'nowrap'
                         }}
@@ -931,7 +930,7 @@ const DisplayDeals = () => {
                 />
                 <Typography 
                   variant="body2" 
-                  color="text.secondary"
+                  color={theme.palette.text.secondary}
                   sx={{
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -946,29 +945,29 @@ const DisplayDeals = () => {
               {deal.minQtyForDiscount > 0 && (
                 <Box sx={{ mb: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color={theme.palette.text.secondary}>
                       {deal.totalCommittedQuantity || 0} of {deal.minQtyForDiscount} committed
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" fontWeight="bold">
+                    <Typography variant="caption" color={theme.palette.text.secondary} fontWeight="bold">
                       {Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}%
                     </Typography>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: 'grey.100', borderRadius: 5, overflow: 'hidden' }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: theme.palette.grey[100], borderRadius: 5, overflow: 'hidden' }}>
                     <Box 
                       sx={{ 
                         height: '100%', 
                         width: `${Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}%`,
-                        bgcolor: (deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? 'success.main' : 'primary.main',
+                        bgcolor: (deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? theme.palette.success.main : theme.palette.primary.main,
                         transition: 'width 0.5s ease-in-out'
                       }} 
                     />
                   </Box>
                   {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
-                    <Typography variant="caption" color="success.main" fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
+                    <Typography variant="caption" color={theme.palette.success.main} fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
                       Deal is LIVE! Minimum quantity reached
                     </Typography>
                   ) : (
-                    <Typography variant="caption" color="warning.main" fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
+                    <Typography variant="caption" color={theme.palette.secondary.main} fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
                       {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more units needed to go LIVE
                     </Typography>
                   )}
@@ -982,13 +981,13 @@ const DisplayDeals = () => {
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: 0.5,
-                  bgcolor: 'info.light',
+                  bgcolor: theme.palette.info.light,
                   borderRadius: 1,
                   px: 1,
                   py: 0.3
                 }}>
-                  <TrendingUp fontSize="small" color="inherit" />
-                  <Typography variant="caption" color="info.dark" sx={{ fontWeight: 'medium' }}>
+                  <TrendingUp fontSize="small" color={theme.palette.inherit.main} />
+                  <Typography variant="caption" color={theme.palette.info.dark} sx={{ fontWeight: 'medium' }}>
                     Volume discounts available with collective buying
                   </Typography>
                 </Box>
@@ -1000,14 +999,14 @@ const DisplayDeals = () => {
                   <Chip 
                     size="small" 
                     label={`Min: ${deal.minQtyForDiscount}`}
-                    color="info"
+                    color={theme.palette.primary.dark}
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
                   <Chip 
                     size="small" 
                     label={`Left: ${Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))}`}
-                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? "success" : "warning"}
+                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? theme.palette.success : theme.palette.primary.dark}
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
@@ -1015,7 +1014,7 @@ const DisplayDeals = () => {
                     <Chip 
                       size="small" 
                       label="LIVE"
-                      color="success"
+                      color={theme.palette.primary.dark}
                       sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                     />
                   )}
@@ -1025,13 +1024,13 @@ const DisplayDeals = () => {
                   <Chip 
                     size="small" 
                     label="Committed"
-                    color="success"
+                    color={theme.palette.primary.dark}
                     sx={{ borderRadius: 1 }}
                   />
                 ) : (
                   <Typography 
                     variant="body2" 
-                    color="text.secondary"
+                    color={theme.palette.text.secondary}
                     sx={{ fontSize: '0.75rem' }}
                   >
                     Ends: {new Date(deal.dealEndsAt).toLocaleDateString()}
@@ -1045,6 +1044,7 @@ const DisplayDeals = () => {
                 fullWidth
                 variant="outlined"
                 size="small"
+                color={theme.palette.primary.dark}
                 onClick={() => handleOpenView(deal)}
                 sx={{ borderRadius: 1 }}
               >
@@ -1056,7 +1056,7 @@ const DisplayDeals = () => {
                 size="small"
                 onClick={() => handleOpenGetDeal(deal)}
                 sx={{ borderRadius: 1 }}
-                startIcon={isCommitted ? <EditIcon /> : <AddShoppingCart />}
+                startIcon={isCommitted ? <EditIcon color={theme.palette.primary.dark} /> : <AddShoppingCart color={theme.palette.primary.dark} />}
               >
                 {isCommitted ? 'Update' : 'Commit'}
               </Button>
@@ -1084,11 +1084,11 @@ const DisplayDeals = () => {
 
       <Box sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom, #f3f4f6, #ffffff)',
+        background: theme.palette.background.default,
         pb: 4
       }}>
         <Box sx={{
-          background: 'linear-gradient(45deg, #1a237e, #0d47a1)',
+          background: theme.palette.primary.main,
           color: 'white',
           py: { xs: 4, md: 4 },
           px: { xs: 2, sm: 4 },
@@ -1109,7 +1109,7 @@ const DisplayDeals = () => {
                   sx={{
                     fontSize: { xs: '1.3rem', sm: '1.6rem', md: '2rem' },
                     mb: 1,
-                    background: 'linear-gradient(45deg, #ffffff 30%, #e3f2fd 90%)',
+                    background: theme.palette.primary.contrastText,
                     backgroundClip: 'text',
                     textFillColor: 'transparent',
                   }}
@@ -1119,9 +1119,9 @@ const DisplayDeals = () => {
                 <Typography
                   variant="h6"
                   sx={{
-                    opacity: 0.9,
-                    fontWeight: 400,
-                    fontSize: { xs: '0.7rem', sm: '0.9rem' }
+                    opacity: 1,
+                    fontWeight: 500,
+                    fontSize: { xs: '1rem', sm: '1rem' }
                   }}
                 >
                   Discover amazing products at unbeatable prices
@@ -1130,10 +1130,10 @@ const DisplayDeals = () => {
               <Button
                 onClick={() => navigate(`/dashboard/co-op-member/offers/view/splash-content?id=${user_id}&session=${user_id}&role=distributor?offer=true`)}
                 sx={{
-                  border: '2px solid #007bff',
-                  color: '#007bff',
+                  border: `2px solid ${theme.palette.primary.contrastText}`,
+                  color: theme.palette.primary.contrastText,
                   backgroundColor: 'white',
-                  padding: { xs: '4px 4px', md: '10px 10px' },
+                  padding: { xs: '8px 16px', md: '10px 10px' },
                   cursor: 'pointer',
                   borderRadius: 25,
                   fontSize: { xs: '12px', md: '16px' },
@@ -1142,8 +1142,8 @@ const DisplayDeals = () => {
                   transition: 'background-color 0.3s ease',
                   marginRight: '4px',
                   '&:hover': {
-                    backgroundColor: '#0056b3',
-                    color: 'white',
+                    backgroundColor: theme.palette.primary.contrastText,
+                    color: theme.palette.secondary.contrastText,
                   },
                 }}
               >
@@ -1184,15 +1184,16 @@ const DisplayDeals = () => {
                     <Button
                       variant="contained"
                       onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                      startIcon={<FilterList />}
-                      endIcon={mobileFiltersOpen ? <ExpandLess /> : <ExpandMore />}
+                      startIcon={<FilterList color={theme.palette.primary.contrastText} />}
+                      endIcon={mobileFiltersOpen ? <ExpandLess color={theme.palette.primary.contrastText} /> : <ExpandMore color={theme.palette.primary.contrastText} />}
                       sx={{
                         bgcolor: 'rgba(255,255,255,0.2)',
-                        color: 'white',
+                        color: theme.palette.primary.contrastText,
                         borderRadius: 3,
                         px: 3,
                         '&:hover': {
-                          bgcolor: 'rgba(255,255,255,0.3)',
+                          bgcolor: theme.palette.primary.contrastText,
+                          color: theme.palette.secondary.main,
                         }
                       }}
                     >
@@ -1284,7 +1285,7 @@ const DisplayDeals = () => {
                           label={cat}
                           onClick={() => handleFilterChange('category', cat === filter.category ? '' : cat)}
                           variant={filter.category === cat ? "filled" : "outlined"}
-                          color="primary"
+                          color={theme.palette.primary.dark}
                           sx={{
                             borderRadius: 2,
                             '&:hover': {
@@ -1586,14 +1587,14 @@ const DisplayDeals = () => {
                               <TableCell align="right">
                                 <Typography 
                                   variant="body1" 
-                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "primary"}
+                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.primary.main}
                                 >
                                   ${effectivePrice.toFixed(2)}
                                 </Typography>
                                 {priceWillChange && (
                                   <Typography 
                                     variant="caption" 
-                                    color={effectivePrice < size.discountPrice ? "success.main" : "error.main"} 
+                                    color={effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main} 
                                     sx={{ display: 'block', textDecoration: effectivePrice < size.discountPrice ? 'line-through' : 'none' }}
                                   >
                                     {effectivePrice < size.discountPrice ? `was $${size.discountPrice.toFixed(2)}` : `was $${(appliedTier ? appliedTier.tierDiscount : size.discountPrice).toFixed(2)}`}
@@ -1615,7 +1616,7 @@ const DisplayDeals = () => {
                                 <Typography 
                                   variant="body1" 
                                   fontWeight="medium"
-                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "inherit"}
+                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.inherit.main}
                                 >
                                   ${subtotal.toFixed(2)}
                                 </Typography>
@@ -1743,7 +1744,7 @@ const DisplayDeals = () => {
                               <Chip 
                                 size="small" 
                                 label={`Projected: ${projectedQuantity} units`}
-                                color={wouldUnlockNewTier ? "success" : wouldLoseTier ? "error" : "info"}
+                                color={wouldUnlockNewTier ? theme.palette.success.main : wouldLoseTier ? theme.palette.error.main : theme.palette.info.main}
                                 variant="outlined"
                                 sx={{ ml: 1 }}
                               />
@@ -1786,13 +1787,13 @@ const DisplayDeals = () => {
                                       flexDirection: { xs: 'column', sm: 'row' },
                                       alignItems: { xs: 'flex-start', sm: 'center' },
                                       justifyContent: 'space-between',
-                                      bgcolor: wouldBeApplied ? 'success.light' : 
-                                               isCurrentlyApplied && !wouldBeApplied ? 'error.light' : 
-                                               isNext ? 'info.light' : 'background.paper',
-                                      color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? 'white' : 'inherit',
-                                      borderColor: wouldBeApplied ? 'success.main' : 
-                                                   isCurrentlyApplied && !wouldBeApplied ? 'error.main' : 
-                                                   isNext ? 'info.main' : 'divider',
+                                      bgcolor: wouldBeApplied ? theme.palette.success.light : 
+                                               isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.light : 
+                                               isNext ? theme.palette.info.light : theme.palette.background.paper,
+                                      color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? theme.palette.text.primary : theme.palette.inherit.main,
+                                      borderColor: wouldBeApplied ? theme.palette.success.main : 
+                                                   isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.main : 
+                                                   isNext ? theme.palette.info.main : 'divider',
                                       gap: 1
                                     }}
                                   >
@@ -1831,7 +1832,7 @@ const DisplayDeals = () => {
                                           size="small"
                                           sx={{ 
                                             bgcolor: 'white', 
-                                            color: isNext ? 'info.dark' : 'text.primary', 
+                                            color: isNext ? theme.palette.info.dark : theme.palette.text.primary, 
                                             fontWeight: 'bold' 
                                           }}
                                         />
@@ -1854,12 +1855,12 @@ const DisplayDeals = () => {
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: 0.5,
-                      bgcolor: 'info.light',
+                      bgcolor: theme.palette.info.light,
                       borderRadius: 1,
                       px: 1,
                       py: 0.3
                     }}>
-                      <Typography variant="caption" color="info.dark" sx={{ fontWeight: 'medium' }}>
+                      <Typography variant="caption" color={theme.palette.info.dark} sx={{ fontWeight: 'medium' }}>
                         Volume Discount: As low as ${Math.min(...selectedDeal.discountTiers.map(tier => tier.tierDiscount)).toFixed(2)} per unit
                       </Typography>
                     </Box>
@@ -1867,7 +1868,7 @@ const DisplayDeals = () => {
                 </Grid>
                 
                 <Grid item xs={12} md={4}>
-                  <Paper sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: 2, mb: 2 }}>
+                  <Paper sx={{ p: 2, bgcolor: theme.palette.primary.light, color: theme.palette.primary.contrastText, borderRadius: 2, mb: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Order Summary
                   </Typography>
@@ -1883,7 +1884,7 @@ const DisplayDeals = () => {
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body1">Total Savings:</Typography>
-                      <Typography variant="body1" fontWeight="medium" color="success.light">
+                      <Typography variant="body1" fontWeight="medium" color={theme.palette.success.light}>
                         -${totalSavings.toFixed(2)}
                   </Typography>
                     </Box>
@@ -1891,7 +1892,7 @@ const DisplayDeals = () => {
                     {activeTier && (
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">Volume Discount:</Typography>
-                        <Typography variant="body1" fontWeight="medium" color="success.light">
+                        <Typography variant="body1" fontWeight="medium" color={theme.palette.success.light}>
                           Fixed price: ${activeTier.tierDiscount.toFixed(2)}/unit
                         </Typography>
                       </Box>

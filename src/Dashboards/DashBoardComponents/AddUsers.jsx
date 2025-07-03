@@ -81,10 +81,10 @@ const AddUsers = ({ open, handleClose, refreshUsers }) => {
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button onClick={handleClose} color="primary.contrastText">
           Cancel
         </Button>
-        <Button onClick={handleAddUser} color="primary">
+        <Button onClick={handleAddUser} color="primary.contrastText">
           Invite
         </Button>
       </DialogActions>

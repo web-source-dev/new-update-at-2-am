@@ -217,10 +217,11 @@ const MemberCommitmentDetails = () => {
   return (
     <Container maxWidth="xl" sx={{ pb: 8, mb:6 }}>
       <Button 
-        startIcon={<ArrowBackIcon />} 
+        startIcon={<ArrowBackIcon color='primary.contrastText' />} 
         variant="outlined" 
         onClick={() => navigate(-1)}
         sx={{ mb: 3 }}
+        color='primary.contrastText'
       >
         Back to Stores
       </Button>
@@ -237,7 +238,8 @@ const MemberCommitmentDetails = () => {
                     height: 100, 
                     bgcolor: theme.palette.primary.main,
                     fontSize: '2.5rem',
-                    mb: 2
+                    mb: 2,
+                    color:'primary.contrastText'
                   }}
                 >
                   {store.name?.charAt(0).toUpperCase() || 'M'}
@@ -292,10 +294,10 @@ const MemberCommitmentDetails = () => {
           {stats && (
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <Card sx={{ bgcolor: theme.palette.primary.light, color: 'white' }}>
+                <Card sx={{ bgcolor: theme.palette.primary.main }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <ShoppingBagIcon />
+                      <ShoppingBagIcon color="primary.contrastText" />
                       <Typography variant="h4" align="right">{stats.totalCommitments}</Typography>
                     </Box>
                     <Typography variant="body2">Total Commitments</Typography>
@@ -304,10 +306,10 @@ const MemberCommitmentDetails = () => {
               </Grid>
               
               <Grid item xs={6}>
-                <Card sx={{ bgcolor: theme.palette.warning.light, color: 'white' }}>
+                <Card sx={{ bgcolor: theme.palette.warning.light }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <AccessTimeIcon />
+                      <AccessTimeIcon color="primary.contrastText"/>
                       <Typography variant="h4" align="right">{stats.pendingCommitments}</Typography>
                     </Box>
                     <Typography variant="body2">Pending</Typography>
@@ -316,10 +318,10 @@ const MemberCommitmentDetails = () => {
               </Grid>
               
               <Grid item xs={6}>
-                <Card sx={{ bgcolor: theme.palette.success.main, color: 'white' }}>
+                <Card sx={{ bgcolor: theme.palette.success.main }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <CheckIcon />
+                      <CheckIcon color="primary.contrastText"/>
                       <Typography variant="h4" align="right">{stats.approvedCommitments}</Typography>
                     </Box>
                     <Typography variant="body2">Approved</Typography>
@@ -346,6 +348,21 @@ const MemberCommitmentDetails = () => {
                     value={tabValue} 
                     onChange={handleTabChange}
                     aria-label="commitment tabs"
+                    sx={{ 
+                      mb: 2, 
+                      width: '100%',
+                      "& .MuiTabs-indicator": {
+                        backgroundColor: "yellow",
+                        height: 3
+                      },
+                      "& .MuiTab-root": {
+                        color: "black",
+                        "&.Mui-selected": {
+                          color: "black",
+                          fontWeight: "bold"
+                        }
+                      }
+                    }}
                   >
                     <Tab label="All Commitments" />
                     <Tab label="Pending" />
@@ -382,7 +399,7 @@ const MemberCommitmentDetails = () => {
                                 component="button"
                                 variant="body2"
                                 onClick={() => navigate(`/deals-catlog/deals/${commitment.dealId._id}`)}
-                                sx={{ textDecoration: 'none' }}
+                                sx={{ textDecoration: 'none',color:'primary.contrastText' }}
                               >
                                 {commitment.dealId.name}
                               </Link>
@@ -434,11 +451,11 @@ const MemberCommitmentDetails = () => {
                             <TableCell align="center">
                               <IconButton
                                 size="small"
-                                color="primary"
+                                color="primary.contrastText"
                                 onClick={() => handleOpenDetailModal(commitment)}
                                 aria-label="View commitment details"
                               >
-                                <VisibilityIcon fontSize="small" />
+                                <VisibilityIcon color="primary.contrastText" fontSize="small" />
                               </IconButton>
                             </TableCell>
                           </TableRow>

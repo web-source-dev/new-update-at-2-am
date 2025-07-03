@@ -642,12 +642,14 @@ const ViewSingleDeal = () => {
         }}
       >
         <Button
-          startIcon={<ArrowBack />}
+          startIcon={<ArrowBack sx={{ color: '#000000' }} />}
           onClick={() => navigate('/deals-catlog')}
           sx={{ 
             borderRadius: 2,
+            color: theme.palette.primary.contrastText,
+            border: `1px solid ${theme.palette.primary.contrastText}`,
             '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)'
+              backgroundColor: theme.palette.background.default
             }
           }}
         >
@@ -719,16 +721,16 @@ const ViewSingleDeal = () => {
                           left: { xs: 4, md: 8 },
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          bgcolor: 'rgba(255,255,255,0.9)',
+                          bgcolor: theme.palette.background.default,
                           '&:hover': { 
-                            bgcolor: 'rgba(255,255,255,1)',
+                            bgcolor: theme.palette.background.light,
                             transform: 'translateY(-50%) scale(1.1)',
                           },
                           transition: 'all 0.2s ease',
                           boxShadow: 2,
                         }}
                       >
-                        <NavigateBefore />
+                        <NavigateBefore sx={{ color: '#000000' }} />
                       </IconButton>
                       <IconButton
                         onClick={handleNextImage}
@@ -737,16 +739,16 @@ const ViewSingleDeal = () => {
                           right: { xs: 4, md: 8 },
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          bgcolor: 'rgba(255,255,255,0.9)',
+                          bgcolor: theme.palette.background.default,
                           '&:hover': { 
-                            bgcolor: 'rgba(255,255,255,1)',
+                            bgcolor: theme.palette.background.light,
                             transform: 'translateY(-50%) scale(1.1)',
                           },
                           transition: 'all 0.2s ease',
                           boxShadow: 2,
                         }}
                       >
-                        <NavigateNext />
+                        <NavigateNext sx={{ color: '#000000' }} />
                       </IconButton>
                     </>
                   )}
@@ -773,7 +775,7 @@ const ViewSingleDeal = () => {
                 sx={{
                   p: 1,
                   borderRadius: 3,
-                  bgcolor: 'background.paper',
+                  bgcolor: theme.palette.background.paper,
                   boxShadow: 1
                 }}
               >
@@ -788,14 +790,14 @@ const ViewSingleDeal = () => {
                       height: 6,
                     },
                     '&::-webkit-scrollbar-track': {
-                      backgroundColor: 'grey.100',
+                      backgroundColor: theme.palette.grey[100],
                       borderRadius: 3,
                     },
                     '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: 'grey.400',
+                      backgroundColor: theme.palette.grey[400],
                       borderRadius: 3,
                       '&:hover': {
-                        backgroundColor: 'grey.500',
+                        backgroundColor: theme.palette.grey[500],
                       },
                     },
                   }}
@@ -812,7 +814,7 @@ const ViewSingleDeal = () => {
                         overflow: 'hidden',
                         cursor: 'pointer',
                         border: '2px solid',
-                        borderColor: currentImageIndex === index ? 'primary.main' : 'transparent',
+                        borderColor: currentImageIndex === index ? theme.palette.primary.main : 'transparent',
                         transition: 'all 0.2s ease',
                         '&:hover': {
                           transform: 'scale(1.05)',
@@ -845,7 +847,7 @@ const ViewSingleDeal = () => {
                               backgroundColor: 'rgba(0, 0, 0, 0.3)',
                             }}
                           >
-                            <PlayArrow sx={{ color: 'white', fontSize: 24 }} />
+                            <PlayArrow sx={{ color: '#000000', fontSize: 24 }} />
                           </Box>
                         </>
                       ) : (
@@ -883,7 +885,7 @@ const ViewSingleDeal = () => {
               sx={{
                 p: { xs: 2, sm: 3 },
                 borderRadius: 3,
-                bgcolor: 'background.paper',
+                bgcolor: theme.palette.background.paper,
                 boxShadow: 1
               }}
             >
@@ -957,7 +959,7 @@ const ViewSingleDeal = () => {
                                 </Typography>
                               </TableCell>
                               <TableCell align="right">
-                                <Typography variant="body1" color="primary" fontWeight="medium">
+                                <Typography variant="body1" color="text.secondary" fontWeight="medium">
                                   ${size.discountPrice.toFixed(2)}
                                 </Typography>
                               </TableCell>
@@ -965,7 +967,7 @@ const ViewSingleDeal = () => {
                                 <Chip 
                                   label={`${savingsPercent}%`} 
                                   size="small"
-                                  color="success"
+                                  color={theme.palette.success.main}
                                   sx={{ fontWeight: 'medium' }}
                                 />
                               </TableCell>
@@ -993,9 +995,9 @@ const ViewSingleDeal = () => {
                 }}
               >
                 <Chip 
-                  icon={<LocalOffer />} 
+                  icon={<LocalOffer sx={{ color: '#000000' }} />} 
                   label={deal?.category} 
-                  color="primary" 
+                  color={theme.palette.error.main} 
                   variant="outlined"
                   sx={{
                     borderRadius: 1,
@@ -1016,7 +1018,7 @@ const ViewSingleDeal = () => {
                   />
                 )}
                  <Chip 
-                  icon={<Schedule />}
+                  icon={<Schedule sx={{ color: '#000000' }} />}
                   label={`Ends ${new Date(deal?.dealEndsAt).toLocaleDateString()}`} 
                   color="warning" 
                   variant="outlined"
@@ -1057,7 +1059,7 @@ const ViewSingleDeal = () => {
                   />
                 ) : (
                   <Chip
-                    label={`${Math.max(0, (deal?.minQtyForDiscount || 0) - (deal?.totalCommittedQuantity || 0))} more to go LIVE`}
+                    label={`${Math.max(0, (deal?.minQtyForDiscount || 0) - (deal?.totalCommittedQuantity || 0))} more to go`}
                     color="warning"
                     sx={{
                       borderRadius: 1,
@@ -1087,7 +1089,7 @@ const ViewSingleDeal = () => {
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     Deal Progress
                     {(deal?.totalCommittedQuantity || 0) >= (deal?.minQtyForDiscount || 0) && (
-                      <CheckCircleIcon />
+                      <CheckCircleIcon sx={{ color: '#000000' }} />
                     )}
                   </Typography>
                   
@@ -1121,7 +1123,7 @@ const ViewSingleDeal = () => {
                     <Alert severity="info" variant="outlined" sx={{ mb: 2 }}>
                       <AlertTitle>Almost there!</AlertTitle>
                       <Typography variant="body2">
-                        <strong>{Math.max(0, (deal?.minQtyForDiscount || 0) - (deal?.totalCommittedQuantity || 0))}</strong> more units needed to make this deal live. Share with other members to reach the goal faster!
+                        <strong>{Math.max(0, (deal?.minQtyForDiscount || 0) - (deal?.totalCommittedQuantity || 0))}</strong> more units needed. Share with other members to reach the goal faster!
                       </Typography>
                     </Alert>
                   )}
@@ -1271,13 +1273,13 @@ const ViewSingleDeal = () => {
                                   flexDirection: { xs: 'column', sm: 'row' },
                                   alignItems: { xs: 'flex-start', sm: 'center' },
                                   justifyContent: 'space-between',
-                                  bgcolor: wouldBeApplied ? 'success.light' : 
-                                           isCurrentlyApplied && !wouldBeApplied ? 'error.light' : 
-                                           isNext ? 'info.light' : 'background.paper',
-                                  color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? 'white' : 'inherit',
-                                  borderColor: wouldBeApplied ? 'success.main' : 
-                                               isCurrentlyApplied && !wouldBeApplied ? 'error.main' : 
-                                               isNext ? 'info.main' : 'divider',
+                                  bgcolor: wouldBeApplied ? theme.palette.success.light : 
+                                           isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.light : 
+                                           isNext ? theme.palette.info.light : theme.palette.background.paper,
+                                  color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? theme.palette.text.primary : theme.palette.inherit.main,
+                                  borderColor: wouldBeApplied ? theme.palette.success.main : 
+                                               isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.main : 
+                                               isNext ? theme.palette.info.main : theme.palette.divider,
                                   gap: 1
                                 }}
                               >
@@ -1293,8 +1295,8 @@ const ViewSingleDeal = () => {
                                       color="success"
                                       size="small"
                                       sx={{ 
-                                        bgcolor: 'white', 
-                                        color: 'success.dark', 
+                                        bgcolor: theme.palette.background.default, 
+                                        color: theme.palette.success.dark, 
                                         fontWeight: 'bold' 
                                       }}
                                     />
@@ -1304,8 +1306,8 @@ const ViewSingleDeal = () => {
                                       color="error"
                                       size="small"
                                       sx={{ 
-                                        bgcolor: 'white', 
-                                        color: 'error.dark', 
+                                        bgcolor: theme.palette.background.default, 
+                                        color: theme.palette.error.dark, 
                                         fontWeight: 'bold' 
                                       }}
                                     />
@@ -1315,8 +1317,8 @@ const ViewSingleDeal = () => {
                                       color="primary"
                                       size="small"
                                       sx={{ 
-                                        bgcolor: 'white', 
-                                        color: isNext ? 'info.dark' : 'text.primary', 
+                                        bgcolor: theme.palette.background.default, 
+                                        color: isNext ? theme.palette.info.dark : theme.palette.text.primary, 
                                         fontWeight: 'bold' 
                                       }}
                                     />
@@ -1356,16 +1358,16 @@ const ViewSingleDeal = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          bgcolor: activeTier === tier ? 'success.light' : 'background.paper',
-                          color: activeTier === tier ? 'white' : 'inherit',
-                          borderColor: activeTier === tier ? 'success.main' : 'divider'
+                          bgcolor: activeTier === tier ? theme.palette.success.light : theme.palette.background.paper,
+                          color: activeTier === tier ? theme.palette.text.primary : theme.palette.inherit.main,
+                          borderColor: activeTier === tier ? theme.palette.success.main : theme.palette.divider
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {activeTier === tier ? (
-                            <CheckCircleIcon color="inherit" fontSize="small" />
+                            <CheckCircleIcon sx={{ color: '#000000' }} fontSize="small" />
                           ) : (
-                            <TrendingUp color="primary" fontSize="small" />
+                            <TrendingUp sx={{ color: '#000000' }} fontSize="small" />
                           )}
                           <Typography variant="body1">
                             ${tier.tierDiscount.toFixed(2)} fixed price at {tier.tierQuantity}+ units
@@ -1376,7 +1378,7 @@ const ViewSingleDeal = () => {
                             label="Active" 
                             color="success" 
                             size="small"
-                            sx={{ bgcolor: 'white', color: 'success.dark', fontWeight: 'bold' }}
+                            sx={{ bgcolor: theme.palette.background.default, color: theme.palette.success.dark, fontWeight: 'bold' }}
                           />
                         )}
                       </Paper>
@@ -1391,7 +1393,7 @@ const ViewSingleDeal = () => {
               sx={{
                 p: { xs: 2, sm: 3 },
                 borderRadius: 3,
-                bgcolor: 'background.paper',
+                bgcolor: theme.palette.background.paper,
                 boxShadow: 1
               }}
             >
@@ -1415,7 +1417,7 @@ const ViewSingleDeal = () => {
     sx={{
       p: { xs: 2, sm: 3 },
       borderRadius: 3,
-      bgcolor: 'background.paper',
+      bgcolor: theme.palette.background.paper,
       boxShadow: 1
     }}
   >
@@ -1441,7 +1443,7 @@ const ViewSingleDeal = () => {
               sx={{ 
                 p: { xs: 2, sm: 3 }, 
                 borderRadius: 3,
-                bgcolor: 'background.paper',
+                bgcolor: theme.palette.background.paper,
                 boxShadow: 1
               }}
             >
@@ -1451,7 +1453,7 @@ const ViewSingleDeal = () => {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Groups color="primary" fontSize="small" />
+                    <Groups sx={{ color: '#000000' }} fontSize="small" />
                     <Box>
                       <Typography variant="body2" color="text.secondary">
                         Minimum Quantity
@@ -1464,7 +1466,7 @@ const ViewSingleDeal = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Schedule color="primary" fontSize="small" />
+                    <Schedule sx={{ color: '#000000' }} fontSize="small" />
                     <Box>
                       <Typography variant="body2" color="text.secondary">
                         Deal Ends
@@ -1480,7 +1482,7 @@ const ViewSingleDeal = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <ShoppingCart color="success" fontSize="small" />
+                    <ShoppingCart sx={{ color: '#000000' }} fontSize="small" />
                     <Box>
                       <Typography variant="body2" color="text.secondary">
                         Total Commitments
@@ -1499,7 +1501,7 @@ const ViewSingleDeal = () => {
               sx={{ 
                 p: { xs: 2, sm: 3 }, 
                 borderRadius: 3,
-                bgcolor: 'background.paper',
+                bgcolor: theme.palette.background.paper,
                 boxShadow: 1
               }}
             >
@@ -1515,7 +1517,7 @@ const ViewSingleDeal = () => {
                     sx={{ 
                       width: 64, 
                       height: 64, 
-                      bgcolor: 'primary.main',
+                      bgcolor: theme.palette.primary.main,
                       fontSize: '1.5rem'
                     }}
                   >
@@ -1536,7 +1538,7 @@ const ViewSingleDeal = () => {
                 {deal?.distributor?.contactPerson && (
                   <Grid item xs={12} sm={6}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Person color="primary" fontSize="small" />
+                      <Person sx={{ color: '#000000' }} fontSize="small" />
                       <Box>
                         <Typography variant="body2" color="text.secondary">
                           Contact Person
@@ -1551,7 +1553,7 @@ const ViewSingleDeal = () => {
                 {deal?.distributor?.email && (
                   <Grid item xs={12} sm={6}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Email color="primary" fontSize="small" />
+                      <Email sx={{ color: '#000000' }} fontSize="small" />
                       <Box>
                         <Typography variant="body2" color="text.secondary">
                           Email
@@ -1566,7 +1568,7 @@ const ViewSingleDeal = () => {
                 {deal?.distributor?.phone && (
                   <Grid item xs={12} sm={6}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Phone color="primary" fontSize="small" />
+                      <Phone sx={{ color: '#000000' }} fontSize="small" />
                       <Box>
                         <Typography variant="body2" color="text.secondary">
                           Phone
@@ -1612,7 +1614,7 @@ const ViewSingleDeal = () => {
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Store color="secondary" fontSize="small" />
+                            <Store sx={{ color: '#000000' }} fontSize="small" />
                             <Box>
                               <Typography variant="body2" color="text.secondary">
                                 Supplier Name
@@ -1626,7 +1628,7 @@ const ViewSingleDeal = () => {
                         {supplier.email && (
                           <Grid item xs={12} sm={6}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Email color="secondary" fontSize="small" />
+                              <Email sx={{ color: '#000000' }} fontSize="small" />
                               <Box>
                                 <Typography variant="body2" color="text.secondary">
                                   Supplier Email
@@ -1652,7 +1654,7 @@ const ViewSingleDeal = () => {
               gap: 2,
               position: 'sticky',
               bottom: 0,
-              bgcolor: 'background.paper',
+              bgcolor: theme.palette.background.paper,
               py: 2,
               borderTop: '1px solid',
               borderColor: 'divider',
@@ -1669,13 +1671,13 @@ const ViewSingleDeal = () => {
                   textTransform: 'none',
                   fontWeight: 600,
                   boxShadow: 2,
-                  background: userCommitment ? 'linear-gradient(45deg,rgb(17, 128, 26) 30%,rgba(6, 78, 18, 0.68) 90%)' : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  background: userCommitment ? theme.palette.success.main : theme.palette.primary.main,
                   '&:hover': {
                     boxShadow: 4,
-                  background: userCommitment ? 'linear-gradient(45deg,rgb(17, 128, 26) 30%,rgba(6, 78, 18, 0.68) 90%)' : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  background: userCommitment ? theme.palette.success.main : theme.palette.primary.main,
                   }
                 }}
-                startIcon={userCommitment ? <EditIcon /> : <AddShoppingCart />}
+                startIcon={userCommitment ? <EditIcon sx={{ color: '#000000' }} /> : <AddShoppingCart sx={{ color: '#000000' }} />}
               >
                 {userCommitment ? 'Update Your Commitment' : 'Make Commitment'}
               </Button>
@@ -1810,7 +1812,7 @@ const ViewSingleDeal = () => {
                             <TableCell align="right">
                               <Typography 
                                 variant="body1" 
-                                color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "primary"}
+                                color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "primary.contrastText"}
                               >
                                 ${effectivePrice.toFixed(2)}
                               </Typography>
@@ -1839,7 +1841,7 @@ const ViewSingleDeal = () => {
                               <Typography 
                                 variant="body1" 
                                 fontWeight="medium"
-                                color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "inherit"}
+                                color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "primary.contrastText"}
                               >
                                 ${subtotal.toFixed(2)}
                               </Typography>
@@ -2012,13 +2014,13 @@ const ViewSingleDeal = () => {
                                   flexDirection: { xs: 'column', sm: 'row' },
                                   alignItems: { xs: 'flex-start', sm: 'center' },
                                   justifyContent: 'space-between',
-                                  bgcolor: wouldBeApplied ? 'success.light' : 
-                                           isCurrentlyApplied && !wouldBeApplied ? 'error.light' : 
-                                           isNext ? 'info.light' : 'background.paper',
-                                  color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? 'white' : 'inherit',
-                                  borderColor: wouldBeApplied ? 'success.main' : 
-                                               isCurrentlyApplied && !wouldBeApplied ? 'error.main' : 
-                                               isNext ? 'info.main' : 'divider',
+                                  bgcolor: wouldBeApplied ? theme.palette.success.light : 
+                                           isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.light : 
+                                           isNext ? theme.palette.info.light : theme.palette.background.paper,
+                                  color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? theme.palette.text.primary : theme.palette.inherit.main,
+                                  borderColor: wouldBeApplied ? theme.palette.success.main : 
+                                               isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.main : 
+                                               isNext ? theme.palette.info.main : theme.palette.divider,
                                   gap: 1
                                 }}
                               >
@@ -2034,8 +2036,8 @@ const ViewSingleDeal = () => {
                                       color="success"
                                       size="small"
                                       sx={{ 
-                                        bgcolor: 'white', 
-                                        color: 'success.dark', 
+                                        bgcolor: theme.palette.background.default, 
+                                        color: theme.palette.success.dark, 
                                         fontWeight: 'bold' 
                                       }}
                                     />
@@ -2045,8 +2047,8 @@ const ViewSingleDeal = () => {
                                       color="error"
                                       size="small"
                                       sx={{ 
-                                        bgcolor: 'white', 
-                                        color: 'error.dark', 
+                                        bgcolor: theme.palette.background.default, 
+                                        color: theme.palette.error.dark, 
                                         fontWeight: 'bold' 
                                       }}
                                     />
@@ -2056,8 +2058,8 @@ const ViewSingleDeal = () => {
                                       color="primary"
                                       size="small"
                                       sx={{ 
-                                        bgcolor: 'white', 
-                                        color: isNext ? 'info.dark' : 'text.primary', 
+                                        bgcolor: theme.palette.background.default, 
+                                        color: isNext ? theme.palette.info.dark : theme.palette.text.primary, 
                                         fontWeight: 'bold' 
                                       }}
                                     />
@@ -2097,16 +2099,16 @@ const ViewSingleDeal = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          bgcolor: activeTier === tier ? 'success.light' : 'background.paper',
-                          color: activeTier === tier ? 'white' : 'inherit',
-                          borderColor: activeTier === tier ? 'success.main' : 'divider'
+                          bgcolor: activeTier === tier ? theme.palette.success.light : theme.palette.background.paper,
+                          color: activeTier === tier ? theme.palette.text.primary : theme.palette.inherit.main,
+                          borderColor: activeTier === tier ? theme.palette.success.main : theme.palette.divider
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {activeTier === tier ? (
-                            <CheckCircleIcon color="inherit" fontSize="small" />
+                            <CheckCircleIcon sx={{ color: '#000000' }} fontSize="small" />
                           ) : (
-                            <TrendingUp color="primary" fontSize="small" />
+                            <TrendingUp sx={{ color: '#000000' }} fontSize="small" />
                           )}
                           <Typography variant="body1">
                             ${tier.tierDiscount.toFixed(2)} fixed price at {tier.tierQuantity}+ units
@@ -2117,7 +2119,7 @@ const ViewSingleDeal = () => {
                             label="Active" 
                             color="success" 
                             size="small"
-                            sx={{ bgcolor: 'white', color: 'success.dark', fontWeight: 'bold' }}
+                            sx={{ bgcolor: theme.palette.background.default, color: theme.palette.success.dark, fontWeight: 'bold' }}
                           />
                         )}
                       </Paper>
@@ -2128,12 +2130,12 @@ const ViewSingleDeal = () => {
             </Grid>
             
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, bgcolor: 'white', color: 'black', borderRadius: 2, mb: 2 }}>
+              <Paper sx={{ p: 2, bgcolor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 2, mb: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Order Summary
                 </Typography>
                 
-                <Divider sx={{ borderColor: 'rgba(0,0,0,0.2)', my: 1 }} />
+                <Divider sx={{ borderColor: theme.palette.divider, my: 1 }} />
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body1">Items Subtotal:</Typography>
@@ -2158,7 +2160,7 @@ const ViewSingleDeal = () => {
                   </Box>
                 )}
                 
-                <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                <Divider sx={{ borderColor: theme.palette.divider, my: 1 }} />
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="h6">Total Price:</Typography>

@@ -151,7 +151,9 @@ const TopMembers = () => {
                         sx={{ 
                           width: 45, 
                           height: 45,
-                          border: `2px solid ${getMedalColor(index)}`
+                          border: `2px solid ${getMedalColor(index)}`,
+                          bgcolor:'primary.main',
+                          color:'primary.contrastText'
                         }}
                       >
                         {member.name.charAt(0)}
@@ -187,7 +189,7 @@ const TopMembers = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      startIcon={<VisibilityIcon />}
+                      startIcon={<VisibilityIcon color='primary.contrastText'/>}
                       onClick={() => handleViewMember(member._id)}
                       sx={{ 
                         borderRadius: 2,

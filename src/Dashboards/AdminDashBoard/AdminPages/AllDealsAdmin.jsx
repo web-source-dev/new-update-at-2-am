@@ -197,6 +197,9 @@ const AllDealsAdmin = () => {
 
       if (selectedMonth) {
         url += `&month=${selectedMonth}`;
+      } else {
+        // Explicitly add empty month parameter when "All Months" is selected
+        url += `&month=`;
       }
 
       if (selectedStatus) {
@@ -213,6 +216,7 @@ const AllDealsAdmin = () => {
 
       const response = await axios.get(url);
       setDeals(response.data.deals);
+      console.log("response of all deals" , response)
       setTotalPages(response.data.pagination.totalPages);
       setError(null);
     } catch (err) {
@@ -744,6 +748,7 @@ const AllDealsAdmin = () => {
                     checked={selectAllDeals}
                     onChange={(e) => setSelectAllDeals(e.target.checked)}
                     size="small"
+                    color="primary.contrastText"
                   />
                 }
                 label={<Typography sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>All</Typography>}
@@ -813,6 +818,7 @@ const AllDealsAdmin = () => {
                     checked={selectAllDeals}
                     onChange={(e) => setSelectAllDeals(e.target.checked)}
                     size="small"
+                    color='primary.contrastText'
                   />
                 )}
               </StyledTableCell>
@@ -826,137 +832,165 @@ const AllDealsAdmin = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {deals.map((deal) => (
-              <TableRow key={deal._id}>
-                <StyledTableCell padding="checkbox" sx={{ display: { xs: 'table-cell', sm: 'table-cell' } }}>
-                  {deal.pendingCommitments > 0 && (
-                    <Checkbox
-                      checked={selectedDeals.includes(deal._id)}
-                      onChange={() => handleDealSelect(deal._id)}
-                      size="small"
-                    />
-                  )}
-                </StyledTableCell>
-                <StyledTableCell sx={{ maxWidth: { xs: '100px', sm: 'none' } }}>
-                  <Typography noWrap>{deal.name}</Typography>
-                  <Tooltip title={deal.sizes && deal.sizes.length > 0 
-                    ? deal.sizes.map(s => `${s.size}: $${s.discountPrice}`).join(', ')
-                    : 'No sizes available'
-                  }>
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                      {deal.sizes && deal.sizes.length > 0 
-                        ? `${deal.sizes.length} size option${deal.sizes.length > 1 ? 's' : ''}`
-                        : 'No size options'
-                      }
-                    </Typography>
-                  </Tooltip>
-                </StyledTableCell>
-                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                  {deal.distributor ? (deal.distributor.businessName || deal.distributor.name) : 'Unknown'}
-                </StyledTableCell>
-                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
-                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
-                <StyledTableCell>
-                  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
-                  {deal.minimumQuantity > 0 && (
-                    <Box sx={{ mt: 0.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Box sx={{ width: '100%', mr: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={Math.min(100, ((deal.totalQuantity || deal.totalPQuantity || 0) / deal.minimumQuantity) * 100)}
-                            color={(deal.totalQuantity || deal.totalPQuantity || 0) >= deal.minimumQuantity ? 'success' : 'primary'}
-                            sx={{ height: 4, borderRadius: 5 }}
-                          />
-                        </Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {Math.min(100, Math.round(((deal.totalQuantity || deal.totalPQuantity || 0) / deal.minimumQuantity) * 100))}%
-                        </Typography>
-                      </Box>
-                      {(deal.totalQuantity || deal.totalPQuantity || 0) >= deal.minimumQuantity ? (
-                        <Chip 
-                          label="LIVE" 
-                          color="success" 
-                          size="small"
-                          sx={{ fontSize: '0.625rem', height: 18, mt: 0.5 }}
-                        />
-                      ) : (
-                        <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
-                          {Math.max(0, deal.minimumQuantity - (deal.totalQuantity || deal.totalPQuantity || 0))} more to go live
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-                </StyledTableCell>
-                <StyledTableCell>
-                  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
-                </StyledTableCell>
-                <StyledTableCell>
-                  <Box sx={{display:'flex',gap:2}}>
-                    {deal.bulkAction ? (
-                      <Chip 
-                        label={deal.bulkStatus} 
-                        color={deal.bulkStatus === "approved" ? "success" : "error"} 
-                        variant="outlined" 
+            {deals.length > 0 ? (
+              deals.map((deal) => (
+                <TableRow key={deal._id}>
+                  <StyledTableCell padding="checkbox" sx={{ display: { xs: 'table-cell', sm: 'table-cell' } }}>
+                    {deal.pendingCommitments > 0 && (
+                      <Checkbox
+                        checked={selectedDeals.includes(deal._id)}
+                        onChange={() => handleDealSelect(deal._id)}
+                        size="small"
+                        color='primary.contrastText'
                       />
-                    ) : (
-                      <Box 
-                        display="flex" 
-                        gap={1}
-                        sx={{
-                          flexDirection: { xs: 'column', sm: 'row' },
-                          '.MuiButton-root': {
-                            minWidth: { xs: '70px', sm: 'auto' },
-                            padding: { xs: '4px 8px', sm: '6px 16px' },
-                          }
-                        }}
-                      >
-                        {/* Show buttons on larger screens */}
-                        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleBulkAction(deal._id, 'approve')}
-                            disabled={actionInProgress || deal.pendingCommitments === 0}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="error"
-                            onClick={() => handleBulkAction(deal._id, 'decline')}
-                            disabled={actionInProgress || deal.pendingCommitments === 0}
-                          >
-                            Decline
-                          </Button>
+                    )}
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ maxWidth: { xs: '100px', sm: 'none' } }}>
+                    <Typography noWrap>{deal.name}</Typography>
+                    <Tooltip title={deal.sizes && deal.sizes.length > 0 
+                      ? deal.sizes.map(s => `${s.size}: $${s.discountPrice}`).join(', ')
+                      : 'No sizes available'
+                    }>
+                      <Typography variant="caption" color="text.secondary" noWrap>
+                        {deal.sizes && deal.sizes.length > 0 
+                          ? `${deal.sizes.length} size option${deal.sizes.length > 1 ? 's' : ''}`
+                          : 'No size options'
+                        }
+                      </Typography>
+                    </Tooltip>
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                    {deal.distributor ? (deal.distributor.businessName || deal.distributor.name) : 'Unknown'}
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
+                  <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
+                  <StyledTableCell>
+                    {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
+                    {deal.minimumQuantity > 0 && (
+                      <Box sx={{ mt: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ width: '100%', mr: 1 }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={Math.min(100, ((deal.totalQuantity || deal.totalPQuantity || 0) / deal.minimumQuantity) * 100)}
+                              color={(deal.totalQuantity || deal.totalPQuantity || 0) >= deal.minimumQuantity ? 'success' : 'primary'}
+                              sx={{ height: 4, borderRadius: 5 }}
+                            />
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {Math.min(100, Math.round(((deal.totalQuantity || deal.totalPQuantity || 0) / deal.minimumQuantity) * 100))}%
+                          </Typography>
                         </Box>
+                        {(deal.totalQuantity || deal.totalPQuantity || 0) >= deal.minimumQuantity ? (
+                          <Chip 
+                            label="100%" 
+                            color="success" 
+                            size="small"
+                            sx={{ fontSize: '0.625rem', height: 18, mt: 0.5 }}
+                          />
+                        ) : (
+                          <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
+                            {Math.max(0, deal.minimumQuantity - (deal.totalQuantity || deal.totalPQuantity || 0))} more to go
+                          </Typography>
+                        )}
                       </Box>
                     )}
-                    {/* Show only menu on mobile */}
-                    <IconButton
-                      size="small"
-                      onClick={(event) => handleMenuClick(event, deal)}
-                      sx={{ 
-                        display: { xs: 'flex', sm: 'none' },
-                        alignSelf: 'center'
-                      }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                    {/* Show menu on desktop too */}
-                    <IconButton
-                      size="small"
-                      onClick={(event) => handleMenuClick(event, deal)}
-                      sx={{ display: { xs: 'none', sm: 'flex' } }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <Box sx={{display:'flex',gap:2}}>
+                      {deal.bulkAction ? (
+                        <Chip 
+                          label={deal.bulkStatus} 
+                          color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                          variant="outlined" 
+                        />
+                      ) : (
+                        <Box 
+                          display="flex" 
+                          gap={1}
+                          sx={{
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            '.MuiButton-root': {
+                              minWidth: { xs: '70px', sm: 'auto' },
+                              padding: { xs: '4px 8px', sm: '6px 16px' },
+                            }
+                          }}
+                        >
+                          {/* Show buttons on larger screens */}
+                          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleBulkAction(deal._id, 'approve')}
+                              disabled={actionInProgress || deal.pendingCommitments === 0}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleBulkAction(deal._id, 'decline')}
+                              disabled={actionInProgress || deal.pendingCommitments === 0}
+                            >
+                              Decline
+                            </Button>
+                          </Box>
+                        </Box>
+                      )}
+                      {/* Show only menu on mobile */}
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleMenuClick(event, deal)}
+                        sx={{ 
+                          display: { xs: 'flex', sm: 'none' },
+                          alignSelf: 'center'
+                        }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                      {/* Show menu on desktop too */}
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleMenuClick(event, deal)}
+                        sx={{ display: { xs: 'none', sm: 'flex' } }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+                  </StyledTableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <StyledTableCell colSpan={8} align="center">
+                  <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      No deals available
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {searchInput || selectedMonth || startDate || endDate || selectedDistributor ? 
+                        "No deals match your filter criteria" : 
+                        "No deals found in the system"}
+                    </Typography>
+                    {(searchInput || selectedMonth || startDate || endDate || selectedDistributor) && (
+                      <Button
+                        sx={{ mt: 2 }}
+                        variant="outlined"
+                        color="primary.contrastText"
+                        onClick={handleClearFilters}
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
                   </Box>
                 </StyledTableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -982,7 +1016,7 @@ const AllDealsAdmin = () => {
             disabled={actionInProgress || !selectedDealId?.pendingCommitments}
           >
             <ListItemIcon>
-              <CheckIcon fontSize="small" color="primary" />
+              <CheckIcon fontSize="small" color="primary.contrastText" />
             </ListItemIcon>
             Approve
           </MenuItem>
@@ -994,7 +1028,7 @@ const AllDealsAdmin = () => {
             disabled={actionInProgress || !selectedDealId?.pendingCommitments}
           >
             <ListItemIcon>
-              <CloseIcon fontSize="small" color="error" />
+              <CloseIcon fontSize="small" color="primary.contrastText" />
             </ListItemIcon>
             Decline
           </MenuItem>
@@ -1002,13 +1036,13 @@ const AllDealsAdmin = () => {
         </Box>
         <MenuItem onClick={handleViewDeal}>
           <ListItemIcon>
-            <VisibilityIcon fontSize="small" />
+            <VisibilityIcon fontSize="small" color="primary.contrastText" />
           </ListItemIcon>
           View
         </MenuItem>
         <MenuItem onClick={handleAnalyticsDeal}>
           <ListItemIcon>
-            <AnalyticsIcon fontSize="small" />
+            <AnalyticsIcon fontSize="small" color="primary.contrastText" />
           </ListItemIcon>
           Analytics
         </MenuItem>

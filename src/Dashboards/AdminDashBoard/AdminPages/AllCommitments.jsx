@@ -488,54 +488,156 @@ const AllCommitments = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedCommitments.map((commitment) => (
-                <TableRow key={commitment._id}>
-                  <TableCell>{commitment.dealId?.name || 'N/A'}</TableCell>
-                  {userRole === 'admin' && (
+              {paginatedCommitments.length > 0 ? (
+                paginatedCommitments.map((commitment) => (
+                  <TableRow key={commitment._id}>
+                    <TableCell>{commitment.dealId?.name || 'N/A'}</TableCell>
+                    {userRole === 'admin' && (
+                      <TableCell>
+                        {commitment.dealId?.distributor?.name || 'N/A'}
+                      </TableCell>
+                    )}
+                    {(userRole !== 'member' || userRole === 'admin') && (
+                      <>
+                        <TableCell>{commitment.userId?.name || 'N/A'}</TableCell>
+                        <TableCell>{commitment.userId?.email || 'N/A'}</TableCell>
+                      </>
+                    )}
                     <TableCell>
-                      {commitment.dealId?.distributor?.name || 'N/A'}
+                      {commitment.modifiedQuantity ? (
+                        <span>
+                          <s>{commitment.quantity}</s> → {commitment.modifiedQuantity}
+                        </span>
+                      ) : (
+                        commitment.quantity
+                      )}
                     </TableCell>
+                    <TableCell>
+                      {commitment.modifiedTotalPrice ? (
+                        <span>
+                          <s>${commitment.totalPrice}</s> → ${commitment.modifiedTotalPrice}
+                        </span>
+                      ) : (
+                        `$${commitment.totalPrice}`
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={commitment.status.toUpperCase()}
+                        color={getStatusColor(commitment.status)}
+                        size="small"
+                        sx={{
+                          fontWeight: 'medium',
+                          minWidth: '90px',
+                          '& .MuiChip-label': {
+                            px: 1
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>{new Date(commitment.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {(userRole === 'admin' || (userRole !== 'member' && commitment.status === 'pending')) && (
+                        <Button 
+                          variant="outlined" 
+                          color="primary" 
+                          onClick={() => handleOpenDialog(commitment)}
+                          sx={{ mr: 1 }}
+                        >
+                          Review
+                        </Button>
+                      )}
+                      <Button
+                        variant="outlined"
+                        color="info"
+                        onClick={() => navigate(`/commitment-details/${commitment._id}`)}
+                      >
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={userRole === 'admin' ? 9 : (userRole !== 'member' ? 8 : 6)} align="center">
+                    <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        No commitments available
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {filteredCommitments.length === 0 && commitments.length > 0 ? 
+                          "No commitments match your filter criteria" : 
+                          "No commitment data found"}
+                      </Typography>
+                      {filteredCommitments.length === 0 && commitments.length > 0 && (
+                        <Button
+                          sx={{ mt: 2 }}
+                          variant="outlined"
+                          color="primary"
+                          onClick={clearFilters}
+                        >
+                          Clear Filters
+                        </Button>
+                      )}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {layout === 'grid' && (
+        paginatedCommitments.length > 0 ? (
+          <Grid container spacing={3}>
+            {paginatedCommitments.map((commitment) => (
+              <Grid item xs={12} sm={6} md={4} key={commitment._id}>
+                <Paper sx={{ p: 2 }}>
+                  <Typography variant="h6">{commitment.dealId?.name || 'N/A'}</Typography>
+                  {userRole === 'admin' && (
+                    <Typography variant="body2">
+                      Distributor: {commitment.dealId?.distributor?.name || 'N/A'}
+                    </Typography>
                   )}
                   {(userRole !== 'member' || userRole === 'admin') && (
                     <>
-                      <TableCell>{commitment.userId?.name || 'N/A'}</TableCell>
-                      <TableCell>{commitment.userId?.email || 'N/A'}</TableCell>
+                      <Typography variant="body2">Member: {commitment.userId?.name || 'N/A'}</Typography>
+                      <Typography variant="body2">Email: {commitment.userId?.email || 'N/A'}</Typography>
                     </>
                   )}
-                  <TableCell>
-                    {commitment.modifiedQuantity ? (
+                  <Typography variant="body2">
+                    Quantity: {commitment.modifiedQuantity ? (
                       <span>
                         <s>{commitment.quantity}</s> → {commitment.modifiedQuantity}
                       </span>
                     ) : (
                       commitment.quantity
                     )}
-                  </TableCell>
-                  <TableCell>
-                    {commitment.modifiedTotalPrice ? (
+                  </Typography>
+                  <Typography variant="body2">
+                    Total Price: {commitment.modifiedTotalPrice ? (
                       <span>
                         <s>${commitment.totalPrice}</s> → ${commitment.modifiedTotalPrice}
                       </span>
                     ) : (
                       `$${commitment.totalPrice}`
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={commitment.status.toUpperCase()}
-                      color={getStatusColor(commitment.status)}
-                      size="small"
-                      sx={{
-                        fontWeight: 'medium',
-                        minWidth: '90px',
-                        '& .MuiChip-label': {
-                          px: 1
-                        }
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{new Date(commitment.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>
+                  </Typography>
+                  <Chip
+                    label={commitment.status.toUpperCase()}
+                    color={getStatusColor(commitment.status)}
+                    size="small"
+                    sx={{
+                      fontWeight: 'medium',
+                      minWidth: '90px',
+                      '& .MuiChip-label': {
+                        px: 1
+                      }
+                    }}
+                  />
+                  <Typography variant="body2">Created At: {new Date(commitment.createdAt).toLocaleDateString()}</Typography>
+                  <Box mt={2}>
                     {(userRole === 'admin' || (userRole !== 'member' && commitment.status === 'pending')) && (
                       <Button 
                         variant="outlined" 
@@ -553,19 +655,42 @@ const AllCommitments = () => {
                     >
                       View
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Paper sx={{ p: 5, textAlign: 'center' }}>
+            <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No commitments available
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {filteredCommitments.length === 0 && commitments.length > 0 ? 
+                  "No commitments match your filter criteria" : 
+                  "No commitment data found"}
+              </Typography>
+              {filteredCommitments.length === 0 && commitments.length > 0 && (
+                <Button
+                  sx={{ mt: 2 }}
+                  variant="outlined"
+                  color="primary"
+                  onClick={clearFilters}
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </Box>
+          </Paper>
+        )
       )}
 
-      {layout === 'grid' && (
-        <Grid container spacing={3}>
-          {paginatedCommitments.map((commitment) => (
-            <Grid item xs={12} sm={6} md={4} key={commitment._id}>
-              <Paper sx={{ p: 2 }}>
+      {layout === 'list' && (
+        paginatedCommitments.length > 0 ? (
+          <Box>
+            {paginatedCommitments.map((commitment) => (
+              <Paper key={commitment._id} sx={{ p: 2, mb: 2 }}>
                 <Typography variant="h6">{commitment.dealId?.name || 'N/A'}</Typography>
                 {userRole === 'admin' && (
                   <Typography variant="body2">
@@ -629,80 +754,32 @@ const AllCommitments = () => {
                   </Button>
                 </Box>
               </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      )}
-
-      {layout === 'list' && (
-        <Box>
-          {paginatedCommitments.map((commitment) => (
-            <Paper key={commitment._id} sx={{ p: 2, mb: 2 }}>
-              <Typography variant="h6">{commitment.dealId?.name || 'N/A'}</Typography>
-              {userRole === 'admin' && (
-                <Typography variant="body2">
-                  Distributor: {commitment.dealId?.distributor?.name || 'N/A'}
-                </Typography>
-              )}
-              {(userRole !== 'member' || userRole === 'admin') && (
-                <>
-                  <Typography variant="body2">Member: {commitment.userId?.name || 'N/A'}</Typography>
-                  <Typography variant="body2">Email: {commitment.userId?.email || 'N/A'}</Typography>
-                </>
-              )}
-              <Typography variant="body2">
-                Quantity: {commitment.modifiedQuantity ? (
-                  <span>
-                    <s>{commitment.quantity}</s> → {commitment.modifiedQuantity}
-                  </span>
-                ) : (
-                  commitment.quantity
-                )}
+            ))}
+          </Box>
+        ) : (
+          <Paper sx={{ p: 5, textAlign: 'center' }}>
+            <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No commitments available
               </Typography>
-              <Typography variant="body2">
-                Total Price: {commitment.modifiedTotalPrice ? (
-                  <span>
-                    <s>${commitment.totalPrice}</s> → ${commitment.modifiedTotalPrice}
-                  </span>
-                ) : (
-                  `$${commitment.totalPrice}`
-                )}
+              <Typography variant="body2" color="text.secondary">
+                {filteredCommitments.length === 0 && commitments.length > 0 ? 
+                  "No commitments match your filter criteria" : 
+                  "No commitment data found"}
               </Typography>
-              <Chip
-                label={commitment.status.toUpperCase()}
-                color={getStatusColor(commitment.status)}
-                size="small"
-                sx={{
-                  fontWeight: 'medium',
-                  minWidth: '90px',
-                  '& .MuiChip-label': {
-                    px: 1
-                  }
-                }}
-              />
-              <Typography variant="body2">Created At: {new Date(commitment.createdAt).toLocaleDateString()}</Typography>
-              <Box mt={2}>
-                {(userRole === 'admin' || (userRole !== 'member' && commitment.status === 'pending')) && (
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    onClick={() => handleOpenDialog(commitment)}
-                    sx={{ mr: 1 }}
-                  >
-                    Review
-                  </Button>
-                )}
+              {filteredCommitments.length === 0 && commitments.length > 0 && (
                 <Button
+                  sx={{ mt: 2 }}
                   variant="outlined"
-                  color="info"
-                  onClick={() => navigate(`/commitment-details/${commitment._id}`)}
+                  color="primary"
+                  onClick={clearFilters}
                 >
-                  View
+                  Clear Filters
                 </Button>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
+              )}
+            </Box>
+          </Paper>
+        )
       )}
 
       <Box sx={{ 

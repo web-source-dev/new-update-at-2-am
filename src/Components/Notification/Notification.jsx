@@ -127,7 +127,7 @@ const Notification = ({ onClose }) => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'auth':
-        return <NotificationsActiveIcon color="primary" />;
+        return <NotificationsActiveIcon color="primary.contrastText" />;
       case 'deal':
         return <InfoIcon color="info" />;
       case 'favorite':
@@ -137,7 +137,7 @@ const Notification = ({ onClose }) => {
       case 'chat':
         return <ErrorIcon color="error" />;
       default:
-        return <InfoIcon />;
+        return <InfoIcon color='primary.contrastText' />;
     }
   };
 
@@ -214,11 +214,11 @@ const Notification = ({ onClose }) => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
-            color="primary"
+            color="primary.contrastText"
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
             size="small"
-            startIcon={<CheckCircleIcon />}
+            startIcon={<CheckCircleIcon color='primary.contrastText' />}
             sx={{
               borderRadius: 20,
               textTransform: 'none',
@@ -255,7 +255,7 @@ const Notification = ({ onClose }) => {
             justifyContent: 'center',
           }}
         >
-          <NotificationsActiveIcon sx={{ fontSize: { xs: 40, sm: 48 }, mb: 2, opacity: 0.5 }} />
+          <NotificationsActiveIcon sx={{ fontSize: { xs: 40, sm: 48 }, mb: 2, opacity: 0.5, color: 'primary.contrastText' }}  />
           <Typography variant="h6" align="center">No notifications</Typography>
           <Typography variant="body2" align="center">You're all caught up!</Typography>
         </Box>
@@ -292,7 +292,7 @@ const Notification = ({ onClose }) => {
                         },
                       }}
                     >
-                      <CheckCircleIcon fontSize="small" />
+                      <CheckCircleIcon fontSize="small" color='primary.contrastText' />
                     </IconButton>
                     <IconButton
                       size="small"
@@ -304,7 +304,7 @@ const Notification = ({ onClose }) => {
                         },
                       }}
                     >
-                      <DeleteIcon fontSize="small" />
+                      <DeleteIcon fontSize="small" color='primary.contrastText' />
                     </IconButton>
                   </Box>
                 }
@@ -407,6 +407,8 @@ const Notification = ({ onClose }) => {
               textTransform: 'none',
               borderRadius: 20,
               minWidth: { xs: '50%', sm: '120px' },
+              color: 'primary.contrastText',
+              bgcolor:'primary.main'
             }}
           >
             {loading ? (
@@ -446,7 +448,7 @@ const Notification = ({ onClose }) => {
               color="inherit"
               onClick={handleCloseSnackbar}
             >
-              <CloseIcon fontSize="small" />
+              <CloseIcon fontSize="small" color='primary.contrastText' />
             </IconButton>
           }
         >

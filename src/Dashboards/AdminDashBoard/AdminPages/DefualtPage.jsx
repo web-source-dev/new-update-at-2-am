@@ -284,7 +284,7 @@ const DefualtPage = () => {
                 </div>
                 <People sx={{ fontSize: 40 }} />
               </Box>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 +{userStats?.newThisMonth || 0} this month
               </Typography>
             </CardContent>
@@ -301,7 +301,7 @@ const DefualtPage = () => {
                 </div>
                 <ShoppingCart sx={{ fontSize: 40 }} />
               </Box>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 ${(dealStats?.totalRevenue || 0).toLocaleString()} total revenue
               </Typography>
             </CardContent>
@@ -318,7 +318,7 @@ const DefualtPage = () => {
                 </div>
                 <TrendingUp sx={{ fontSize: 40 }} />
               </Box>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 Managing {dealStats?.total || 0} deals
               </Typography>
             </CardContent>
@@ -335,7 +335,7 @@ const DefualtPage = () => {
                 </div>
                 <Block sx={{ fontSize: 40 }} />
               </Box>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 {((userStats?.blocked || 0) / (userStats?.total || 1) * 100).toFixed(1)}% of total users
               </Typography>
             </CardContent>

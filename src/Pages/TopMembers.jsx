@@ -109,6 +109,7 @@ const TopMembers = () => {
             variant="outlined" 
             onClick={handleViewAllMembers}
             sx={{ borderRadius: 2 }}
+            color='primary.contrastText'
           >
             View All
           </Button>
@@ -176,7 +177,8 @@ const TopMembers = () => {
                           height: 40, 
                           mr: 2,
                           bgcolor: 'primary.main',
-                          border: `2px solid ${getMedalColor(index)}`
+                          border: `2px solid ${getMedalColor(index)}`,
+                          color:'primary.contrastText'
                         }}
                       >
                         {member.logo ? (
@@ -199,7 +201,7 @@ const TopMembers = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      startIcon={<VisibilityIcon />}
+                      startIcon={<VisibilityIcon color='primary.contrastText'/>}
                       onClick={() => handleViewMember(member._id)}
                       sx={{ borderRadius: 2 }}
                     >

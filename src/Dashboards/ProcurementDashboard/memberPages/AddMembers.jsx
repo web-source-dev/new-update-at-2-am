@@ -175,7 +175,7 @@ const AddMembers = () => {
         <Button
           variant="contained"
           color="primary"
-          startIcon={<PersonAddIcon />}
+          startIcon={<PersonAddIcon color="primary.contrastText" />}
           onClick={() => setOpen(true)}
         >
           Add New Store
@@ -212,11 +212,11 @@ const AddMembers = () => {
                         <Tooltip title="View Commitments">
                           <IconButton
                             size="small"
-                            color="primary"
+                            color="primary.contrastText"
                             aria-label="View store commitments"
                             onClick={() => handleViewStore(store._id)}
                           >
-                            <VisibilityIcon />
+                            <VisibilityIcon color="primary.contrastText" />
                           </IconButton>
                         </Tooltip>
                       </TableCell>

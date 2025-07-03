@@ -47,7 +47,7 @@ const NotificationIcon = () => {
     <>
       <Fade in={true}>
         <IconButton
-          color="primary"
+          color="primary.contrastText"
           onClick={toggleDrawer}
           sx={{
             mr: 2,
@@ -70,7 +70,7 @@ const NotificationIcon = () => {
               }
             }}
           >
-            <NotificationsIcon sx={{ fontSize: 28 }} />
+            <NotificationsIcon sx={{ fontSize: 28, color: 'primary.contrastText' }} />
           </Badge>
         </IconButton>
       </Fade>
@@ -140,7 +140,7 @@ const NotificationIcon = () => {
                   },
                 }}
               >
-                <CloseIcon />
+                <CloseIcon color='primary.contrastText' />
               </IconButton>
             </Stack>
           </Box>

@@ -255,7 +255,7 @@ const ResetPassword = () => {
                     fontWeight: 600,
                     textAlign: 'center',
                     mb: 3,
-                    color: theme.palette.primary.main
+                    color: theme.palette.primary.contrastText
                   }}
                 >
                   Reset Password
@@ -286,13 +286,13 @@ const ResetPassword = () => {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Lock />
+                              <Lock  color='primary.contrastText'/>
                             </InputAdornment>
                           ),
                           endAdornment: (
                             <InputAdornment position="end">
                               <IconButton onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                {showPassword ? <VisibilityOff  color='primary.contrastText'/> : <Visibility  color='primary.contrastText'/>}
                               </IconButton>
                             </InputAdornment>
                           ),
@@ -343,13 +343,13 @@ const ResetPassword = () => {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Lock />
+                              <Lock  color='primary.contrastText'/>
                             </InputAdornment>
                           ),
                           endAdornment: (
                             <InputAdornment position="end">
                               <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                {showConfirmPassword ? <VisibilityOff  color='primary.contrastText'/> : <Visibility  color='primary.contrastText'/>}
                               </IconButton>
                             </InputAdornment>
                           ),

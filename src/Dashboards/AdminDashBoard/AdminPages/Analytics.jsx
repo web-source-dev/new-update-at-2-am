@@ -692,7 +692,7 @@ const Analytics = () => {
           <Card elevation={0} sx={{ mb: 4, p: 2, backgroundColor: 'transparent' }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Button
-                startIcon={<ArrowBack />}
+                startIcon={<ArrowBack color='primary.contrastText' />}
                 onClick={() => navigate(-1)}
                 variant="outlined"
                 sx={{ 
@@ -700,6 +700,7 @@ const Analytics = () => {
                   textTransform: 'none',
                   px: 3
                 }}
+                color='primary.contrastText'
               >
                 Back to Commitments
               </Button>
@@ -711,9 +712,9 @@ const Analytics = () => {
                 )}
                 <Button
                   onClick={handleRefresh}
-                  startIcon={<RefreshIcon />}
+                  startIcon={<RefreshIcon color='primary.contrastText' />}
                   variant="outlined"
-                  color="primary"
+                  color="primary.contrastText"
                   disabled={loading}
                   sx={{ borderRadius: 2 }}
                 >
@@ -721,9 +722,9 @@ const Analytics = () => {
                 </Button>
                 <Button
                   onClick={handleExport}
-                  startIcon={<DownloadIcon />}
+                  startIcon={<DownloadIcon color='primary.contrastText' />}
                   variant="outlined"
-                  color="primary"
+                  color="primary.contrastText"
                   sx={{ borderRadius: 2 }}
                 >
                   Export Data
@@ -733,7 +734,7 @@ const Analytics = () => {
                   component="h1"
                   sx={{ 
                     fontWeight: 'bold',
-                    color: 'primary.main'
+                    color: 'primary.contrastText'
                   }}
                 >
                   Commitment Analytics

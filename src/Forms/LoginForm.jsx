@@ -368,7 +368,7 @@ const LoginForm = () => {
                   fontWeight: 600,
                   textAlign: 'center',
                   mb: 3,
-                  color: theme.palette.primary.main
+                  color: theme.palette.primary.contrastText
                 }}
               >
                 Welcome Back
@@ -390,7 +390,7 @@ const LoginForm = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Email />
+                            <Email  color='primary.contrastText'/>
                           </InputAdornment>
                         ),
                       }}
@@ -410,13 +410,13 @@ const LoginForm = () => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Lock />
+                            <Lock color='primary.contrastText'/>
                           </InputAdornment>
                         ),
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton onClick={() => setShowPassword(!showPassword)}>
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                              {showPassword ? <VisibilityOff  color='primary.contrastText'/> : <Visibility  color='primary.contrastText'/>}
                             </IconButton>
                           </InputAdornment>
                         ),
@@ -501,14 +501,14 @@ const LoginForm = () => {
           }}
         >
           <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-            <CheckCircleOutline color="primary" sx={{ fontSize: 48, mb: 1 }} />
+            <CheckCircleOutline color="primary.contrastText" sx={{ fontSize: 48, mb: 1 }} />
             <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
               Verify Your Email
             </Typography>
           </DialogTitle>
           
           <DialogContent>
-            <Alert severity="info" sx={{ mb: 3 }}>
+            <Alert severity="info" sx={{ mb: 3, color: theme.palette.primary.contrastText }}>
               Your email needs to be verified before you can log in.
             </Alert>
             
@@ -547,7 +547,7 @@ const LoginForm = () => {
             
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
               <Button
-                color="primary"
+                color="primary.contrastText"
                 disabled={resendDisabled}
                 onClick={handleResendOTP}
                 sx={{ textTransform: 'none' }}

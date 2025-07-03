@@ -189,6 +189,9 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
 
       if (selectedMonth) {
         url += `&month=${selectedMonth}`;
+      } else {
+        // Explicitly add empty month parameter when "All Months" is selected
+        url += `&month=`;
       }
 
       if (selectedStatus) {
@@ -726,6 +729,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                     checked={selectAllDeals}
                     onChange={(e) => setSelectAllDeals(e.target.checked)}
                     size="small"
+                    color="primary.contrastText"
                   />
                 }
                 label={<Typography sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>All</Typography>}
@@ -795,6 +799,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                     checked={selectAllDeals}
                     onChange={(e) => setSelectAllDeals(e.target.checked)}
                     size="small"
+                    color="primary.contrastText"
                   />
                 )}
               </StyledTableCell>
@@ -807,94 +812,122 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             </TableRow>
           </TableHead>
           <TableBody>
-            {deals.map((deal) => (
-              <TableRow key={deal._id}>
-                <StyledTableCell padding="checkbox" sx={{ display: { xs: 'table-cell', sm: 'table-cell' } }}>
-                  {deal.pendingCommitments > 0 && (
-                    <Checkbox
-                      checked={selectedDeals.includes(deal._id)}
-                      onChange={() => handleDealSelect(deal._id)}
-                      size="small"
-                    />
-                  )}
-                </StyledTableCell>
-                <StyledTableCell sx={{ maxWidth: { xs: '100px', sm: 'none' } }}>
-                  <Typography noWrap>{deal.name}</Typography>
-                </StyledTableCell>
-                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
-                <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
-                <StyledTableCell>
-                  {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
-                </StyledTableCell>
-                <StyledTableCell>
-                  ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
-                </StyledTableCell>
-                <StyledTableCell>
-                  <Box sx={{display:'flex',gap:2}}>
-                    {deal.bulkAction ? (
-                      <Chip 
-                        label={deal.bulkStatus} 
-                        color={deal.bulkStatus === "approved" ? "success" : "error"} 
-                        variant="outlined" 
+            {deals.length > 0 ? (
+              deals.map((deal) => (
+                <TableRow key={deal._id}>
+                  <StyledTableCell padding="checkbox" sx={{ display: { xs: 'table-cell', sm: 'table-cell' } }}>
+                    {deal.pendingCommitments > 0 && (
+                      <Checkbox
+                        checked={selectedDeals.includes(deal._id)}
+                        onChange={() => handleDealSelect(deal._id)}
+                        size="small"
+                        color="primary.contrastText"
                       />
-                    ) : (
-                      <Box 
-                        display="flex" 
-                        gap={1}
-                        sx={{
-                          flexDirection: { xs: 'column', sm: 'row' },
-                          '.MuiButton-root': {
-                            minWidth: { xs: '70px', sm: 'auto' },
-                            padding: { xs: '4px 8px', sm: '6px 16px' },
-                          }
+                    )}
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ maxWidth: { xs: '100px', sm: 'none' } }}>
+                    <Typography noWrap>{deal.name}</Typography>
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.category}</StyledTableCell>
+                  <StyledTableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{deal.minimumQuantity}</StyledTableCell>
+                  <StyledTableCell>
+                    {deal.totalQuantity !== 0 ? deal.totalQuantity : deal.totalPQuantity}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <Box sx={{display:'flex',gap:2}}>
+                      {deal.bulkAction ? (
+                        <Chip 
+                          label={deal.bulkStatus} 
+                          color={deal.bulkStatus === "approved" ? "success" : "error"} 
+                          variant="outlined" 
+                        />
+                      ) : (
+                        <Box 
+                          display="flex" 
+                          gap={1}
+                          sx={{
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            '.MuiButton-root': {
+                              minWidth: { xs: '70px', sm: 'auto' },
+                              padding: { xs: '4px 8px', sm: '6px 16px' },
+                            }
+                          }}
+                        >
+                          {/* Show buttons on larger screens */}
+                          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleBulkAction(deal._id, 'approve')}
+                              disabled={actionInProgress || deal.pendingCommitments === 0}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleBulkAction(deal._id, 'decline')}
+                              disabled={actionInProgress || deal.pendingCommitments === 0}
+                            >
+                              Decline
+                            </Button>
+                          </Box>
+                        </Box>
+                      )}
+                      {/* Show only menu on mobile */}
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleMenuClick(event, deal)}
+                        sx={{ 
+                          display: { xs: 'flex', sm: 'none' },
+                          alignSelf: 'center'
                         }}
                       >
-                        {/* Show buttons on larger screens */}
-                        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleBulkAction(deal._id, 'approve')}
-                            disabled={actionInProgress || deal.pendingCommitments === 0}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="error"
-                            onClick={() => handleBulkAction(deal._id, 'decline')}
-                            disabled={actionInProgress || deal.pendingCommitments === 0}
-                          >
-                            Decline
-                          </Button>
-                        </Box>
-                      </Box>
+                        <MoreVertIcon />
+                      </IconButton>
+                      {/* Show menu on desktop too */}
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleMenuClick(event, deal)}
+                        sx={{ display: { xs: 'none', sm: 'flex' } }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+                  </StyledTableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <StyledTableCell colSpan={7} align="center">
+                  <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      No deals available
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {searchInput || selectedMonth || startDate || endDate ? 
+                        "No deals match your filter criteria" : 
+                        "You don't have any deals with commitments"}
+                    </Typography>
+                    {(searchInput || selectedMonth || startDate || endDate) && (
+                      <Button
+                        sx={{ mt: 2 }}
+                        variant="outlined"
+                        color="primary.contrastText"
+                        onClick={handleClearFilters}
+                      >
+                        Clear Filters
+                      </Button>
                     )}
-                    {/* Show only menu on mobile */}
-                    <IconButton
-                      size="small"
-                      onClick={(event) => handleMenuClick(event, deal)}
-                      sx={{ 
-                        display: { xs: 'flex', sm: 'none' },
-                        alignSelf: 'center'
-                      }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                    {/* Show menu on desktop too */}
-                    <IconButton
-                      size="small"
-                      onClick={(event) => handleMenuClick(event, deal)}
-                      sx={{ display: { xs: 'none', sm: 'flex' } }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
                   </Box>
                 </StyledTableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -1165,7 +1198,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             disabled={actionInProgress || !selectedDealId?.pendingCommitments}
           >
             <ListItemIcon>
-              <CheckIcon fontSize="small" color="primary" />
+              <CheckIcon fontSize="small" color="primary.contrastText" />
             </ListItemIcon>
             Approve
           </MenuItem>
@@ -1177,7 +1210,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             disabled={actionInProgress || !selectedDealId?.pendingCommitments}
           >
             <ListItemIcon>
-              <CloseIcon fontSize="small" color="error" />
+              <CloseIcon fontSize="small" color="primary.contrastText" />
             </ListItemIcon>
             Decline
           </MenuItem>
@@ -1185,13 +1218,13 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
         </Box>
         <MenuItem onClick={handleViewDeal}>
           <ListItemIcon>
-            <VisibilityIcon fontSize="small" />
+            <VisibilityIcon fontSize="small" color="primary.contrastText" />
           </ListItemIcon>
           View
         </MenuItem>
         <MenuItem onClick={handleAnalyticsDeal}>
           <ListItemIcon>
-            <AnalyticsIcon fontSize="small" />
+            <AnalyticsIcon fontSize="small" color="primary.contrastText" />
           </ListItemIcon>
           Analytics
         </MenuItem>

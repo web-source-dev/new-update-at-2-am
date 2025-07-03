@@ -92,79 +92,79 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
   const getIcon = (label) => {
     switch (label) {
       case "Dashboard":
-        return <Dashboard />;
+        return <Dashboard  color='primary.contrastText'/>;
       case "Analytics":
-        return <AnalyticsIcon />;
+        return <AnalyticsIcon  color='primary.contrastText'/>;
       case "User Manage":
-        return <SupervisorAccount />;
+        return <SupervisorAccount  color='primary.contrastText'/>;
       case "User Monitoring":
-        return <MonitorHeart />;
+        return <MonitorHeart  color='primary.contrastText'/>;
       case "Overview":
-        return <Home />;
+        return <Home  color='primary.contrastText'/>;
       case "Splash Content":
-        return <ContentPaste />;
+        return <ContentPaste  color='primary.contrastText'/>;
       case "Deal Management":
-        return <LocalOffer />;
+        return <LocalOffer  color='primary.contrastText'/>;
       case "Announcements":
-        return <Announcement />;
+        return <Announcement  color='primary.contrastText'/>;
       case "Orders":
-        return <ShoppingCart />;
+        return <ShoppingCart  color='primary.contrastText'/>;
       case "Suppliers":
-        return <LocalShipping />;
+        return <LocalShipping  color='primary.contrastText'/>;
       case "Profile":
-        return <Person />;
+        return <Person  color='primary.contrastText'/>;
       case "Create Deal":
-        return <Store />;
+        return <Store  color='primary.contrastText'/>;
       case "Manage Deals":
-        return <Business />;
+        return <Business  color='primary.contrastText'/>;
       case "Bulk Upload":
-        return <Inventory />;
+        return <Inventory color='primary.contrastText' />;
       case "User Creation/Deletion":
-        return <GroupAdd />;
+        return <GroupAdd  color='primary.contrastText'/>;
       case "Role Assignment":
-        return <AssignmentInd />;
+        return <AssignmentInd color='primary.contrastText'/>;
       case "Access Control":
-        return <Lock />;
+        return <Lock  color='primary.contrastText'/>;
       case "Profile Management":
-        return <AccountBox />;
+        return <AccountBox  color='primary.contrastText'/>;
       case "System-wide User Monitoring":
-        return <Visibility />;
+        return <Visibility  color='primary.contrastText'/>;
       case "Splash Page Content Upload":
-        return <CloudUpload />;
+        return <CloudUpload  color='primary.contrastText'/>;
       case "Promotional Content Management":
-        return <Campaign />;
+        return <Campaign  color='primary.contrastText'/>;
       case "System-wide Announcements":
-        return <Announcement />;
+        return <Announcement  color='primary.contrastText'/>;
       case "User Activity Tracking":
-        return <TrackChanges />;
+        return <TrackChanges  color='primary.contrastText'/>;
       case "System Performance Metrics":
-        return <Speed />;
+        return <Speed  color='primary.contrastText'/>;
       case "Error Logging":
-        return <BugReport />;
+        return <BugReport  color='primary.contrastText'/>;
       case "Audit Trails":
-        return <History />;
+        return <History  color='primary.contrastText'/>;
       case "All Commitments":
-        return <AssignmentIcon />;
+        return <AssignmentIcon  color='primary.contrastText'/>;
       case "All Deals":
-        return <Business />;
+        return <Business  color='primary.contrastText'/>;
       case "All Committed Deals":
-        return <HandshakeOutlined />;
+        return <HandshakeOutlined  color='primary.contrastText'/>;
       case "Co-op Members":
-        return <People />;
+        return <People  color='primary.contrastText'/>;
       case "Compare Supply":
-        return <CompareArrows />;
+        return <CompareArrows color='primary.contrastText'/>;
       case "Contact":
-        return <ContactSupport />;
+        return <ContactSupport color='primary.contrastText'/>;
       case "My Commitments":
-        return <AssignmentIcon />;
+        return <AssignmentIcon color='primary.contrastText'/>;
       case "Add Stores":
-        return <Store />;
+        return <Store color='primary.contrastText'/>;
       case "Detailed Analytics":
-        return <Assessment />;
+        return <Assessment  color='primary.contrastText'/>;
       case "Members Tracking":
-        return <TrackChanges />;
+        return <TrackChanges  color='primary.contrastText'/>;
       default:
-        return <Description />;
+        return <Description  color='primary.contrastText'/>;
     }
   };
 
@@ -175,7 +175,7 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
         onClick={toggleMobileSidebar}
         sx={{ position: "fixed", top: 5, left: 5, zIndex: 1300, display: { xs: "block", sm: "block", md: "none" } }}
       >
-        <Menu />
+        <Menu  color='primary.contrastText'/>
       </IconButton>
 
       {/* Sidebar for Desktop */}
@@ -202,7 +202,7 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
             }}
           >
             {isOpen && <Typography variant="h6">Dashboard</Typography>}
-            <IconButton onClick={toggleSidebar}>{isOpen ? <ChevronLeft /> : <Menu />}</IconButton>
+            <IconButton onClick={toggleSidebar}>{isOpen ? <ChevronLeft  color='primary.contrastText'/> : <Menu  color='primary.contrastText'/>}</IconButton>
           </div>
           <Divider />
           <List>
@@ -217,7 +217,7 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                     <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>{<LocalOffer />}</ListItemIcon>
                     {isOpen && <ListItemText primary={link.title} />}
                     {isOpen && (
-                      (openSubmenus[link.title] ? <ExpandLess /> : <ExpandMore />)
+                      (openSubmenus[link.title] ? <ExpandLess  color='primary.contrastText'/> : <ExpandMore  color='primary.contrastText'/>)
                     )}
                   </ListItem>
                     </Tooltip>
@@ -301,7 +301,7 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
               <Tooltip title="Contact" placement="right" disableHoverListener={isOpen}>
                 <ListItem button>
                   <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
-                    <ContactSupport />
+                    <ContactSupport  color='primary.contrastText'/>
                   </ListItemIcon>
                   {isOpen && <ListItemText primary={<Links link={`/contact`} linkText="Contact" size="0.97em" />} />}
                 </ListItem>
@@ -327,7 +327,7 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                   <ListItem button onClick={() => toggleSubmenu(link.title)}>
                     <ListItemIcon>{getIcon(link.title)}</ListItemIcon>
                     <ListItemText primary={link.title} />
-                    {openSubmenus[link.title] ? <ExpandLess /> : <ExpandMore />}
+                    {openSubmenus[link.title] ? <ExpandLess  color='primary.contrastText'/> : <ExpandMore  color='primary.contrastText'/>}
                   </ListItem>
                   <Collapse in={openSubmenus[link.title]} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>

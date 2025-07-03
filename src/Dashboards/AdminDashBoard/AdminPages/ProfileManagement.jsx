@@ -178,12 +178,12 @@ const ProfileManagement = () => {
   return (
     <Container maxWidth="xl" sx={{ minWidth: { xs: '100%', sm: '300px' } }}>
       <AnnouncementToast event="signup" />
-      <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mb: 2 }}>Back</Button>
+      <Button color='primary.contrastText' startIcon={<ArrowBack  color='primary.contrastText'/>} onClick={() => navigate(-1)} sx={{ mb: 2 }}>Back</Button>
       <Card elevation={3} sx={{ mt: 2, p: 3, position: 'relative' }}>
         <CardContent>
           <Grid container spacing={2} alignItems="center">
             <Grid item>
-              <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main' }}>
+              <Avatar sx={{ width: 80, height: 80, bgcolor: 'secondary.main' }}>
                 {user.logo ? <img src={user.logo} alt="User Logo" style={{ width: '100%' }} /> : getInitials(user.name)}
               </Avatar>
             </Grid>
@@ -197,7 +197,21 @@ const ProfileManagement = () => {
         <Tabs
           value={tabIndex}
           onChange={(e, newValue) => setTabIndex(newValue)}
-          sx={{ mb: 2, width: '100%' }}
+          sx={{ 
+            mb: 2, 
+            width: '100%',
+            "& .MuiTabs-indicator": {
+              backgroundColor: "yellow",
+              height: 3
+            },
+            "& .MuiTab-root": {
+              color: "black",
+              "&.Mui-selected": {
+                color: "black",
+                fontWeight: "bold"
+              }
+            }
+          }}
           variant="scrollable"
           scrollButtons="auto"
         >
