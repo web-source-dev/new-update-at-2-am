@@ -1181,7 +1181,6 @@ const handleClick = () => {
                 borderColor: 'divider',
                 position: { xs: 'static', lg: 'sticky' },
                 top: 24,
-                height: { lg: 'calc(100vh - 50px)' },
                 display: { xs: mobileFiltersOpen ? 'block' : 'none', lg: 'block' }
               }}
             >
