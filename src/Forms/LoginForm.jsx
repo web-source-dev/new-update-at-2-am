@@ -232,6 +232,19 @@ const LoginForm = () => {
       });
     }
   };
+// Add this in a <script> tag or React useEffect
+window.addEventListener('message', (event) => {
+  // Only accept logout messages from your own domain
+  if (event.origin !== 'https://nmga.rtnglobal.site') return;
+
+  if (event.data === 'logout') {
+    localStorage.removeItem('token');
+    console.log('✅ Token cleared from embedded login page.');
+
+    // Optional: Send confirmation back
+    event.source?.postMessage('logout-complete', event.origin);
+  }
+});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
