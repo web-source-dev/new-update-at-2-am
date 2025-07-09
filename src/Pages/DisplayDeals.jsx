@@ -113,7 +113,7 @@ const DisplayDeals = () => {
 
       window.open(`${dashboardPath}?${authParams}`, '_blank');
     } else {
-      window.open('/login', '_blank');
+      window.location.href = '/login';
     }
   };
 
