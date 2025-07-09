@@ -92,14 +92,14 @@ const DisplayDeals = () => {
       setIsLoggedIn(false);
     }
   }, []);
- const handleClick = () => {
-    if (isLoggedIn) {
-      const dashboardPath = `/dashboard/${role === 'member' ? 'co-op-member' : role}`;
-      navigate(dashboardPath);
-    } else {
-      navigate('/login');
-    }
-  };
+const handleClick = () => {
+  if (isLoggedIn) {
+    const dashboardPath = `/dashboard/${role === 'member' ? 'co-op-member' : role}`;
+    window.open(dashboardPath, '_blank');
+  } else {
+    window.open('/login', '_blank');
+  }
+};
 
   useEffect(() => {
     const fetchSplashContent = async () => {
