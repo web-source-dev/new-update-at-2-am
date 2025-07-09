@@ -1055,7 +1055,12 @@ const handleClick = () => {
               </Box>
             <Box sx={{display:'flex',gap:2}}>
               <Button
-                onClick={() => navigate(`/dashboard/co-op-member/offers/view/splash-content?id=${user_id}&session=${user_id}&role=distributor?offer=true`)}
+              onClick={() =>
+    window.open(
+      `/dashboard/co-op-member/offers/view/splash-content?id=${user_id}&session=${user_id}&role=distributor&offer=true`,
+      '_blank'
+    )
+  }
                 sx={{
                   border: `2px solid ${theme.palette.primary.contrastText}`,
                   color: theme.palette.primary.contrastText,
