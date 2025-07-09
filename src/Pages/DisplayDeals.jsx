@@ -1053,6 +1053,7 @@ const handleClick = () => {
                   Discover amazing products at unbeatable prices
                 </Typography>
               </Box>
+            <Box sx={{display:'flex',gap:2}}>
               <Button
                 onClick={() => navigate(`/dashboard/co-op-member/offers/view/splash-content?id=${user_id}&session=${user_id}&role=distributor?offer=true`)}
                 sx={{
@@ -1086,22 +1087,27 @@ const handleClick = () => {
           <LoginIcon sx={{ color: 'primary.contrastText' }} />
         )
       }
-      sx={{
-        backgroundColor: 'primary.main',
-        color: 'primary.contrastText',
-        borderRadius: '8px',
-        fontWeight: 600,
-        textTransform: 'none',
-        px: 4,
-        py: 1.5,
-        fontSize: '1rem',
-        '&:hover': {
-          backgroundColor: 'primary.dark',
-        },
-      }}
+        sx={{
+                  border: `2px solid ${theme.palette.primary.contrastText}`,
+                  color: theme.palette.primary.contrastText,
+                  backgroundColor: 'white',
+                  padding: { xs: '8px 16px', md: '10px 10px' },
+                  cursor: 'pointer',
+                  borderRadius: 25,
+                  fontSize: { xs: '12px', md: '16px' },
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  transition: 'background-color 0.3s ease',
+                  marginRight: '4px',
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.contrastText,
+                    color: theme.palette.secondary.contrastText,
+                  },
+                }}
     >
       {isLoggedIn ? 'Go to Dashboard' : 'Login to Continue'}
     </Button>
+            </Box>
 
               {isMobile && (
                 <Box sx={{
