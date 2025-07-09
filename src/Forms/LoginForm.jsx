@@ -238,7 +238,7 @@ window.addEventListener('message', (event) => {
   if (event.origin !== 'https://nmga.rtnglobal.site') return;
 
   if (event.data === 'logout') {
-    localStorage.removeItem('token');
+    localStorage.clear();
     console.log('✅ Token cleared from embedded login page.');
 
     // Optional: Send confirmation back
