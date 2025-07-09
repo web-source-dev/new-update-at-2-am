@@ -55,7 +55,6 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      {shouldShowHeaderFooter && <Header />}
       {children}
     </>
   );
