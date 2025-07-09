@@ -94,28 +94,28 @@ const DisplayDeals = () => {
       setIsLoggedIn(false);
     }
   }, []);
-const handleClick = () => {
-  if (isLoggedIn) {
-    const dashboardPath = `/dashboard/${role === 'member' ? 'co-op-member' : role}`;
-    
-    // Add authentication parameters to the URL
-    const userId = localStorage.getItem('user_id');
-    const adminId = localStorage.getItem('admin_id');
-    const token = localStorage.getItem('token');
-    
-    let authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(role)}`;
-    
-    if (role === 'admin' && adminId) {
-      authParams += `&admin_id=${encodeURIComponent(adminId)}`;
-    } else if (userId) {
-      authParams += `&user_id=${encodeURIComponent(userId)}`;
+  const handleClick = () => {
+    if (isLoggedIn) {
+      const dashboardPath = `/dashboard/${role === 'member' ? 'co-op-member' : role}`;
+
+      // Add authentication parameters to the URL
+      const userId = localStorage.getItem('user_id');
+      const adminId = localStorage.getItem('admin_id');
+      const token = localStorage.getItem('token');
+
+      let authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(role)}`;
+
+      if (role === 'admin' && adminId) {
+        authParams += `&admin_id=${encodeURIComponent(adminId)}`;
+      } else if (userId) {
+        authParams += `&user_id=${encodeURIComponent(userId)}`;
+      }
+
+      window.open(`${dashboardPath}?${authParams}`, '_blank');
+    } else {
+      window.open('/login', '_blank');
     }
-    
-    window.open(`${dashboardPath}?${authParams}`, '_blank');
-  } else {
-    window.open('/login', '_blank');
-  }
-};
+  };
 
   useEffect(() => {
     const fetchSplashContent = async () => {
@@ -386,7 +386,7 @@ const handleClick = () => {
 
   const handleSizeQuantityChange = (size, quantity) => {
     const newQuantity = Math.max(0, parseInt(quantity) || 0);
-    
+
     // Only perform tier calculations if we have a selected deal
     if (selectedDeal) {
       // Get the size data
@@ -395,7 +395,7 @@ const handleClick = () => {
         // Get current collective quantity for this size
         // In a real implementation, you'd want the size-specific data, but here we'll estimate
         const currentCollectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
-        
+
         // If this is an update, calculate what the previous commitment was
         let previousQuantity = 0;
         if (userCommitments.includes(selectedDeal._id)) {
@@ -403,17 +403,17 @@ const handleClick = () => {
           // This is simplified - in real implementation, you'd want to fetch the specific size quantity
           previousQuantity = selectedSizes[size] || 0;
         }
-        
+
         // Calculate what the new collective total would be
         const newCollectiveQuantity = currentCollectiveQuantity - previousQuantity + newQuantity;
-        
+
         // Sort tiers by quantity (highest first)
         const sortedTiers = [...sizeData.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
-        
+
         // Determine current tier and what tier would apply after this change
         const currentTier = sortedTiers.find(tier => currentCollectiveQuantity >= tier.tierQuantity);
         const newTier = sortedTiers.find(tier => newCollectiveQuantity >= tier.tierQuantity);
-        
+
         // If decreasing quantity would cause dropping to a lower tier or losing tier discount
         if (currentTier && (!newTier || newTier.tierQuantity < currentTier.tierQuantity)) {
           // Show a warning
@@ -425,7 +425,7 @@ const handleClick = () => {
         }
       }
     }
-    
+
     // Update the quantity
     setSelectedSizes(prev => ({
       ...prev,
@@ -435,7 +435,7 @@ const handleClick = () => {
 
   const handleCommitDeal = async () => {
     if (!selectedDeal || isCommitting) return;
-    
+
     // Validate that at least one size has a quantity greater than 0
     const hasQuantity = Object.values(selectedSizes).some(qty => qty > 0);
     if (!hasQuantity) {
@@ -446,17 +446,17 @@ const handleClick = () => {
       });
       return;
     }
-    
+
     // Prepare size commitments data
     const sizeCommitments = [];
-    
+
     Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
       if (quantity > 0) {
         const sizeData = selectedDeal.sizes.find(s => s.size === sizeName);
         if (sizeData) {
           // Determine if any size-specific tier applies
           let pricePerUnit = sizeData.discountPrice;
-          
+
           // Add to size commitments array
           sizeCommitments.push({
             size: sizeName,
@@ -474,7 +474,7 @@ const handleClick = () => {
         userId: user_id,
         sizeCommitments
       };
-      
+
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/deals/commit/buy/${selectedDeal._id}`,
         commitmentData
@@ -485,7 +485,7 @@ const handleClick = () => {
         message: "Deal commitment submitted successfully!",
         severity: 'success'
       });
-      
+
       await refreshUserData();
       await fetchDeals();
       handleCloseGetDeal();
@@ -540,23 +540,23 @@ const handleClick = () => {
   // Calculate total quantity, price, and determine active discount tier
   useEffect(() => {
     if (!selectedDeal) return;
-    
+
     // Calculate total quantity across all sizes
     let newTotalQuantity = 0;
     let newTotalPrice = 0;
     let newTotalSavings = 0;
-    
+
     // Calculate totals based on selected sizes
     Object.entries(selectedSizes).forEach(([sizeName, quantity]) => {
       if (quantity > 0) {
         const sizeData = selectedDeal.sizes.find(s => s.size === sizeName);
         if (sizeData) {
           newTotalQuantity += quantity;
-          
+
           // Get current total collective quantity for this size
           // For simplicity, we're using the total committed quantity 
           const collectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
-          
+
           // If this is an update, calculate what the previous commitment was
           let previousQuantity = 0;
           if (userCommitments.includes(selectedDeal._id)) {
@@ -564,46 +564,46 @@ const handleClick = () => {
             // previous commitment quantity for this size
             previousQuantity = quantity; // Using current quantity as a proxy
           }
-          
+
           // Calculate what the new collective total would be
           const projectedQuantity = collectiveQuantity - previousQuantity + quantity;
-          
+
           // Check for size-specific discount tiers based on projected collective quantity
           let effectivePrice = sizeData.discountPrice;
           let appliedTier = null;
           let projectedTier = null;
           let priceWillChange = false;
-          
+
           if (sizeData.discountTiers && sizeData.discountTiers.length > 0) {
             // Sort tiers by quantity (highest first) to find the best applicable tier
             const sortedTiers = [...sizeData.discountTiers].sort((a, b) => b.tierQuantity - a.tierQuantity);
-            
+
             // Find the tier based on current collective quantity
             appliedTier = sortedTiers.find(tier => collectiveQuantity >= tier.tierQuantity);
-            
+
             // Find the tier based on projected quantity
             projectedTier = sortedTiers.find(tier => projectedQuantity >= tier.tierQuantity);
-            
+
             // Determine if price will change
             const currentPrice = appliedTier ? appliedTier.tierDiscount : sizeData.discountPrice;
             const projectedPrice = projectedTier ? projectedTier.tierDiscount : sizeData.discountPrice;
             priceWillChange = currentPrice !== projectedPrice;
-            
+
             // Use projected tier for display
             if (projectedTier) {
               effectivePrice = projectedTier.tierDiscount;
             }
           }
-          
+
           const sizeTotal = quantity * effectivePrice;
           const sizeSavings = quantity * (sizeData.originalCost - effectivePrice);
-          
+
           newTotalPrice += sizeTotal;
           newTotalSavings += sizeSavings;
         }
       }
     });
-    
+
     setTotalQuantity(newTotalQuantity);
     setTotalPrice(newTotalPrice);
     setTotalSavings(newTotalSavings);
@@ -657,9 +657,9 @@ const handleClick = () => {
             <Typography variant="h6" color="text.secondary">
               No deals found matching your criteria.
             </Typography>
-            <Button 
-              variant="text" 
-              color="primary" 
+            <Button
+              variant="text"
+              color="primary"
               onClick={clearFilters}
               sx={{ mt: 1 }}
             >
@@ -673,26 +673,26 @@ const handleClick = () => {
     return filteredDeals.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((deal) => {
       // Check if user has committed to this deal
       const isCommitted = userCommitments.includes(deal._id);
-      
+
       // Check if the deal has the sizes array, if not use legacy fields
       const hasSizes = deal.sizes && deal.sizes.length > 0;
-      
+
       // Calculate the best savings percentage across all sizes or use legacy fields
       let bestSavingsPercent = '0';
       let lowestPrice = 0;
       let highestPrice = 0;
       let singlePriceDisplay = false;
-      
+
       if (hasSizes) {
-        const savingsPercentages = deal.sizes.map(size => 
+        const savingsPercentages = deal.sizes.map(size =>
           ((size.originalCost - size.discountPrice) / size.originalCost) * 100
         );
         bestSavingsPercent = Math.max(...savingsPercentages).toFixed(0);
-        
+
         // Get price information from available sizes
         lowestPrice = Math.min(...deal.sizes.map(size => size.discountPrice));
         highestPrice = Math.max(...deal.sizes.map(size => size.discountPrice));
-        
+
         // Determine if we should show single price (when there's only one size or all sizes have same price)
         singlePriceDisplay = deal.sizes.length === 1 || lowestPrice === highestPrice;
       } else {
@@ -701,13 +701,13 @@ const handleClick = () => {
         lowestPrice = deal.discountPrice || deal.avgDiscountPrice || 0;
         singlePriceDisplay = true;
       }
-      
+
       return (
         <Grid item xs={12} sm={6} md={4} lg={4} key={deal._id}>
-          <Card 
+          <Card
             sx={{
-              height: '100%', 
-              display: 'flex', 
+              height: '100%',
+              display: 'flex',
               flexDirection: 'column',
               transition: 'transform 0.3s, box-shadow 0.3s',
               '&:hover': {
@@ -720,7 +720,7 @@ const handleClick = () => {
             }}
           >
             {bestSavingsPercent > 0 && (
-              <Box 
+              <Box
                 sx={{
                   position: 'absolute',
                   top: 10,
@@ -739,7 +739,7 @@ const handleClick = () => {
                 SAVE {bestSavingsPercent}%
               </Box>
             )}
-            
+
             {deal.images && deal.images.length > 0 && (
               <Box sx={{ position: 'relative', height: 200, bgcolor: theme.palette.background.default }}>
                 {isVideoUrl(deal.images[0]) ? (
@@ -749,9 +749,9 @@ const handleClick = () => {
                     autoPlay
                     muted
                     loop
-                    sx={{ 
-                      width: '100%', 
-                      height: '100%', 
+                    sx={{
+                      width: '100%',
+                      height: '100%',
                       objectFit: 'contain',
                       p: 2
                     }}
@@ -766,7 +766,7 @@ const handleClick = () => {
                   />
                 )}
                 {isVideoUrl(deal.images[0]) && (
-                  <Box 
+                  <Box
                     sx={{
                       position: 'absolute',
                       bottom: 5,
@@ -782,11 +782,11 @@ const handleClick = () => {
                 )}
               </Box>
             )}
-            
+
             <CardContent sx={{ flexGrow: 1, p: 2, pt: 4 }}>
-                <Typography 
-                  variant="h6" 
-                sx={{ 
+              <Typography
+                variant="h6"
+                sx={{
                   fontWeight: 'bold',
                   fontSize: '1.5rem',
                   color: 'black',
@@ -794,21 +794,21 @@ const handleClick = () => {
               >
                 {deal.name}
               </Typography>
-              
+
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
                 <Box>
-                  <Typography 
-                    variant="body1" 
-                    color={theme.palette.primary.contrastText} 
+                  <Typography
+                    variant="body1"
+                    color={theme.palette.primary.contrastText}
                     component="span"
                     sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}
                   >
                     ${lowestPrice.toFixed(2)}
                   </Typography>
                   {hasSizes && !singlePriceDisplay && (
-                    <Typography 
-                      variant="body2" 
-                      component="span" 
+                    <Typography
+                      variant="body2"
+                      component="span"
                       sx={{ ml: 0.5, color: theme.palette.primary.contrastText }}
                     >
                       - ${highestPrice.toFixed(2)}
@@ -816,17 +816,17 @@ const handleClick = () => {
                   )}
                 </Box>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 1 }}>
-                  <Chip 
-                    label={deal.category || 'Vodka'} 
-                    size="small" 
+                  <Chip
+                    label={deal.category || 'Vodka'}
+                    size="small"
                     variant="outlined"
-                    sx={{ borderRadius: '4px', color: theme.palette.error.dark ,borderColor: theme.palette.error.light }}
+                    sx={{ borderRadius: '4px', color: theme.palette.error.dark, borderColor: theme.palette.error.light }}
                   />
                   {deal.sizes && deal.sizes.length > 1 && (
-                    <Chip 
-                      label="Mix & Match" 
+                    <Chip
+                      label="Mix & Match"
                       size="small"
-                      sx={{ 
+                      sx={{
                         fontWeight: 'bold',
                         borderRadius: '4px',
                         background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
@@ -837,10 +837,10 @@ const handleClick = () => {
                   )}
                 </Box>
               </Box>
-              
+
               {/* Size options */}
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color={theme.palette.text.secondary}
                 sx={{
                   mb: 1,
@@ -852,16 +852,16 @@ const handleClick = () => {
               >
                 <Box component="span" sx={{ fontWeight: 'medium' }}>Sizes:</Box>
                 {hasSizes ? (
-                  <Box component="span" sx={{ 
+                  <Box component="span" sx={{
                     display: 'inline-flex',
                     flexWrap: 'nowrap',
                     overflow: 'hidden'
                   }}>
                     {deal.sizes.map((size, idx) => (
-                      <Box 
-                        key={idx} 
-                        component="span" 
-                        sx={{ 
+                      <Box
+                        key={idx}
+                        component="span"
+                        sx={{
                           px: 0.5,
                           mr: 0.5,
                           fontSize: '0.7rem',
@@ -879,16 +879,16 @@ const handleClick = () => {
                   <Box component="span">Standard size</Box>
                 )}
               </Typography>
-              
+
               {/* Distributor info */}
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Avatar 
-                  src={deal.distributor?.logo} 
+                <Avatar
+                  src={deal.distributor?.logo}
                   alt={deal.distributor?.businessName}
                   sx={{ width: 24, height: 24, mr: 1 }}
                 />
-                <Typography 
-                  variant="body2" 
+                <Typography
+                  variant="body2"
                   color={theme.palette.text.secondary}
                   sx={{
                     overflow: 'hidden',
@@ -899,7 +899,7 @@ const handleClick = () => {
                   {deal.distributor?.businessName || deal.distributor?.name}
                 </Typography>
               </Box>
-              
+
               {/* Progress and stats */}
               {deal.minQtyForDiscount > 0 && (
                 <Box sx={{ mb: 1 }}>
@@ -912,13 +912,13 @@ const handleClick = () => {
                     </Typography>
                   </Box>
                   <Box sx={{ width: '100%', height: 4, bgcolor: theme.palette.grey[100], borderRadius: 5, overflow: 'hidden' }}>
-                    <Box 
-                      sx={{ 
-                        height: '100%', 
+                    <Box
+                      sx={{
+                        height: '100%',
                         width: `${Math.min(100, Math.round((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount * 100))}%`,
                         bgcolor: (deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? theme.palette.success.main : theme.palette.primary.main,
                         transition: 'width 0.5s ease-in-out'
-                      }} 
+                      }}
                     />
                   </Box>
                   {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
@@ -932,44 +932,44 @@ const handleClick = () => {
                   )}
                 </Box>
               )}
-              
+
               {/* Deal status info */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  <Chip 
-                    size="small" 
+                  <Chip
+                    size="small"
                     label={`Min: ${deal.minQtyForDiscount || 0}`}
                     color="primary.contrastText"
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
-                  <Chip 
-                    size="small" 
+                  <Chip
+                    size="small"
                     label={`Left: ${Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))}`}
                     color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? "success" : "primary"}
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
                   {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount && (
-                    <Chip 
-                      size="small" 
+                    <Chip
+                      size="small"
                       label="Committed"
                       color="primary"
                       sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                     />
                   )}
                 </Box>
-                
+
                 {isCommitted ? (
-                  <Chip 
-                    size="small" 
+                  <Chip
+                    size="small"
                     label="Committed"
                     color="primary"
                     sx={{ borderRadius: 1 }}
                   />
                 ) : (
-                  <Typography 
-                    variant="body2" 
+                  <Typography
+                    variant="body2"
                     color={theme.palette.text.secondary}
                     sx={{ fontSize: '0.75rem' }}
                   >
@@ -978,7 +978,7 @@ const handleClick = () => {
                 )}
               </Box>
             </CardContent>
-            
+
             <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
               <Button
                 fullWidth
@@ -1067,23 +1067,55 @@ const handleClick = () => {
                   Discover amazing products at unbeatable prices
                 </Typography>
               </Box>
-            <Box sx={{display:'flex',gap:2}}>
-              {isLoggedIn && role === 'member' && (
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {isLoggedIn && role === 'member' && (
+                  <Button
+                    onClick={() => {
+                      const userId = localStorage.getItem('user_id');
+                      const token = localStorage.getItem('token');
+                      const userRole = localStorage.getItem('user_role');
+
+                      const authParams = `id=${userId}&session=${userId}&role=distributor&offer=true&token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(userRole)}&user_id=${encodeURIComponent(userId)}`;
+                      window.open(`/dashboard/co-op-member/offers/view/splash-content?${authParams}`, '_blank');
+                    }}
+                    sx={{
+                      border: '2px solid',
+                      borderColor: 'primary.contrastText',
+                      color: 'primary.contrastText',
+                      backgroundColor: 'white',
+                      padding: { xs: '4px 4px', md: '10px 10px' },
+                      cursor: 'pointer',
+                      borderRadius: 25,
+                      fontSize: { xs: '12px', md: '16px' },
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      transition: 'background-color 0.3s ease',
+                      marginRight: '4px',
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.contrastText,
+                        color: theme.palette.secondary.contrastText,
+                      },
+                    }}
+                  >
+                    Advertisements
+                  </Button>
+                )}
                 <Button
-                  onClick={() => {
-                    const userId = localStorage.getItem('user_id');
-                    const token = localStorage.getItem('token');
-                    const userRole = localStorage.getItem('user_role');
-                    
-                    const authParams = `id=${userId}&session=${userId}&role=distributor&offer=true&token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(userRole)}&user_id=${encodeURIComponent(userId)}`;
-                    window.open(`/dashboard/co-op-member/offers/view/splash-content?${authParams}`, '_blank');
-                  }}
+                  variant="contained"
+                  size="large"
+                  onClick={handleClick}
+                  startIcon={
+                    isLoggedIn ? (
+                      <DashboardIcon sx={{ color: 'primary.contrastText' }} />
+                    ) : (
+                      <LoginIcon sx={{ color: 'primary.contrastText' }} />
+                    )
+                  }
                   sx={{
-                    border: '2px solid',
-                    borderColor: 'primary.contrastText',
-                    color: 'primary.contrastText',
+                    border: `2px solid ${theme.palette.primary.contrastText}`,
+                    color: theme.palette.primary.contrastText,
                     backgroundColor: 'white',
-                    padding: { xs: '4px 4px', md: '10px 10px' },
+                    padding: { xs: '8px 16px', md: '10px 10px' },
                     cursor: 'pointer',
                     borderRadius: 25,
                     fontSize: { xs: '12px', md: '16px' },
@@ -1091,47 +1123,11 @@ const handleClick = () => {
                     textTransform: 'uppercase',
                     transition: 'background-color 0.3s ease',
                     marginRight: '4px',
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary.contrastText,
-                      color: theme.palette.secondary.contrastText,
-                    },
                   }}
                 >
-                  Advertisements
+                  {isLoggedIn ? 'Go to Dashboard' : 'Login to Continue'}
                 </Button>
-              )}
-               <Button
-      variant="contained"
-      size="large"
-      onClick={handleClick}
-      startIcon={
-        isLoggedIn ? (
-          <DashboardIcon sx={{ color: 'primary.contrastText' }} />
-        ) : (
-          <LoginIcon sx={{ color: 'primary.contrastText' }} />
-        )
-      }
-        sx={{
-                  border: `2px solid ${theme.palette.primary.contrastText}`,
-                  color: theme.palette.primary.contrastText,
-                  backgroundColor: 'white',
-                  padding: { xs: '8px 16px', md: '10px 10px' },
-                  cursor: 'pointer',
-                  borderRadius: 25,
-                  fontSize: { xs: '12px', md: '16px' },
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                  transition: 'background-color 0.3s ease',
-                  marginRight: '4px',
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.contrastText,
-                    color: theme.palette.secondary.contrastText,
-                  },
-                }}
-    >
-      {isLoggedIn ? 'Go to Dashboard' : 'Login to Continue'}
-    </Button>
-            </Box>
+              </Box>
 
               {isMobile && (
                 <Box sx={{
@@ -1261,9 +1257,9 @@ const handleClick = () => {
                       flexWrap: 'wrap',
                       gap: 1
                     }}>
-                      {categories.map((cat,index) => (
+                      {categories.map((cat, index) => (
                         <Chip
-                          key={cat || (index +1)}
+                          key={cat || (index + 1)}
                           label={cat || 'Vodka'}
                           onClick={() => handleFilterChange('category', cat === filter.category ? '' : cat)}
                           variant={filter.category === cat ? "filled" : "outlined"}
@@ -1299,7 +1295,7 @@ const handleClick = () => {
                       </Select>
                     </FormControl>
                   </Box>
-                  <Divider sx={{marginTop:'50px'}} />
+                  <Divider sx={{ marginTop: '50px' }} />
 
                   {Object.values(filter).some(value =>
                     value !== '' &&
@@ -1464,9 +1460,9 @@ const handleClick = () => {
         >
           <DialogTitle sx={{ pb: 1 }}>
             {selectedDeal && (
-            <Typography variant="h6" fontWeight="bold">
+              <Typography variant="h6" fontWeight="bold">
                 {userCommitments.includes(selectedDeal._id) ? 'Update Your Commitment' : 'Make New Commitment'}: {selectedDeal.name}
-            </Typography>
+              </Typography>
             )}
           </DialogTitle>
           <DialogContent sx={{ pt: '16px !important' }}>
@@ -1476,7 +1472,7 @@ const handleClick = () => {
                   <Typography variant="h6" gutterBottom>
                     Size & Quantity Selection
                   </Typography>
-                  
+
                   {userCommitments.includes(selectedDeal._id) && (
                     <Alert severity="info" sx={{ mb: 2 }}>
                       <AlertTitle>Updating Your Commitment</AlertTitle>
@@ -1485,7 +1481,7 @@ const handleClick = () => {
                       </Typography>
                     </Alert>
                   )}
-                  
+
                   {/* Size selection with quantity inputs */}
                   <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
                     <Table>
@@ -1500,50 +1496,50 @@ const handleClick = () => {
                       <TableBody>
                         {selectedDeal.sizes.map((size, index) => {
                           const quantity = selectedSizes[size.size] || 0;
-                          
+
                           // Get collective quantity from all members for this size
                           // For simplicity, we're using the total committed quantity 
                           const collectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
-                          
+
                           // If this is an update, calculate previous commitment quantity
                           let previousQuantity = 0;
                           if (userCommitments.includes(selectedDeal._id)) {
                             // Simplification - in a real implementation, you'd fetch the specific previous quantity
                             previousQuantity = quantity; // Using current selection as proxy
                           }
-                          
+
                           // Calculate projected collective quantity after this change
                           const projectedQuantity = collectiveQuantity - previousQuantity + quantity;
-                          
-                                            // Sort tiers by quantity for display
-                  let sortedTiers = size.discountTiers ? [...size.discountTiers].sort((a, b) => a.tierQuantity - b.tierQuantity) : [];
-                          
+
+                          // Sort tiers by quantity for display
+                          let sortedTiers = size.discountTiers ? [...size.discountTiers].sort((a, b) => a.tierQuantity - b.tierQuantity) : [];
+
                           // Determine if any tier discount applies based on projected quantity
                           let effectivePrice = size.discountPrice;
                           let appliedTier = null;
                           let projectedTier = null;
                           let priceWillChange = false;
-                          
+
                           if (size.discountTiers && size.discountTiers.length > 0) {
                             // Find the tier based on current collective quantity
                             appliedTier = sortedTiers.find(tier => collectiveQuantity >= tier.tierQuantity);
-                            
+
                             // Find the tier based on projected quantity
                             projectedTier = sortedTiers.find(tier => projectedQuantity >= tier.tierQuantity);
-                            
+
                             // Determine if price will change
                             const currentPrice = appliedTier ? appliedTier.tierDiscount : size.discountPrice;
                             const projectedPrice = projectedTier ? projectedTier.tierDiscount : size.discountPrice;
                             priceWillChange = currentPrice !== projectedPrice;
-                            
+
                             // Use projected tier for display
                             if (projectedTier) {
                               effectivePrice = projectedTier.tierDiscount;
                             }
                           }
-                          
+
                           const subtotal = quantity * effectivePrice;
-                          
+
                           return (
                             <TableRow key={index}>
                               <TableCell>
@@ -1567,16 +1563,16 @@ const handleClick = () => {
                                 )}
                               </TableCell>
                               <TableCell align="right">
-                                <Typography 
-                                  variant="body1" 
+                                <Typography
+                                  variant="body1"
                                   color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.primary.main}
                                 >
                                   ${effectivePrice.toFixed(2)}
                                 </Typography>
                                 {priceWillChange && (
-                                  <Typography 
-                                    variant="caption" 
-                                    color={effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main} 
+                                  <Typography
+                                    variant="caption"
+                                    color={effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main}
                                     sx={{ display: 'block', textDecoration: effectivePrice < size.discountPrice ? 'line-through' : 'none' }}
                                   >
                                     {effectivePrice < size.discountPrice ? `was $${size.discountPrice.toFixed(2)}` : `was $${(appliedTier ? appliedTier.tierDiscount : size.discountPrice).toFixed(2)}`}
@@ -1595,8 +1591,8 @@ const handleClick = () => {
                                 />
                               </TableCell>
                               <TableCell align="right">
-                                <Typography 
-                                  variant="body1" 
+                                <Typography
+                                  variant="body1"
                                   fontWeight="medium"
                                   color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.inherit.main}
                                 >
@@ -1626,54 +1622,54 @@ const handleClick = () => {
                       </TableBody>
                     </Table>
                   </TableContainer>
-                  
+
                   {/* Size-specific discount tiers */}
                   {selectedDeal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
                     <>
                       <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
                         Size-Specific Volume Discount Tiers
                       </Typography>
-                      
+
                       <Alert severity="info" sx={{ mb: 2 }}>
                         <AlertTitle>Collective Volume Discounts</AlertTitle>
                         <Typography variant="body2">
-                          Discount tiers are applied based on the <strong>total quantity across all members</strong>. 
+                          Discount tiers are applied based on the <strong>total quantity across all members</strong>.
                           When the collective total for a size reaches a tier threshold, <strong>all members</strong> receive that discount pricing automatically!
                         </Typography>
                       </Alert>
-                      
+
                       {selectedDeal.sizes.map((size, sizeIndex) => {
                         if (!size.discountTiers || size.discountTiers.length === 0) return null;
-                        
+
                         // Get the current quantity for this size from this user
                         const userQuantity = selectedSizes[size.size] || 0;
-                        
+
                         // Get collective quantity from all members for this size
                         // For simplicity, we're using the total committed quantity 
                         const collectiveQuantity = selectedDeal.totalCommittedQuantity || 0;
-                        
+
                         // If this is an update, calculate previous commitment quantity
                         let previousQuantity = 0;
                         if (userCommitments.includes(selectedDeal._id)) {
                           // Simplification - in a real implementation, you'd fetch the specific previous quantity
                           previousQuantity = userQuantity; // Using current selection as proxy
                         }
-                        
+
                         // Calculate projected collective quantity after this change
                         const projectedQuantity = collectiveQuantity - previousQuantity + userQuantity;
-                        
+
                         // Sort tiers by quantity for display - previously declared in other sections
                         let sortedTiers = size.discountTiers ? [...size.discountTiers].sort((a, b) => a.tierQuantity - b.tierQuantity) : [];
-                        
+
                         // Find the currently applied tier and next tier
                         let currentTier = null;
                         let nextTier = null;
-                        
+
                         for (let i = 0; i < sortedTiers.length; i++) {
                           if (collectiveQuantity >= sortedTiers[i].tierQuantity) {
                             currentTier = sortedTiers[i];
                             if (i < sortedTiers.length - 1) {
-                              nextTier = sortedTiers[i+1];
+                              nextTier = sortedTiers[i + 1];
                             }
                           } else {
                             if (!nextTier) {
@@ -1686,12 +1682,12 @@ const handleClick = () => {
                         // Find projected tier based on user's current selection
                         let projectedTier = null;
                         let projectedNextTier = null;
-                        
+
                         for (let i = 0; i < sortedTiers.length; i++) {
                           if (projectedQuantity >= sortedTiers[i].tierQuantity) {
                             projectedTier = sortedTiers[i];
                             if (i < sortedTiers.length - 1) {
-                              projectedNextTier = sortedTiers[i+1];
+                              projectedNextTier = sortedTiers[i + 1];
                             }
                           } else {
                             if (!projectedNextTier) {
@@ -1700,38 +1696,38 @@ const handleClick = () => {
                             break;
                           }
                         }
-                        
+
                         const wouldUnlockNewTier = projectedTier && currentTier && projectedTier.tierQuantity > currentTier.tierQuantity;
                         const wouldLoseTier = currentTier && (!projectedTier || projectedTier.tierQuantity < currentTier.tierQuantity);
-                        
+
                         return (
                           <Box key={sizeIndex} sx={{ mb: 3 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                               <Typography variant="body1" fontWeight="medium" sx={{ mr: 1 }}>
                                 {size.size}
                               </Typography>
-                              <Chip 
-                                size="small" 
+                              <Chip
+                                size="small"
                                 label={`Your Selection: ${userQuantity} units` || '0 units'}
                                 color="primary"
                                 variant="outlined"
                               />
-                              <Chip 
-                                size="small" 
+                              <Chip
+                                size="small"
                                 label={`Current Total: ${collectiveQuantity} units` || '0 units'}
                                 color="secondary"
                                 variant="outlined"
                                 sx={{ ml: 1 }}
                               />
-                              <Chip 
-                                size="small" 
+                              <Chip
+                                size="small"
                                 label={`Projected: ${projectedQuantity} units` || '0 units'}
                                 color={wouldUnlockNewTier ? theme.palette.success.main : wouldLoseTier ? theme.palette.error.main : theme.palette.info.main || 'info'}
                                 variant="outlined"
                                 sx={{ ml: 1 }}
                               />
                             </Box>
-                            
+
                             {wouldUnlockNewTier && (
                               <Alert severity="success" sx={{ mb: 2 }}>
                                 <AlertTitle>You'll unlock a new tier!</AlertTitle>
@@ -1740,7 +1736,7 @@ const handleClick = () => {
                                 </Typography>
                               </Alert>
                             )}
-                            
+
                             {wouldLoseTier && (
                               <Alert severity="warning" sx={{ mb: 2 }}>
                                 <AlertTitle>Tier discount may be lost</AlertTitle>
@@ -1757,7 +1753,7 @@ const handleClick = () => {
                                 const isNext = nextTier && tier.tierQuantity === nextTier.tierQuantity;
                                 const unitsNeeded = tier.tierQuantity - projectedQuantity;
                                 const statusChanged = isCurrentlyApplied !== wouldBeApplied;
-                                
+
                                 return (
                                   <Paper
                                     key={tierIndex}
@@ -1769,13 +1765,13 @@ const handleClick = () => {
                                       flexDirection: { xs: 'column', sm: 'row' },
                                       alignItems: { xs: 'flex-start', sm: 'center' },
                                       justifyContent: 'space-between',
-                                      bgcolor: wouldBeApplied ? theme.palette.success.light : 
-                                               isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.light : 
-                                               isNext ? theme.palette.info.light : theme.palette.background.paper,
+                                      bgcolor: wouldBeApplied ? theme.palette.success.light :
+                                        isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.light :
+                                          isNext ? theme.palette.info.light : theme.palette.background.paper,
                                       color: (wouldBeApplied || isCurrentlyApplied && !wouldBeApplied || isNext) ? theme.palette.text.primary : theme.palette.inherit.main,
-                                      borderColor: wouldBeApplied ? theme.palette.success.main : 
-                                                   isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.main : 
-                                                   isNext ? theme.palette.info.main : 'divider',
+                                      borderColor: wouldBeApplied ? theme.palette.success.main :
+                                        isCurrentlyApplied && !wouldBeApplied ? theme.palette.error.main :
+                                          isNext ? theme.palette.info.main : 'divider',
                                       gap: 1
                                     }}
                                   >
@@ -1787,35 +1783,35 @@ const handleClick = () => {
                                     <Box>
                                       {wouldBeApplied ? (
                                         <Chip
-                                          label={isCurrentlyApplied ? "APPLIED" : "WILL BE APPLIED"} 
+                                          label={isCurrentlyApplied ? "APPLIED" : "WILL BE APPLIED"}
                                           color="success"
                                           size="small"
-                                          sx={{ 
-                                            bgcolor: 'white', 
-                                            color: 'success.dark', 
-                                            fontWeight: 'bold' 
+                                          sx={{
+                                            bgcolor: 'white',
+                                            color: 'success.dark',
+                                            fontWeight: 'bold'
                                           }}
                                         />
                                       ) : isCurrentlyApplied ? (
                                         <Chip
-                                          label="WILL BE LOST" 
+                                          label="WILL BE LOST"
                                           color="error"
                                           size="small"
-                                          sx={{ 
-                                            bgcolor: 'white', 
-                                            color: 'error.dark', 
-                                            fontWeight: 'bold' 
+                                          sx={{
+                                            bgcolor: 'white',
+                                            color: 'error.dark',
+                                            fontWeight: 'bold'
                                           }}
                                         />
                                       ) : (
                                         <Chip
-                                          label={`${unitsNeeded} more needed`} 
+                                          label={`${unitsNeeded} more needed`}
                                           color="primary"
                                           size="small"
-                                          sx={{ 
-                                            bgcolor: 'white', 
-                                            color: isNext ? theme.palette.info.dark : theme.palette.text.primary || 'primary', 
-                                            fontWeight: 'bold' 
+                                          sx={{
+                                            bgcolor: 'white',
+                                            color: isNext ? theme.palette.info.dark : theme.palette.text.primary || 'primary',
+                                            fontWeight: 'bold'
                                           }}
                                         />
                                       )}
@@ -1829,13 +1825,13 @@ const handleClick = () => {
                       })}
                     </>
                   )}
-                  
+
                   {/* Global discount tiers (old implementation) */}
                   {selectedDeal.discountTiers && selectedDeal.discountTiers.length > 0 && (
-                    <Box sx={{ 
-                      mb: 1, 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <Box sx={{
+                      mb: 1,
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 0.5,
                       bgcolor: theme.palette.info.light,
                       borderRadius: 1,
@@ -1848,29 +1844,29 @@ const handleClick = () => {
                     </Box>
                   )}
                 </Grid>
-                
+
                 <Grid item xs={12} md={4}>
                   <Paper sx={{ p: 2, bgcolor: theme.palette.primary.light, color: theme.palette.primary.contrastText, borderRadius: 2, mb: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Order Summary
-                  </Typography>
-                    
+                    </Typography>
+
                     <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body1">Items Subtotal:</Typography>
                       <Typography variant="body1" fontWeight="medium">
                         ${(totalPrice + totalSavings).toFixed(2)}
-                  </Typography>
+                      </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body1">Total Savings:</Typography>
                       <Typography variant="body1" fontWeight="medium" color={theme.palette.success.light}>
                         -${totalSavings.toFixed(2)}
-                  </Typography>
+                      </Typography>
                     </Box>
-                    
+
                     {activeTier && (
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">Volume Discount:</Typography>
@@ -1879,28 +1875,28 @@ const handleClick = () => {
                         </Typography>
                       </Box>
                     )}
-                    
+
                     <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="h6">Total Price:</Typography>
                       <Typography variant="h6" fontWeight="bold">
                         ${totalPrice.toFixed(2)}
-                  </Typography>
-                </Box>
-              </Paper>
-                  
-                  <Alert 
-                    severity="info" 
+                      </Typography>
+                    </Box>
+                  </Paper>
+
+                  <Alert
+                    severity="info"
                     sx={{ mb: 2 }}
                   >
                     <Typography variant="body2">
                       Your commitment will be sent to the distributor. If approved, you'll be notified to complete the purchase.
                     </Typography>
                   </Alert>
-                  
+
                   {selectedDeal?.minQtyForDiscount && (
-                    <Alert 
+                    <Alert
                       severity="warning"
                       sx={{ mb: 2 }}
                     >
