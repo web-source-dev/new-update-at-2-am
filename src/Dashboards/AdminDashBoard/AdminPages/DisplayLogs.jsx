@@ -210,22 +210,25 @@ const DisplayLogs = () => {
                     <ViewToggleButton
                         variant={layout === 'list' ? 'contained' : 'outlined'}
                         onClick={() => setLayout('list')}
-                        startIcon={<ViewList />}
+                        startIcon={<ViewList color="primary.contrastText" />}
+                        sx={{ borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
                     >
                         List View
                     </ViewToggleButton>
                     <ViewToggleButton
                         variant={layout === 'grid' ? 'contained' : 'outlined'}
                         onClick={() => setLayout('grid')}
-                        startIcon={<ViewModule />}
+                        startIcon={<ViewModule color="primary.contrastText" />}
+                        sx={{ borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
                     >
                         Grid View
                     </ViewToggleButton>
                     <ViewToggleButton
                         variant={layout === 'table' ? 'contained' : 'outlined'}
                         onClick={() => setLayout('table')}
-                        startIcon={<TableChart />}
+                        startIcon={<TableChart color="primary.contrastText" />}
                         disabled={isMobile}
+                        sx={{ borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
                     >
                         Table View
                     </ViewToggleButton>
@@ -237,7 +240,7 @@ const DisplayLogs = () => {
                     <StatsCard>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Avatar sx={{ bgcolor: 'primary.main' }}>
-                                <Assessment />
+                                <Assessment color="primary.contrastText" />
                             </Avatar>
                             <Typography variant="h6">Total Logs</Typography>
                         </Box>
@@ -252,7 +255,7 @@ const DisplayLogs = () => {
                     <StatsCard>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Avatar sx={{ bgcolor: 'success.main' }}>
-                                <Today />
+                                <Today color="primary.contrastText" />
                             </Avatar>
                             <Typography variant="h6">Today's Logs</Typography>
                         </Box>
@@ -269,7 +272,7 @@ const DisplayLogs = () => {
                     <StatsCard>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Avatar sx={{ bgcolor: 'error.main' }}>
-                                <Error />
+                                <Error color="primary.contrastText" />
                             </Avatar>
                             <Typography variant="h6">Error Logs</Typography>
                         </Box>
@@ -286,7 +289,7 @@ const DisplayLogs = () => {
                     <StatsCard>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Avatar sx={{ bgcolor: 'warning.main' }}>
-                                <Warning />
+                                <Warning color="primary.contrastText" />
                             </Avatar>
                             <Typography variant="h6">Warning Logs</Typography>
                         </Box>
@@ -305,18 +308,18 @@ const DisplayLogs = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Button
                             onClick={() => setShowFilters(!showFilters)}
-                            startIcon={<FilterAlt />}
-                            endIcon={showFilters ? <ExpandLess /> : <ExpandMore />}
-                            color="primary"
+                            startIcon={<FilterAlt color="primary.contrastText" />}
+                            endIcon={showFilters ? <ExpandLess color="primary.contrastText" /> : <ExpandMore color="primary.contrastText" />}
+                            color="primary.contrastText"
                         >
-                            <Badge badgeContent={activeFilters} color="primary" sx={{ mr: 1 }}>
+                            <Badge badgeContent={activeFilters} color="primary.contrastText" sx={{ mr: 1 }}>
                                 Filters
                             </Badge>
                         </Button>
                         {activeFilters > 0 && (
                             <Button
                                 variant="text"
-                                startIcon={<Clear />}
+                                startIcon={<Clear color="primary.contrastText" />}
                                 onClick={handleClearFilters}
                                 size="small"
                             >
@@ -352,7 +355,7 @@ const DisplayLogs = () => {
                                                         }
                                                     }}
                                                     variant="outlined"
-                                                    color="primary"
+                                                    color="primary.contrastText"
                                                     sx={{
                                                         '&:hover': {
                                                             backgroundColor: 'primary.light',
@@ -376,7 +379,7 @@ const DisplayLogs = () => {
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
-                                                    <Search fontSize="small" />
+                                                    <Search fontSize="small" color="primary.contrastText" />
                                                 </InputAdornment>
                                             ),
                                         }}
@@ -491,7 +494,7 @@ const DisplayLogs = () => {
                             <Chip
                                 label={`Type: ${filter.logType}`}
                                 onDelete={() => setFilter(prev => ({ ...prev, logType: '' }))}
-                                color="primary"
+                                color="primary.contrastText"
                                 variant="outlined"
                             />
                         )}
@@ -499,7 +502,7 @@ const DisplayLogs = () => {
                             <Chip
                                 label={`Role: ${filter.role}`}
                                 onDelete={() => setFilter(prev => ({ ...prev, role: '' }))}
-                                color="primary"
+                                color="primary.contrastText"
                                 variant="outlined"
                             />
                         )}
@@ -507,7 +510,7 @@ const DisplayLogs = () => {
                             <Chip
                                 label={`Last ${filter.dateRange} days`}
                                 onDelete={() => setFilter(prev => ({ ...prev, dateRange: '' }))}
-                                color="primary"
+                                color="primary.contrastText"
                                 variant="outlined"
                             />
                         )}
@@ -515,7 +518,7 @@ const DisplayLogs = () => {
                             <Chip
                                 label={`Search: ${filter.search}`}
                                 onDelete={() => setFilter(prev => ({ ...prev, search: '' }))}
-                                color="primary"
+                                color="primary.contrastText"
                                 variant="outlined"
                             />
                         )}
@@ -587,7 +590,7 @@ const GridView = ({ logs }) => (
             <Grid item xs={12} sm={6} md={4} key={log._id}>
                 <GridItemCard>
                     <CardContent>
-                        <Typography variant="h6" gutterBottom color="primary">
+                        <Typography variant="h6" gutterBottom color="primary.contrastText" fontWeight="bold">
                             {log.type}
                         </Typography>
                         <Typography variant="body2" color="textSecondary">
@@ -617,7 +620,7 @@ const ListView = ({ logs }) => (
         {logs.map((log) => (
             <ListItemContainer key={log._id}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="subtitle1" color="primary">
+                    <Typography variant="subtitle1" color="primary.contrastText" fontWeight="bold">
                         {log.type}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">

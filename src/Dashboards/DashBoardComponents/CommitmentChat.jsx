@@ -209,13 +209,13 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
 
   const getRoleIcon = (role, isAdminMessage) => {
     if (isAdminMessage || role === 'admin') {
-      return <AdminIcon fontSize="small" />;
+      return <AdminIcon fontSize="small" color="primary.contrastText" />;
     }
     switch(role) {
       case 'distributor':
-        return <BusinessIcon fontSize="small" />;
+        return <BusinessIcon fontSize="small" color="primary.contrastText" />;
       default:
-        return <PersonIcon fontSize="small" />;
+        return <PersonIcon fontSize="small" color="primary.contrastText" />;
     }
   };
 
@@ -225,9 +225,9 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
     }
     switch(role) {
       case 'distributor':
-        return 'secondary';
+        return 'secondary.contrastText';
       default:
-        return 'primary';
+        return 'primary.main';
     }
   };
 
@@ -239,9 +239,9 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
       maxWidth: '70%',
       minWidth: '100px',
       bgcolor: isCurrentUser 
-        ? (isAdminMessage ? 'error.main' : 'primary.main')
-        : 'grey.100',
-      color: isCurrentUser ? 'white' : 'text.primary',
+        ? (isAdminMessage ? 'error.main' : 'primary.main') // Use primary.main for yellow color for current user
+        : 'grey.100', // Use grey.100 for normal messages
+      color: isCurrentUser ? 'primary.contrastText' : 'primary.contrastText', // Use primary.contrastText for black text
       p: 1.5,
       borderRadius: 3,
       position: 'relative',
@@ -254,8 +254,8 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
         borderStyle: 'solid',
         borderWidth: '8px 8px 8px 0',
         borderColor: `transparent ${isCurrentUser 
-          ? (isAdminMessage ? theme.palette.error.main : theme.palette.primary.main)
-          : theme.palette.grey[100]} transparent transparent`,
+          ? (isAdminMessage ? theme.palette.error.main : theme.palette.primary.main) // Yellow for current user
+          : theme.palette.grey[100]} transparent transparent`, // Grey for others
         transform: isCurrentUser ? 'scaleX(-1)' : 'none'
       }
     };
@@ -283,8 +283,9 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
                 height: 40,
                 bgcolor: isAdminMessage 
                   ? 'error.main' 
-                  : (message.senderId.role === 'distributor' ? 'secondary.main' : 'primary.main'),
-                fontSize: '1rem'
+                  : (message.senderId.role === 'distributor' ? 'secondary.main' : 'primary.main'), // Sky blue for distributor, yellow for member
+                fontSize: '1rem',
+                color: 'primary.contrastText' // Avatar text should use primary.contrastText (black)
               }}
             >
               {message.senderId.name?.[0] || '?'}
@@ -412,8 +413,8 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
         p: 2.5, 
         bgcolor: isAdmin 
           ? 'rgba(239, 83, 80, 0.08)' 
-          : 'rgba(25, 118, 210, 0.08)',
-        color: isAdmin ? 'error.main' : 'primary.main',
+          : 'primary.main', // Yellow color for header
+        color: isAdmin ? 'error.main' : 'primary.contrastText', // Black text
         display: 'flex',
         alignItems: 'center',
         gap: 2,
@@ -432,8 +433,8 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
               height: 48,
               bgcolor: isAdmin 
                 ? 'rgba(239, 83, 80, 0.12)' 
-                : 'rgba(25, 118, 210, 0.12)',
-              color: isAdmin ? 'error.main' : 'primary.main',
+                : 'secondary.main', // Yellow for member
+              color: 'primary.contrastText', // Avatar text color to black
               fontWeight: 600
             }}
           >
@@ -531,12 +532,12 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
                 '& fieldset': {
                   borderColor: isAdmin 
                     ? 'rgba(239, 83, 80, 0.2)' 
-                    : 'rgba(0, 0, 0, 0.1)'
+                    : 'primary.main' // Yellow border for message box
                 },
                 '&:hover fieldset': {
                   borderColor: isAdmin 
                     ? 'error.main' 
-                    : 'primary.main'
+                    : 'primary.main' // Yellow border on hover
                 }
               }
             }}
@@ -548,8 +549,8 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
               sx={{
                 bgcolor: isAdmin 
                   ? 'rgba(239, 83, 80, 0.08)' 
-                  : 'rgba(25, 118, 210, 0.08)',
-                color: isAdmin ? 'error.main' : 'primary.main',
+                  : 'primary.contrastText', // Yellow for send button
+                color: isAdmin ? 'error.main' : 'primary.main', // Black color for icon
                 width: 48,
                 height: 48,
                 borderRadius: 3,
@@ -557,7 +558,7 @@ const CommitmentChat = ({ commitmentId, commitment }) => {
                 '&:hover': {
                   bgcolor: isAdmin 
                     ? 'rgba(239, 83, 80, 0.15)' 
-                    : 'rgba(25, 118, 210, 0.15)',
+                    : 'primary.dark', // Darker yellow on hover
                   transform: 'scale(1.05)'
                 },
                 '&:disabled': {

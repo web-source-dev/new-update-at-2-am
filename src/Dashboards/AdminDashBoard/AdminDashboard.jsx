@@ -20,11 +20,16 @@ import { Helmet } from 'react-helmet';
 import AllDealsAdmin from './AdminPages/AllDealsAdmin';
 import AdminContactDisplay from './AdminPages/AdminContactDisplay';
 import MembersnotCommiting from './AdminPages/MembersnotCommiting';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Box, CircularProgress, Fade } from '@mui/material';
+import { CloudUpload, InfoOutlined } from '@mui/icons-material';
 
 const AdminDashboard = () => {
   let match = useMatch('/dashboard/admin/*');
   const navigate = useNavigate();
   const [splashContent, setSplashContent] = useState([]);
+  const [importDialog, setImportDialog] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importStats, setImportStats] = useState(null);
 
   useEffect(() => {
     const adminId = localStorage.getItem('admin_id');
@@ -44,6 +49,33 @@ const AdminDashboard = () => {
 
     fetchSplashContent();
   }, []);
+
+  const openImportDialog = () => {
+    setImportDialog(true);
+    setImportStats(null);
+  };
+
+  const closeImportDialog = () => {
+    setImportDialog(false);
+  };
+
+  const handleImportUsers = async () => {
+    try {
+      setImportLoading(true);
+      
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/auth/add-user/import-users`, 
+        {}, 
+        { headers: { 'user-role': localStorage.getItem('user_role') } }
+      );
+      
+      setImportStats(response.data.stats);
+    } catch (error) {
+      console.error('Error importing users:', error);
+    } finally {
+      setImportLoading(false);
+    }
+  };
 
   const links = [
     { path: '', label: 'Dashboard' },
@@ -69,7 +101,16 @@ const AdminDashboard = () => {
       <div style={{ display: 'flex', width: '100%' }}>
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end',paddingBottom:5, alignItems: 'center' ,marginBottom:5 ,borderBottom:'1px solid',borderColor:'primary.main'}}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={openImportDialog}
+              startIcon={<CloudUpload sx={{ color: 'primary.contrastText' }} />}
+              sx={{ mr: 2, bgcolor: "primary.main" }}
+            >
+              Import Users
+            </Button>
             <NotificationIcon />
             <Logout />
           </div>
@@ -123,11 +164,105 @@ const AdminDashboard = () => {
             <Route path="request/contact/manage" element={<>
               <AdminContactDisplay />
             </>} />
-          </Routes>
-          
+          </Routes>          
         </div>
       </div>
 
+      {/* Import Users Dialog */}
+      <Dialog open={importDialog} onClose={closeImportDialog}>
+        <DialogTitle>Import Users</DialogTitle>
+        <DialogContent sx={{ minWidth: '400px' }}>
+          {importLoading ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
+              <CircularProgress size={60} />
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Importing users from Excel file...
+              </Typography>
+            </Box>
+          ) : importStats ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
+              <Box 
+                sx={{ 
+                  width: 150, 
+                  height: 150, 
+                  borderRadius: '50%', 
+                  bgcolor: 'primary.main',
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  mb: 2
+                }}
+              >
+                <Typography variant="h3" component="div" sx={{ color: 'primary.contrastText' }}>
+                  {importStats.created}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'primary.contrastText' }}>
+                  Users Created
+                </Typography>
+              </Box>
+              
+              {importStats.created === 0 && (
+                <Fade in={true} timeout={800}>
+                  <Box 
+                    sx={{ 
+                      mt: 2, 
+                      p: 3, 
+                      bgcolor: 'rgba(48, 102, 156, 0.38)', 
+                      borderRadius: 2, 
+                      border: '1px solid', 
+                      borderColor: 'primary.main',
+                      maxWidth: '350px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 2,
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+                    }}
+                  >
+                    <InfoOutlined sx={{ color: 'primary.main', mt: 0.5 }} />
+                    <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                      No new users were created. The file is either empty or all users already exist in the system.
+                    </Typography>
+                  </Box>
+                </Fade>
+              )}
+              
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Typography variant="h6" component="div" gutterBottom>
+                  Default Password: changeme123
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Users will be prompted to change this on first login
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <DialogContentText>
+              This will import users from the Excel file stored on the server.
+              <br /><br />
+              The system will use the existing users.xlsx file located in the server directory.
+              <br /><br />
+              Click "Start Import" to begin.
+            </DialogContentText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeImportDialog} color="primary">
+            Close
+          </Button>
+          {!importLoading && !importStats && (
+            <Button 
+              onClick={handleImportUsers} 
+              color="primary" 
+              variant="contained" 
+              startIcon={<CloudUpload sx={{ color: 'primary.contrastText' }} />}
+              disabled={importLoading}
+            >
+              Start Import
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

@@ -30,7 +30,7 @@ const AllMembersForDistributor = () => {
 
     const totalCommitments = members.reduce((sum, member) => sum + member.totalCommitments, 0);
     const totalRevenue = members.reduce((sum, member) => sum + member.totalSpent, 0);
-    const quantity = members.reduce((sum, member) => sum + member.quantity, 0);
+    const totalQuantity = members.reduce((sum, member) => sum + member.quantity, 0);
 
     const rows = members.map(member => ({
         ...member,
@@ -47,7 +47,7 @@ const AllMembersForDistributor = () => {
                 <Card sx={{ flex: 1 }}>
                     <CardContent>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <PersonIcon color="primary" />
+                            <PersonIcon color="primary.contrastText" />
                             <Box>
                                 <Typography variant="h6">{members.length}</Typography>
                                 <Typography color="textSecondary">Total Members</Typography>
@@ -58,10 +58,10 @@ const AllMembersForDistributor = () => {
                 <Card sx={{ flex: 1 }}>
                     <CardContent>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <ShoppingCartIcon color="primary" />
+                            <ShoppingCartIcon color="primary.contrastText" />
                             <Box>
-                                <Typography variant="h6">{quantity}</Typography>
-                                <Typography color="textSecondary">Total Commitments</Typography>
+                                <Typography variant="h6">{totalQuantity}</Typography>
+                                <Typography color="textSecondary">Total Quantity</Typography>
                             </Box>
                         </Stack>
                     </CardContent>
@@ -69,7 +69,7 @@ const AllMembersForDistributor = () => {
                 <Card sx={{ flex: 1 }}>
                     <CardContent>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <MoneyIcon color="primary" />
+                            <MoneyIcon color="primary.contrastText" />
                             <Box>
                                 <Typography variant="h6">${totalRevenue.toFixed(2)}</Typography>
                                 <Typography color="textSecondary">Total Revenue</Typography>
@@ -101,14 +101,14 @@ const AllMembersForDistributor = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.member.name}</TableCell>
                                     <TableCell>{row.member.email}</TableCell>
-                                    <TableCell>{row.quantity}</TableCell>
+                                    <TableCell>{row.totalCommitments}</TableCell>
                                     <TableCell>${row.totalSpent.toFixed(2)}</TableCell>
                                     <TableCell>{moment(row.lastCommitment).format('MMMM Do YYYY')}</TableCell>
                                     <TableCell>
                                         <Typography
                                             variant="body2"
                                             sx={{
-                                                color: 'primary.main',
+                                                color: 'primary.contrastText',
                                                 cursor: 'pointer',
                                                 '&:hover': { textDecoration: 'underline' }
                                             }}

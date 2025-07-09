@@ -525,9 +525,12 @@ The new deal will be created with the following settings:
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Button
               onClick={() => setShowFilters(!showFilters)}
-              startIcon={<FilterAlt />}
-              endIcon={showFilters ? <ExpandLess /> : <ExpandMore />}
-              color="primary"
+              startIcon={<FilterAlt color="primary.contrastText" />}
+              endIcon={showFilters ? <ExpandLess color="primary.contrastText" /> : <ExpandMore color="primary.contrastText" />}
+              color="primary.contrastText"
+              sx={{
+                color: 'primary.contrastText',
+              }}
             >
               <Badge badgeContent={activeFilters} color="primary" sx={{ mr: 1 }}>
                 Filters
@@ -536,9 +539,10 @@ The new deal will be created with the following settings:
             {activeFilters > 0 && (
               <Button
                 variant="text"
-                startIcon={<Clear />}
+                startIcon={<Clear color="primary.contrastText" />}
                 onClick={handleClearFilters}
                 size="small"
+                color="primary.contrastText"
               >
                 Clear All
               </Button>
@@ -560,7 +564,7 @@ The new deal will be created with the following settings:
                           label={cat}
                           onClick={() => handleFilterChange({ target: { name: 'category', value: cat } })}
                           variant="outlined"
-                          color="primary"
+                          color="primary.contrastText"
                           sx={{
                             '&:hover': {
                               backgroundColor: 'primary.light',
@@ -584,7 +588,7 @@ The new deal will be created with the following settings:
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Search />
+                          <Search color="primary.contrastText" />
                         </InputAdornment>
                       ),
                     }}
@@ -715,7 +719,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Search: ${filter.search}`}
                 onDelete={() => handleFilterChange({ target: { name: 'search', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -723,7 +727,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Month: ${filter.month}`}
                 onDelete={() => handleFilterChange({ target: { name: 'month', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -731,7 +735,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Category: ${filter.category}`}
                 onDelete={() => handleFilterChange({ target: { name: 'category', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -739,7 +743,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Status: ${filter.status}`}
                 onDelete={() => handleFilterChange({ target: { name: 'status', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -747,7 +751,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Min Price: $${filter.minPrice}`}
                 onDelete={() => handleFilterChange({ target: { name: 'minPrice', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -755,7 +759,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Max Price: $${filter.maxPrice}`}
                 onDelete={() => handleFilterChange({ target: { name: 'maxPrice', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -763,7 +767,7 @@ The new deal will be created with the following settings:
               <Chip
                 label={`Sorted by: ${filter.sortBy.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
                 onDelete={() => handleFilterChange({ target: { name: 'sortBy', value: '' } })}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -810,42 +814,30 @@ The new deal will be created with the following settings:
         <Box>
           <Tooltip title="Add New Deal">
             {(location.pathname.includes("distributor")) && (
-              <IconButton color="primary" onClick={() => navigate('/dashboard/distributor/deal/create')}>
-                <Add />
+              <IconButton color="primary.contrastText" onClick={() => navigate('/dashboard/distributor/deal/create')}>
+                <Add color="primary.contrastText" />
               </IconButton>
             )}
           </Tooltip>
           <Tooltip title="Download">
-            <IconButton color="primary" onClick={handleDownloadClick}>
-              <GetApp />
+            <IconButton color="primary.contrastText" onClick={handleDownloadClick}>
+              <GetApp color="primary.contrastText" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Grid View">
-            <IconButton color={layout === 'grid' ? 'primary' : 'default'} onClick={() => setLayout('grid')}>
-              <ViewModule />
+            <IconButton color={layout === 'grid' ? 'primary.contrastText' : 'default'} onClick={() => setLayout('grid')}>
+              <ViewModule color="primary.contrastText" />
             </IconButton>
           </Tooltip>
           <Tooltip title="List View">
-            <IconButton color={layout === 'list' ? 'primary' : 'default'} onClick={() => setLayout('list')}>
-              <ViewList />
+            <IconButton color={layout === 'list' ? 'primary.contrastText' : 'default'} onClick={() => setLayout('list')}>
+              <ViewList color="primary.contrastText" />
             </IconButton>
           </Tooltip>
           {!isMobile && (
             <Tooltip title="Table View">
-              <IconButton color={layout === 'table' ? 'primary' : 'default'} onClick={() => setLayout('table')}>
-                <ViewComfy />
-              </IconButton>
-            </Tooltip>
-          )}
-          {/* Admin debug button */}
-          {localStorage.getItem('user_role') === 'admin' && (
-            <Tooltip title="Debug Data">
-              <IconButton color="default" onClick={handleOpenDebugDialog}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-                  <path d="M12 16v.01"/>
-                  <path d="M12 8v4"/>
-                </svg>
+              <IconButton color={layout === 'table' ? 'primary.contrastText' : 'default'} onClick={() => setLayout('table')}>
+                <ViewComfy color="primary.contrastText" />
               </IconButton>
             </Tooltip>
           )}
@@ -936,12 +928,12 @@ The new deal will be created with the following settings:
                         {deal.name.toLowerCase().includes('(copy)') && (
                           <Chip
                             label="Duplicate"
-                            color="info"
+                            color="primary.contrastText"
                             size="small"
                             sx={{
                               height: '20px',
                               fontSize: '0.65rem',
-                              backgroundColor: 'rgba(33, 150, 243, 0.85)',
+                              backgroundColor: 'primary.contrastText',
                               color: 'white',
                               fontWeight: 'bold',
                               backdropFilter: 'blur(4px)'
@@ -1126,7 +1118,7 @@ The new deal will be created with the following settings:
                               sx={{ 
                                 height: '20px',
                                 fontSize: '0.65rem',
-                                borderColor: 'primary.light',
+                                borderColor: 'primary.contrastText',
                                 minWidth: 'fit-content'
                               }}
                             />
@@ -1224,7 +1216,7 @@ The new deal will be created with the following settings:
                           <>
                             <Tooltip title="Edit Deal">
                               <IconButton 
-                                color="primary" 
+                                color="primary.contrastText"  
                                 onClick={() => handleEdit(deal)}
                                 size="small"
                                 sx={{ 
@@ -1235,12 +1227,12 @@ The new deal will be created with the following settings:
                                   '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.15)' } 
                                 }}
                               >
-                                <Edit fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                                <Edit fontSize="small" sx={{ fontSize: '0.9rem', color: 'primary.contrastText' }} />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Duplicate Deal">
                               <IconButton 
-                                color="info" 
+                                color="primary.contrastText" 
                                 onClick={() => handleDuplicate(deal)}
                                 size="small"
                                 sx={{ 
@@ -1251,14 +1243,14 @@ The new deal will be created with the following settings:
                                   '&:hover': { bgcolor: 'rgba(3, 169, 244, 0.15)' } 
                                 }}
                               >
-                                <ContentCopy fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                                <ContentCopy fontSize="small" sx={{ fontSize: '0.9rem', color: 'primary.contrastText' }} />
                               </IconButton>
                             </Tooltip>
                           </>
                         )}
                         <Tooltip title="View Details">
                           <IconButton 
-                            color="info" 
+                            color="primary.contrastText" 
                             onClick={() => handleView(deal._id)}
                             size="small"
                             sx={{ 
@@ -1268,7 +1260,7 @@ The new deal will be created with the following settings:
                               '&:hover': { bgcolor: 'rgba(0, 150, 136, 0.15)' } 
                             }}
                           >
-                            <Visibility fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                            <Visibility fontSize="small" sx={{ fontSize: '0.9rem', color: 'primary.contrastText' }} />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -1286,7 +1278,7 @@ The new deal will be created with the following settings:
                             {!deal.bulkAction && (
                               <Tooltip title='Delete'>
                                 <IconButton
-                                  color="error"
+                                  color="primary.contrastText"
                                   onClick={() => handleDelete(deal._id)}
                                   size="small"
                                   sx={{ 
@@ -1296,7 +1288,7 @@ The new deal will be created with the following settings:
                                     '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' } 
                                   }}
                                 >
-                                  <DeleteOutline fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                                  <DeleteOutline fontSize="small" sx={{ fontSize: '0.9rem', color: 'primary.contrastText'  }} />
                                 </IconButton>
                               </Tooltip>
                             )}
@@ -1304,7 +1296,7 @@ The new deal will be created with the following settings:
                               <Switch
                                 checked={deal.status === 'active'}
                                 onChange={() => handleToggleChange(deal._id, deal.status)}
-                                color="primary"
+                                color="primary.contrastText "
                                 size="small"
                                 sx={{ transform: 'scale(0.8)', ml: '-4px' }}
                               />
@@ -1362,7 +1354,7 @@ The new deal will be created with the following settings:
                         {deal.name.toLowerCase().includes('(copy)') && (
                           <Chip
                             label="Duplicate"
-                            color="info"
+                            color="primary.contrastText"
                             size="small"
                             sx={{
                               backgroundColor: 'rgba(33, 150, 243, 0.9)',
@@ -1396,7 +1388,7 @@ The new deal will be created with the following settings:
                               label={deal.category}
                               size="small"
                               variant="outlined"
-                              color="primary"
+                              color="primary.contrastText"
                             />
                             {deal.sizes && deal.sizes.length > 1 && (
                               <Chip 
@@ -1424,7 +1416,7 @@ The new deal will be created with the following settings:
                                   label={sizeItem.size} 
                                   size="small" 
                                   variant="outlined" 
-                                  sx={{ borderColor: 'primary.light' }}
+                                  sx={{ borderColor: 'primary.contrastText' }}
                                 />
                               ))}
                             </Box>
@@ -1465,7 +1457,7 @@ The new deal will be created with the following settings:
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                 {deal.sizes.filter(size => size.discountTiers && size.discountTiers.length > 0).map((size, sizeIdx) => (
                                   <Box key={sizeIdx} sx={{ mb: 1 }}>
-                                    <Typography variant="caption" fontWeight="bold" color="primary.main">
+                                    <Typography variant="caption" fontWeight="bold" color="primary.contrastText">
                                       {size.size}:
                                     </Typography>
                                     {size.discountTiers.map((tier, tierIdx) => (
@@ -1505,7 +1497,7 @@ The new deal will be created with the following settings:
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
-                      <MoreVert />
+                      <MoreVert sx={{ color: 'primary.contrastText' }} />
                     </IconButton>
                     <Menu
                       anchorEl={anchorElMap[deal._id]}
@@ -1514,14 +1506,14 @@ The new deal will be created with the following settings:
                     >
                       {location.pathname.includes("distributor") && [
                         <MenuItem key="edit" onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
-                          <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                          <Edit sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> Edit
                         </MenuItem>,
                         <MenuItem key="duplicate" onClick={() => { handleDuplicate(deal); handleMenuClose(deal._id); }}>
-                          <ContentCopy sx={{ mr: 1 }} fontSize="small" /> Duplicate
+                          <ContentCopy sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> Duplicate
                         </MenuItem>
                       ]}
                       <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
-                        <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                        <Visibility sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> View
                       </MenuItem>
                       {deal.bulkAction ? (
                         <MenuItem disabled>
@@ -1547,7 +1539,7 @@ The new deal will be created with the following settings:
 
                       {!deal.bulkAction && (
                         <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
-                          <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
+                          <DeleteOutline sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> Delete
                         </MenuItem>
                       )}
                     </Menu>
@@ -1677,7 +1669,7 @@ The new deal will be created with the following settings:
 
                       <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                         <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
-                          <MoreVert />
+                          <MoreVert sx={{ color: 'primary.contrastText' }} />
                         </IconButton>
                         <Menu
                           anchorEl={anchorElMap[deal._id]}
@@ -1686,14 +1678,14 @@ The new deal will be created with the following settings:
                         >
                           {location.pathname.includes("distributor") && [
                             <MenuItem key="edit" onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
-                              <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                              <Edit sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> Edit
                             </MenuItem>,
                             <MenuItem key="duplicate" onClick={() => { handleDuplicate(deal); handleMenuClose(deal._id); }}>
-                              <ContentCopy sx={{ mr: 1 }} fontSize="small" /> Duplicate
+                              <ContentCopy sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> Duplicate
                             </MenuItem>
                           ]}
                           <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
-                            <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                            <Visibility sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> View
                           </MenuItem>
                           {deal.bulkAction ? (
                             <MenuItem disabled>
@@ -1719,7 +1711,7 @@ The new deal will be created with the following settings:
 
                           {!deal.bulkAction && (
                             <MenuItem onClick={() => {handleDelete(deal._id); handleMenuClose(deal._id);}}>
-                              <DeleteOutline sx={{ mr: 1 }} fontSize="small" /> Delete
+                              <DeleteOutline sx={{ mr: 1, color: 'primary.contrastText' }} fontSize="small" /> Delete
                             </MenuItem>
                           )}
                         </Menu>

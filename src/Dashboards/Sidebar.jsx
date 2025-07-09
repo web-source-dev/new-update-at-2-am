@@ -55,6 +55,7 @@ import {
   ContactSupport,
 } from "@mui/icons-material";
 import Links from "../Components/Buttons/Links";
+import { useLocation } from "react-router-dom";
 
 const Sidebar = ({ match, links, userRole = "admin" }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -62,11 +63,10 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
   const [openSubmenus, setOpenSubmenus] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
   const [openPopupMenu, setOpenPopupMenu] = useState(null);
+  const location = useLocation();
 
   // Check if user is distributor or member (not admin)
-
   const role = localStorage.getItem("user_role")
-
   const showContactButton = role === "distributor" || role === "member";
 
   const toggleSidebar = () => setIsOpen((prev) => !prev);
@@ -87,6 +87,22 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
   const handleClosePopup = () => {
     setOpenPopupMenu(null);
     setAnchorEl(null);
+  };
+
+  // Check if a link is active
+  const isLinkActive = (path) => {
+    const currentPath = location.pathname;
+    // Exclude "/dashboard" from the path matching
+    // Check if it's an exact match at the end of the path or if it contains the path component
+    return currentPath.endsWith(`/${path}`) || 
+           (path !== '' && currentPath.includes(`/${path}`) && 
+            !path.includes('dashboard'));
+  };
+
+  // Check if any sublink in a group is active
+  const isAnySubLinkActive = (subLinks) => {
+    if (!subLinks) return false;
+    return subLinks.some(subLink => isLinkActive(subLink.path));
   };
 
   const getIcon = (label) => {
@@ -213,6 +229,9 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                   <ListItem 
                     button 
                     onClick={(e) => handlePopupMenu(e, link.title)}
+                    sx={{
+                      backgroundColor: isAnySubLinkActive(link.subLinks) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                    }}
                   >
                     <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>{<LocalOffer />}</ListItemIcon>
                     {isOpen && <ListItemText primary={link.title} />}
@@ -227,7 +246,13 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                         <List component="div" disablePadding>
                           {link.subLinks.map((subLink, subIndex) => (
                             <Tooltip key={subIndex} title={subLink.label} placement="right" disableHoverListener={isOpen}>
-                              <ListItem button sx={{ pl: 4 }}>
+                              <ListItem 
+                                button 
+                                sx={{ 
+                                  pl: 4,
+                                  backgroundColor: isLinkActive(subLink.path) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                                }}
+                              >
                                 <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
                                   {getIcon(subLink.label)}
                                 </ListItemIcon>
@@ -260,6 +285,9 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                                   key={subIndex}
                                   onClick={handleClosePopup}
                                   dense
+                                  sx={{
+                                    backgroundColor: isLinkActive(subLink.path) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                                  }}
                                 >
                                   <ListItemIcon sx={{ minWidth: 40 }}>
                                     {getIcon(subLink.label)}
@@ -283,7 +311,12 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                 </div>
               ) : (
                 <Tooltip key={index} title={link.label} placement="right" disableHoverListener={isOpen}>
-                  <ListItem button>
+                  <ListItem 
+                    button
+                    sx={{
+                      backgroundColor: isLinkActive(link.path) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                    }}
+                  >
                     <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
                       {getIcon(link.label)}
                     </ListItemIcon>
@@ -299,7 +332,12 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
             <List sx={{ marginTop: 'auto' }}>
               <Divider />
               <Tooltip title="Contact" placement="right" disableHoverListener={isOpen}>
-                <ListItem button>
+                <ListItem 
+                  button
+                  sx={{
+                    backgroundColor: isLinkActive('contact') ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                  }}
+                >
                   <ListItemIcon sx={{ justifyContent: isOpen ? "space-around" : "center", alignItems: "center", display: "flex", fontSize: "10em" }}>
                     <ContactSupport  color='primary.contrastText'/>
                   </ListItemIcon>
@@ -324,7 +362,13 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
             {links.map((link, index) => (
               link.title ? (
                 <div key={index}>
-                  <ListItem button onClick={() => toggleSubmenu(link.title)}>
+                  <ListItem 
+                    button 
+                    onClick={() => toggleSubmenu(link.title)}
+                    sx={{
+                      backgroundColor: isAnySubLinkActive(link.subLinks) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                    }}
+                  >
                     <ListItemIcon>{getIcon(link.title)}</ListItemIcon>
                     <ListItemText primary={link.title} />
                     {openSubmenus[link.title] ? <ExpandLess  color='primary.contrastText'/> : <ExpandMore  color='primary.contrastText'/>}
@@ -332,7 +376,15 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                   <Collapse in={openSubmenus[link.title]} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
                       {link.subLinks.map((subLink, subIndex) => (
-                        <ListItem button key={subIndex} onClick={toggleMobileSidebar} sx={{ pl: 4 }}>
+                        <ListItem 
+                          button 
+                          key={subIndex} 
+                          onClick={toggleMobileSidebar} 
+                          sx={{ 
+                            pl: 4,
+                            backgroundColor: isLinkActive(subLink.path) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                          }}
+                        >
                           <ListItemIcon>{getIcon(subLink.label)}</ListItemIcon>
                           <ListItemText primary={<Links link={`${match.pathnameBase}/${subLink.path}`} linkText={subLink.label} />} />
                         </ListItem>
@@ -341,7 +393,14 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
                   </Collapse>
                 </div>
               ) : (
-                <ListItem button key={index} onClick={toggleMobileSidebar}>
+                <ListItem 
+                  button 
+                  key={index} 
+                  onClick={toggleMobileSidebar}
+                  sx={{
+                    backgroundColor: isLinkActive(link.path) ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                  }}
+                >
                   <ListItemIcon>{getIcon(link.label)}</ListItemIcon>
                   <ListItemText primary={<Links link={`${match.pathnameBase}/${link.path}`} linkText={link.label} />} />
                 </ListItem>
@@ -353,7 +412,13 @@ const Sidebar = ({ match, links, userRole = "admin" }) => {
           {showContactButton && (
             <List sx={{ marginTop: 'auto' }}>
               <Divider />
-              <ListItem button onClick={toggleMobileSidebar}>
+              <ListItem 
+                button 
+                onClick={toggleMobileSidebar}
+                sx={{
+                  backgroundColor: isLinkActive('contact') ? 'rgba(0, 85, 164, 0.1)' : 'transparent',
+                }}
+              >
                 <ListItemIcon><ContactSupport /></ListItemIcon>
                 <ListItemText primary={<Links link={`/contact`} linkText="Contact" />} />
               </ListItem>

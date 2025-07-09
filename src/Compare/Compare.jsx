@@ -351,7 +351,7 @@ const Compare = () => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6} md={4}>
               <Typography variant="subtitle1" sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-                <FilterIcon color="primary" sx={{ mr: 1 }} />
+                <FilterIcon color="primary.contrastText" sx={{ mr: 1 }} />
                 Filter by Time Period
               </Typography>
               <FormControl fullWidth size="small">
@@ -376,7 +376,11 @@ const Compare = () => {
                 variant="outlined" 
                 size="small" 
                 onClick={fetchDeals}
-                startIcon={<RefreshIcon />}
+                startIcon={<RefreshIcon sx={{ color: 'primary.contrastText' }} />}
+                sx={{
+                  color: 'primary.contrastText',
+                  borderColor: 'primary.contrastText',
+                }}
               >
                 Refresh Data
               </Button>
@@ -406,7 +410,7 @@ const Compare = () => {
                     ? 'Current Month' 
                     : availableMonths.find(m => m.value === monthFilter)?.label || monthFilter}
                   size="small"
-                  color="primary"
+                  color="primary.contrastText"
                   variant="outlined"
                   sx={{ ml: 2 }}
                 />
@@ -416,8 +420,12 @@ const Compare = () => {
           action={
             <Button
               onClick={fetchDeals}
-              startIcon={<RefreshIcon />}
+              startIcon={<RefreshIcon sx={{ color: 'primary.contrastText' }} />}
               size="small"
+              sx={{
+                color: 'primary.contrastText',
+                borderColor: 'primary.contrastText',
+              }}
             >
               Refresh
             </Button>
@@ -450,7 +458,7 @@ const Compare = () => {
                         variant="outlined" 
                         size="small" 
                         onClick={() => setMonthFilter('all')}
-                        startIcon={<FilterIcon />}
+                        startIcon={<FilterIcon sx={{ color: 'primary.contrastText' }} />}
                       >
                         View All Time Periods
                       </Button>
@@ -489,7 +497,11 @@ const Compare = () => {
                           size="small" 
                           onClick={() => handleDownloadTemplate(deal._id)}
                           title="Download CSV Template"
-                          startIcon={<DownloadIcon />}
+                          sx={{
+                            color: 'primary.contrastText',
+                            borderColor: 'primary.contrastText',
+                          }}
+                          startIcon={<DownloadIcon sx={{ color: 'primary.contrastText' }} />}
                         >
                           Template
                         </Button>
@@ -498,8 +510,11 @@ const Compare = () => {
                           size="small" 
                           onClick={() => handleUploadClick(deal)}
                           title="Upload Comparison Data"
-                          startIcon={<UploadIcon />}
-                          color="primary"
+                          sx={{
+                            color: 'secondary.contrastText',
+                            backgroundColor: 'secondary.main',
+                          }}
+                          startIcon={<UploadIcon sx={{ color: 'primary.contrastText' }} />}
                         >
                           Upload
                         </Button>
@@ -509,8 +524,11 @@ const Compare = () => {
                           onClick={() => fetchComparisonHistory(deal._id)}
                           title="View Comparison History"
                           disabled={!deal.hasComparison}
-                          startIcon={<HistoryIcon />}
-                          color="info"
+                          sx={{
+                            color: 'primary.contrastText',
+                            backgroundColor: 'primary.main',
+                          }}
+                          startIcon={<HistoryIcon sx={{ color: 'primary.contrastText' }} />}
                         >
                           History
                         </Button>
@@ -537,7 +555,7 @@ const Compare = () => {
             onClick={handleCloseUploadModal}
             sx={{ position: 'absolute', right: 8, top: 8 }}
           >
-            <CloseIcon />
+            <CloseIcon sx={{ color: 'primary.contrastText' }} />
           </IconButton>
         </DialogTitle>
         <DialogContent>
@@ -563,8 +581,9 @@ const Compare = () => {
           <IconButton
             onClick={() => setShowHistoryModal(false)}
             sx={{ position: 'absolute', right: 8, top: 8 }}
+
           >
-            <CloseIcon />
+            <CloseIcon sx={{ color: 'primary.contrastText' }} />
           </IconButton>
         </DialogTitle>
         <DialogContent>
@@ -604,7 +623,11 @@ const Compare = () => {
                           variant="outlined" 
                           size="small" 
                           onClick={() => handleViewComparison(comparison._id)}
-                          startIcon={<EyeIcon />}
+                          sx={{
+                            color: 'primary.contrastText',
+                            backgroundColor: 'primary.main',
+                          }}
+                          startIcon={<EyeIcon sx={{ color: 'primary.contrastText' }} />}
                         >
                           View Details
                         </Button>
@@ -637,7 +660,7 @@ const Compare = () => {
             }}
             sx={{ position: 'absolute', right: 8, top: 8 }}
           >
-            <CloseIcon />
+            <CloseIcon sx={{ color: 'primary.contrastText' }} />
           </IconButton>
         </DialogTitle>
         <DialogContent>

@@ -34,7 +34,6 @@ import {
   TableCell,
   Skeleton,
   AlertTitle,
-  IconButton,
 } from "@mui/material";
 import { FilterList, ExpandLess, ExpandMore, Clear, Search, TrendingUp, PlayArrow, Edit as EditIcon, AddShoppingCart } from "@mui/icons-material";
 import axios from "axios";
@@ -270,23 +269,6 @@ const DisplayDeals = () => {
       }
     };
   }, [deals, filter, userFavorites, userCommitments]);
-
-  const checkAuth = () => {
-    const token = localStorage.getItem('token');
-    const user_role = localStorage.getItem('user_role');
-    const user_id = localStorage.getItem('user_id');
-
-    if (!token || !user_role || !user_id) {
-      setToast({
-        open: true,
-        message: 'Please login to perform this action',
-        severity: 'warning'
-      });
-      navigate('/login');
-      return false;
-    }
-    return true;
-  };
 
   const handleOpenView = async (deal) => {
     if (isViewLoading) return;
@@ -624,56 +606,6 @@ const DisplayDeals = () => {
 
   const [redirectLoading, setRedirectLoading] = useState(false);
 
-  const toggleFavorite = async (dealId) => {
-    if (!user_id) {
-      setToast({
-        open: true,
-        message: 'Please login to add to favorites',
-        severity: 'error'
-      });
-      setTimeout(() =>
-        setRedirectLoading(true), 2000);
-      const currentPath = window.location.pathname;
-      localStorage.setItem('redirectPath', currentPath);
-      setTimeout(() => window.location.href = '/login', 3000);
-      return;
-    }
-
-    const user_role = localStorage.getItem('user_role');
-    if (user_role !== 'member') {
-      setToast({
-        open: true,
-        message: 'Only Co-op members can add deals to favorites',
-        severity: 'warning'
-      });
-      return;
-    }
-    try {
-      setIsFavoriteLoading(true);
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/deals/favorite/toggle`,
-        { dealId, user_id }
-      );
-
-      // Refresh user data to update favorites
-      await refreshUserData();
-
-      setToast({
-        open: true,
-        message: response.data.message,
-        severity: 'success'
-      });
-    } catch (error) {
-      console.error("Error updating favorites", error);
-      setToast({
-        open: true,
-        message: "Error updating favorites",
-        severity: 'error'
-      });
-    } finally {
-      setIsFavoriteLoading(false);
-    }
-  };
 
   const renderDeals = () => {
     if (loading) {
@@ -858,7 +790,7 @@ const DisplayDeals = () => {
                 </Box>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, mb: 1 }}>
                   <Chip 
-                    label={deal.category} 
+                    label={deal.category || 'Vodka'} 
                     size="small" 
                     variant="outlined"
                     sx={{ borderRadius: '4px', color: theme.palette.error.dark ,borderColor: theme.palette.error.light }}
@@ -964,32 +896,13 @@ const DisplayDeals = () => {
                   </Box>
                   {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
                     <Typography variant="caption" color={theme.palette.success.main} fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
-                      Deal is LIVE! Minimum quantity reached
+                      Minimum quantity reached
                     </Typography>
                   ) : (
                     <Typography variant="caption" color={theme.palette.secondary.main} fontWeight="bold" sx={{ display: 'block', mt: 0.5 }}>
-                      {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more units needed to go LIVE
+                      {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more units needed to go
                     </Typography>
                   )}
-                </Box>
-              )}
-              
-              {/* Discount tiers badge if available */}
-              {deal.sizes && deal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
-                <Box sx={{ 
-                  mb: 1, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 0.5,
-                  bgcolor: theme.palette.info.light,
-                  borderRadius: 1,
-                  px: 1,
-                  py: 0.3
-                }}>
-                  <TrendingUp fontSize="small" color={theme.palette.inherit.main} />
-                  <Typography variant="caption" color={theme.palette.info.dark} sx={{ fontWeight: 'medium' }}>
-                    Volume discounts available with collective buying
-                  </Typography>
                 </Box>
               )}
               
@@ -998,23 +911,23 @@ const DisplayDeals = () => {
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
                   <Chip 
                     size="small" 
-                    label={`Min: ${deal.minQtyForDiscount}`}
-                    color={theme.palette.primary.dark}
+                    label={`Min: ${deal.minQtyForDiscount || 0}`}
+                    color="primary.contrastText"
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
                   <Chip 
                     size="small" 
                     label={`Left: ${Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))}`}
-                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? theme.palette.success : theme.palette.primary.dark}
+                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? "success" : "primary"}
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
                   {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount && (
                     <Chip 
                       size="small" 
-                      label="LIVE"
-                      color={theme.palette.primary.dark}
+                      label="Committed"
+                      color="primary"
                       sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                     />
                   )}
@@ -1024,7 +937,7 @@ const DisplayDeals = () => {
                   <Chip 
                     size="small" 
                     label="Committed"
-                    color={theme.palette.primary.dark}
+                    color="primary"
                     sx={{ borderRadius: 1 }}
                   />
                 ) : (
@@ -1044,7 +957,7 @@ const DisplayDeals = () => {
                 fullWidth
                 variant="outlined"
                 size="small"
-                color={theme.palette.primary.dark}
+                color={theme.palette.primary.dark || 'primary'}
                 onClick={() => handleOpenView(deal)}
                 sx={{ borderRadius: 1 }}
               >
@@ -1056,7 +969,7 @@ const DisplayDeals = () => {
                 size="small"
                 onClick={() => handleOpenGetDeal(deal)}
                 sx={{ borderRadius: 1 }}
-                startIcon={isCommitted ? <EditIcon color={theme.palette.primary.dark} /> : <AddShoppingCart color={theme.palette.primary.dark} />}
+                startIcon={isCommitted ? <EditIcon color={theme.palette.primary.dark || 'primary'} /> : <AddShoppingCart color={theme.palette.primary.dark || 'primary'} />}
               >
                 {isCommitted ? 'Update' : 'Commit'}
               </Button>
@@ -1279,13 +1192,13 @@ const DisplayDeals = () => {
                       flexWrap: 'wrap',
                       gap: 1
                     }}>
-                      {categories.map((cat) => (
+                      {categories.map((cat,index) => (
                         <Chip
-                          key={cat}
-                          label={cat}
+                          key={cat || (index +1)}
+                          label={cat || 'Vodka'}
                           onClick={() => handleFilterChange('category', cat === filter.category ? '' : cat)}
                           variant={filter.category === cat ? "filled" : "outlined"}
-                          color={theme.palette.primary.dark}
+                          color={theme.palette.primary.dark || 'primary'}
                           sx={{
                             borderRadius: 2,
                             '&:hover': {
@@ -1730,21 +1643,21 @@ const DisplayDeals = () => {
                               </Typography>
                               <Chip 
                                 size="small" 
-                                label={`Your Selection: ${userQuantity} units`}
+                                label={`Your Selection: ${userQuantity} units` || '0 units'}
                                 color="primary"
                                 variant="outlined"
                               />
                               <Chip 
                                 size="small" 
-                                label={`Current Total: ${collectiveQuantity} units`}
+                                label={`Current Total: ${collectiveQuantity} units` || '0 units'}
                                 color="secondary"
                                 variant="outlined"
                                 sx={{ ml: 1 }}
                               />
                               <Chip 
                                 size="small" 
-                                label={`Projected: ${projectedQuantity} units`}
-                                color={wouldUnlockNewTier ? theme.palette.success.main : wouldLoseTier ? theme.palette.error.main : theme.palette.info.main}
+                                label={`Projected: ${projectedQuantity} units` || '0 units'}
+                                color={wouldUnlockNewTier ? theme.palette.success.main : wouldLoseTier ? theme.palette.error.main : theme.palette.info.main || 'info'}
                                 variant="outlined"
                                 sx={{ ml: 1 }}
                               />
@@ -1832,7 +1745,7 @@ const DisplayDeals = () => {
                                           size="small"
                                           sx={{ 
                                             bgcolor: 'white', 
-                                            color: isNext ? theme.palette.info.dark : theme.palette.text.primary, 
+                                            color: isNext ? theme.palette.info.dark : theme.palette.text.primary || 'primary', 
                                             fontWeight: 'bold' 
                                           }}
                                         />

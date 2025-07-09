@@ -28,20 +28,12 @@ import Toast from '../Components/Toast/Toast';
 
 // Enhanced Styled Components
 const GradientHeroSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%)',
+  background: theme.palette.primary.main,
   color: 'white',
   position: 'relative',
   overflow: 'hidden',
   padding: '120px 0 80px 0',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'radial-gradient(circle at 20% 150%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%)',
-  }
+
 }));
 
 const AnimatedCard = styled(motion(Card))({
@@ -56,7 +48,7 @@ const AnimatedCard = styled(motion(Card))({
   }
 });
 
-const FeatureIcon = styled(Box)({
+const FeatureIcon = styled(Box)(({ theme }) => ({
   width: 60,
   height: 60,
   borderRadius: '50%',
@@ -64,9 +56,9 @@ const FeatureIcon = styled(Box)({
   alignItems: 'center',
   justifyContent: 'center',
   marginBottom: 16,
-  background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)',
-  color: 'white',
-});
+  background: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+}));
 
 const HomePage = () => {
       const [isVisible, setIsVisible] = useState({});
@@ -111,7 +103,7 @@ const HomePage = () => {
                 <Box>
                   <Typography variant="h2" fontWeight="800" gutterBottom>
                     Transform Your
-                    <Box component="span" sx={{ color: '#64ffda' }}> Business</Box>
+                    <Box component="span" sx={{ color: 'primary.contrastText' }}> Business</Box>
                     <br />
                     with Smart Deals
                   </Typography>
@@ -125,37 +117,15 @@ const HomePage = () => {
                         size="large"
                         onClick={() => navigate('/register')}
                         sx={{
-                          bgcolor: '#64ffda',
-                          color: '#1a237e',
-                          '&:hover': {
-                            bgcolor: '#00bfa5'
-                          },
+                          bgcolor: 'primary.contrastText',
+                          color: 'primary.main',
+                          
                           px: 4,
                           py: 1.5,
                           fontSize: '1.1rem'
                         }}
                       >
                         Get Started Now
-                      </Button>
-                    </Grid>
-                    <Grid item>
-                      <Button
-                        variant="outlined"
-                        size="large"
-                        onClick={() => navigate('/faq')}
-                        sx={{
-                          color: '#64ffda',
-                          borderColor: '#64ffda',
-                          '&:hover': {
-                            borderColor: '#00bfa5',
-                            bgcolor: 'rgba(100, 255, 218, 0.1)'
-                          },
-                          px: 4,
-                          py: 1.5,
-                          fontSize: '1.1rem'
-                        }}
-                      >
-                        Learn More
                       </Button>
                     </Grid>
                   </Grid>
@@ -188,10 +158,10 @@ const HomePage = () => {
         <Container>
           <Grid container spacing={4}>
             {[
-              { value: '$50M+', label: 'Total Deal Value', icon: <TrendingUpIcon /> },
-              { value: '10,000+', label: 'Active Members', icon: <GroupsIcon /> },
-              { value: '95%', label: 'Success Rate', icon: <HandshakeIcon /> },
-              { value: '500+', label: 'Distributors', icon: <StorefrontIcon /> }
+              { value: '$50M+', label: 'Total Deal Value', icon: <TrendingUpIcon sx={{color:'primary.contrastText'}} /> },
+              { value: '10,000+', label: 'Active Members', icon: <GroupsIcon sx={{color:'primary.contrastText'}} /> },
+              { value: '95%', label: 'Success Rate', icon: <HandshakeIcon sx={{color:'primary.contrastText'}} /> },
+              { value: '500+', label: 'Distributors', icon: <StorefrontIcon sx={{color:'primary.contrastText'}} /> }
             ].map((stat, index) => (
               <Grid item xs={12} sm={6} md={3} key={index}>
                 <AnimatedCard sx={{ p: 3, textAlign: 'center' }}>
@@ -214,7 +184,7 @@ const HomePage = () => {
         <Container>
           <Typography variant="h3" fontWeight="800" textAlign="center" gutterBottom>
             How It
-            <Box component="span" sx={{ color: '#1a237e' }}> Works</Box>
+            <Box component="span" sx={{ color: 'secondary.main' }}> Works</Box>
           </Typography>
           <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
             Your journey to successful group purchasing in 6 simple steps
@@ -225,21 +195,21 @@ const HomePage = () => {
                 step: 1,
                 title: 'Join Our Network',
                 description: 'Complete a simple registration process and verify your business credentials. Get instant access to our platform.',
-                icon: <GroupAddIcon sx={{ fontSize: 40 }} />,
+                icon: <GroupAddIcon sx={{ fontSize: 40,color:'primary.contrastText' }} />,
                 details: ['Quick 5-minute signup', 'Business verification', 'Instant platform access']
               },
               {
                 step: 2,
                 title: 'Browse Active Deals',
                 description: 'Explore current group purchasing opportunities across various categories. Filter by industry, location, or volume.',
-                icon: <SearchIcon sx={{ fontSize: 40 }} />,
+                icon: <SearchIcon sx={{ fontSize: 40,color:'primary.contrastText' }} />,
                 details: ['Smart category filters', 'Real-time deal updates', 'Detailed product specs']
               },
               {
                 step: 3,
                 title: 'Join or Create Deals',
                 description: 'Participate in existing deals or initiate new ones. Set your preferred quantity and specifications.',
-                icon: <HandshakeIcon sx={{ fontSize: 40 }} />,
+                icon: <HandshakeIcon sx={{ fontSize: 40,color:'primary.contrastText' }} />,
                 details: ['Flexible quantity options', 'Custom specifications', 'Deal creation wizard']
               },
 
@@ -289,7 +259,7 @@ const HomePage = () => {
         <Container>
           <Typography variant="h3" fontWeight="800" textAlign="center" gutterBottom>
             Platform
-            <Box component="span" sx={{ color: '#1a237e' }}> Features</Box>
+            <Box component="span" sx={{ color: 'secondary.main' }}> Features</Box>
           </Typography>
           <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
             Powerful tools and capabilities to enhance your group purchasing experience
@@ -299,7 +269,7 @@ const HomePage = () => {
               {
                 title: 'Smart Deal Matching',
                 description: 'AI-powered system that matches your business with relevant deals based on your purchase history and preferences.',
-                icon: <AutoGraphIcon sx={{ fontSize: 40 }} />,
+                icon: <AutoGraphIcon sx={{ fontSize: 40,color:'primary.contrastText' }} />,
                 benefits: [
                   '95% matching accuracy',
                   'Personalized recommendations',
@@ -310,7 +280,7 @@ const HomePage = () => {
               {
                 title: 'Deal Analytics',
                 description: 'Comprehensive analytics dashboard to track and optimize your purchasing performance.',
-                icon: <BarChartIcon sx={{ fontSize: 40 }} />,
+                icon: <BarChartIcon sx={{ fontSize: 40,color:'primary.contrastText' }} />,
                 benefits: [
                   'Cost savings tracker',
                   'Volume analysis',
@@ -321,7 +291,7 @@ const HomePage = () => {
               {
                 title: 'Communication Hub',
                 description: 'Integrated messaging and notification system to facilitate seamless communication between all parties.',
-                icon: <SupportAgentIcon sx={{ fontSize: 40 }} />,
+                icon: <SupportAgentIcon sx={{ fontSize: 40,color:'primary.contrastText' }} />,
                 benefits: [
                   'Real-time chat',
                   'Deal announcements',
@@ -358,75 +328,8 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* FAQ Section */}
-      <Box sx={{ py: 10, bgcolor: '#f8f9fa' }}>
-        <Container>
-          <Typography variant="h3" fontWeight="800" textAlign="center" gutterBottom>
-            Frequently Asked
-            <Box component="span" sx={{ color: '#1a237e' }}> Questions</Box>
-          </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
-            Get answers to common questions about our platform
-          </Typography>
-          <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-            {[
-                {
-                  "question": "How can a distributor create a deal?",
-                  "answer": "Distributors can log in to their dashboard, navigate to the 'Create Deal' section, and enter the necessary details such as product name, quantity, pricing, and expiration date. Once submitted, the deal will be available for coop members to commit."
-                },
-                {
-                  "question": "How do coop members commit to a deal?",
-                  "answer": "Coop members can browse available deals on their dashboard. When they find a deal they want to commit to, they can enter the quantity they wish to purchase and confirm their commitment."
-                },
-                {
-                  "question": "Is payment processing available on the platform?",
-                  "answer": "No, payment processing is not available on the platform. Members and distributors must arrange payments externally."
-                },
-                {
-                  "question": "How do members and distributors handle payments?",
-                  "answer": "Since payments are not processed on the platform, members and distributors must coordinate payments directly through their preferred methods."
-                },
-                {
-                  "question": "Can a distributor edit or cancel a deal after it's created?",
-                  "answer": "Yes, distributors can edit or cancel a deal as long as no commitments have been made. Once commitments are placed, the distributor may need to coordinate changes directly with committed members."
-                },
-                {
-                  "question": "Can a member cancel their commitment to a deal?",
-                  "answer": "Once a commitment is placed, members should reach out to the distributor directly to discuss any changes or cancellations."
-                },
-                {
-                  "question": "How will members know if a deal is still available?",
-                  "answer": "Members can see real-time availability on their dashboard. If a deal reaches its maximum commitments or expires, it will no longer be available."
-                },
-                {
-                  "question": "What happens after a member commits to a deal?",
-                  "answer": "After committing to a deal, the member's order is recorded. The distributor will then handle order fulfillment and coordinate payment and delivery."
-                }
-            ].map((faq, index) => (
-              <Accordion key={index} sx={{ mb: 2, bgcolor: 'white' }}>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  sx={{
-                    '&:hover': { bgcolor: 'rgba(100, 255, 218, 0.1)' }
-                  }}
-                >
-                  <Typography variant="h6" fontWeight="bold">
-                    {faq.question}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Typography variant="body1" color="text.secondary">
-                    {faq.answer}
-                  </Typography>
-                </AccordionDetails>
-              </Accordion>
-            ))}
-          </Box>
-        </Container>
-      </Box>
-
       {/* Call to Action */}
-      <Box sx={{ py: 10, bgcolor: '#1a237e', color: 'white' }}>
+      <Box sx={{ py: 10, bgcolor: 'primary.main', color: 'white' }}>
         <Container>
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={8}>
@@ -443,11 +346,9 @@ const HomePage = () => {
                 size="large"
                 onClick={() => navigate('/register')}
                 sx={{
-                  bgcolor: '#64ffda',
-                  color: '#1a237e',
-                  '&:hover': {
-                    bgcolor: '#00bfa5'
-                  },
+                  bgcolor: 'primary.contrastText',
+                  color: 'primary.main',
+                
                   px: 4,
                   py: 2
                 }}

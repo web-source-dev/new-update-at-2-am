@@ -20,27 +20,15 @@ import CommitmentCharts from './Dashboards/DashBoardComponents/CommitmentCharts'
 import PaymentPage from './Payments/PaymentPage';
 import ThankYou from './Payments/ThankYou';
 import Home from './Pages/home';
-import AboutUs from './Pages/aboutus';
 import ContactUs from './Pages/contactus';
-import FAQ from './Pages/faq';
-import HowItWorks from './Pages/howitworks';
-import Pricing from './Pages/pricing';
-import PrivacyPolicy from './Pages/privacypolicy';
-import Support from './Pages/support';
-import TermsOfService from './Pages/termsofservice';
 import Header from './Components/HeaderFotter/Header';
-import Footer from './Components/HeaderFotter/Footer';
 import SingleDealCommitments from './Dashboards/DashBoardComponents/SingleDealCommitments';
-import Disclaimer from './Pages/Disclaimer';
 import AllTopMembers from './Pages/AllTopMembers';
 import EachMemberDetail from './Pages/EachMemberDetail';
 import TopMembers from './Pages/TopMembers';
 import DealAnalytics from './Dashboards/Components/DealAnalytics';
 import AllCoopMembers from './Dashboards/Components/AllCoopMembers';
-import AssignSupplierPage from './Dashboards/Pages/AssignSupplierPage';
 import Compare from './Compare/Compare';
-import AddMembers from './Dashboards/ProcurementDashboard/memberPages/AddMembers';
-import MemberCommitmentDetails from './Dashboards/ProcurementDashboard/memberPages/MemberCommitmentDetails';
 import CreateAddedMembersPassword from './Pages/createaddedmemberspassword';
 
 // Layout component to handle conditional rendering of Header and Footer
@@ -69,7 +57,6 @@ const Layout = ({ children }) => {
     <>
       {shouldShowHeaderFooter && <Header />}
       {children}
-      {shouldShowHeaderFooter && <Footer />}
     </>
   );
 };
@@ -88,17 +75,9 @@ const App = () => {
           <Routes>
             {/* Public pages with header and footer */}
             <Route path="/" element={<Layout><Home /></Layout>} />
-            <Route path="/about" element={<Layout><AboutUs /></Layout>} />
             <Route path="/contact" element={<Layout><ContactUs /></Layout>} />
-            <Route path="/faq" element={<Layout><FAQ /></Layout>} />
-            <Route path="/howitworks" element={<Layout><HowItWorks /></Layout>} />
-            <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
-            <Route path="/privacypolicy" element={<Layout><PrivacyPolicy /></Layout>} />
-            <Route path="/support" element={<Layout><Support /></Layout>} />
-            <Route path="/termsofservice" element={<Layout><TermsOfService /></Layout>} />
             <Route path="/deals-catlog" element={<Layout><DisplayDeals /></Layout>} />
             <Route path="/deals-catlog/deals/:dealId" element={<Layout><ViewSingleDeal /></Layout>} />
-            <Route path="/disclaimer" element={<Layout><Disclaimer /></Layout>} />
 
             {/* Routes without header and footer */}
             <Route path="/dashboard/*" element={<AllDashboard />} />
@@ -128,7 +107,6 @@ const App = () => {
             {/* Admin Routes */}
             <Route path="/admin/deal-analytics/:dealId" element={<DealAnalytics />} />
             <Route path="/coop-members" element={<AllCoopMembers />} />
-            <Route path="/assign-supplier/:memberId" element={<AssignSupplierPage />} />
             <Route path="/create-password/:token" element={<CreateAddedMembersPassword />} />
           </Routes>
         </Router>

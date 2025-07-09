@@ -549,14 +549,14 @@ const AssignSuppliers = () => {
               aria-label="Go back"
               size="small"
               sx={{ 
-                color: 'primary.main',
+                color: 'primary.contrastText',
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
                 '&:hover': {
                   backgroundColor: alpha(theme.palette.primary.main, 0.2),
                 }
               }}
             >
-              <ArrowBackIcon />
+              <ArrowBackIcon sx={{ color: 'primary.contrastText' }} />
             </IconButton>
           </Stack>
           
@@ -598,7 +598,7 @@ const AssignSuppliers = () => {
                   </Typography>
                   {member.businessName && (
                     <Chip
-                      icon={<BusinessIcon fontSize="small" />}
+                      icon={<BusinessIcon fontSize="small" sx={{ color: 'primary.contrastText' }} />}
                       label={member.businessName}
                       size="small"
                       sx={{ mt: 1 }}
@@ -612,7 +612,7 @@ const AssignSuppliers = () => {
                 <Stack spacing={2}>
                   <InfoItem>
                     <InfoIcon>
-                      <EmailIcon fontSize="small" />
+                      <EmailIcon fontSize="small" sx={{ color: 'primary.contrastText' }} />
                     </InfoIcon>
                     <InfoLabel>Email:</InfoLabel>
                     <InfoValue>{member.email}</InfoValue>
@@ -620,7 +620,7 @@ const AssignSuppliers = () => {
                   
                   <InfoItem>
                     <InfoIcon>
-                      <PhoneIcon fontSize="small" />
+                      <PhoneIcon fontSize="small" sx={{ color: 'primary.contrastText' }} />
                     </InfoIcon>
                     <InfoLabel>Phone:</InfoLabel>
                     <InfoValue>{member.phone || "Not provided"}</InfoValue>
@@ -628,7 +628,7 @@ const AssignSuppliers = () => {
                   
                   <InfoItem>
                     <InfoIcon>
-                      <LocationIcon fontSize="small" />
+                      <LocationIcon fontSize="small" sx={{ color: 'primary.contrastText' }} />
                     </InfoIcon>
                     <InfoLabel>Address:</InfoLabel>
                     <InfoValue>{member.address || "Not provided"}</InfoValue>
@@ -651,7 +651,7 @@ const AssignSuppliers = () => {
                       width: 40
                     }}
                   >
-                    <AssignmentIcon />
+                    <AssignmentIcon sx={{ color: 'primary.contrastText' }} />
                   </Avatar>
                 }
               />
@@ -669,7 +669,7 @@ const AssignSuppliers = () => {
                       }}
                     >
                       <InventoryIcon 
-                        color="primary" 
+                        color="primary.contrastText" 
                         sx={{ fontSize: 36, mb: 1 }} 
                       />
                       <Typography variant="h5" fontWeight="bold">
@@ -692,7 +692,7 @@ const AssignSuppliers = () => {
                       }}
                     >
                       <AttachMoneyIcon 
-                        color="success" 
+                        color="primary.contrastText" 
                         sx={{ fontSize: 36, mb: 1 }} 
                       />
                       <Typography variant="h5" fontWeight="bold">
@@ -714,7 +714,11 @@ const AssignSuppliers = () => {
                   <StatusChip
                     label={assignedSuppliers.length > 0 ? "Sales person Assigned" : "No Sales person"}
                     statuscolor={assignedSuppliers.length > 0 ? "success" : "warning"}
-                    icon={assignedSuppliers.length > 0 ? <CheckCircleIcon fontSize="small" /> : <InfoIcon fontSize="small" />}
+                    sx={{
+                      color: 'primary.contrastText',
+                      borderRadius: 2,
+                    }}
+                    icon={assignedSuppliers.length > 0 ? <CheckCircleIcon fontSize="small" sx={{ color: 'primary.contrastText' }} /> : <InfoIcon fontSize="small" sx={{ color: 'primary.contrastText' }} />}
                   />
                 </Box>
               </CardContent>
@@ -737,7 +741,7 @@ const AssignSuppliers = () => {
                       width: 40
                     }}
                   >
-                    <GroupIcon />
+                    <GroupIcon sx={{ color: 'primary.contrastText' }} />
                   </Avatar>
                 }
               />
@@ -754,14 +758,13 @@ const AssignSuppliers = () => {
                         p: 4,
                         mb: 4,
                         borderRadius: 3,
-                        backgroundColor: alpha(theme.palette.success.main, 0.08),
                         position: 'relative',
-                        borderLeft: '6px solid',
-                        borderColor: 'success.main',
+                        border: '1px solid',
+                        borderColor: 'primary.contrastText',
                         overflow: 'hidden'
                       }}
                     >
-                      <Typography variant="h6" color="success.dark" gutterBottom fontWeight="600">
+                      <Typography variant="h6" color="primary.contrastText" gutterBottom fontWeight="600">
                         Assigned Sales Persons ({assignedSuppliers.length})
                       </Typography>
                       
@@ -782,7 +785,7 @@ const AssignSuppliers = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                               <Avatar 
                                 sx={{ 
-                                  bgcolor: 'success.main', 
+                                  bgcolor: 'primary.contrastText', 
                                   mr: 2,
                                   width: 48,
                                   height: 48
@@ -802,9 +805,9 @@ const AssignSuppliers = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <Tooltip title={`${getSupplierMemberCount(supplier._id)} members are assigned to this supplier`}>
                                 <Chip
-                                  icon={<GroupIcon fontSize="small" />}
+                                  icon={<GroupIcon fontSize="small" sx={{ color: 'primary.contrastText' }} />}
                                   label={`${getSupplierMemberCount(supplier._id)} members assigned`}
-                                  color="success"
+                                  color="primary.contrastText"
                                   size="small"
                                   sx={{ mr: 1 }}
                                 />
@@ -814,7 +817,7 @@ const AssignSuppliers = () => {
                           <Button
                             variant="outlined"
                             color="error"
-                            startIcon={<DeleteIcon />}
+                            startIcon={<DeleteIcon sx={{ color: 'primary.contrastText' }} />}
                             onClick={() => {
                               setSelectedSupplierToRemove(supplier._id);
                               setAlertOpen(true);
@@ -859,7 +862,7 @@ const AssignSuppliers = () => {
                         bgcolor: alpha(theme.palette.primary.main, 0.04)
                       }}
                     >
-                      <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
+                      <Typography variant="h6" sx={{ mb: 3, color: 'primary.contrastText', fontWeight: 600 }}>
                         Assign Additional Sales Person
                       </Typography>
                       
@@ -901,7 +904,7 @@ const AssignSuppliers = () => {
                                           badgeContent={getSupplierMemberCount(supplier._id)} 
                                           color="primary"
                                         >
-                                          <GroupIcon color="action" fontSize="small" />
+                                          <GroupIcon color="primary.contrastText" fontSize="small" />
                                         </SupplierBadge>
                                       </Stack>
                                     </MenuItem>
@@ -913,7 +916,7 @@ const AssignSuppliers = () => {
                         <Grid item xs={12} md={4}>
                           <Button
                             variant="contained"
-                            color="primary"
+                            color="primary.main"
                             onClick={handleAssignSupplier}
                             disabled={!selectedSupplierId}
                             fullWidth
@@ -925,7 +928,7 @@ const AssignSuppliers = () => {
                               fontWeight: 'bold',
                               '&:hover': { boxShadow: 4 }
                             }}
-                            endIcon={<ArrowForwardIcon />}
+                            endIcon={<ArrowForwardIcon sx={{ color: 'primary.contrastText' }} />}
                           >
                             Assign Sales Person
                           </Button>
@@ -958,9 +961,9 @@ const AssignSuppliers = () => {
                         Create New Sales Person
                       </Typography>
                       <Button
-                        startIcon={<AddIcon />}
+                        startIcon={<AddIcon sx={{ color: 'primary.contrastText' }} />}
                         variant="outlined"
-                        color="secondary"
+                        color="primary.contrastText"
                         onClick={() => setModalOpen(true)}
                         sx={{ 
                           borderRadius: 2,
@@ -1046,9 +1049,9 @@ const AssignSuppliers = () => {
                                       </Box>
                                       <SupplierBadge 
                                         badgeContent={getSupplierMemberCount(supplier._id)} 
-                                        color="primary"
+                                        color="primary.contrastText"
                                       >
-                                        <GroupIcon color="action" fontSize="small" />
+                                        <GroupIcon color="primary.contrastText" fontSize="small" />
                                       </SupplierBadge>
                                     </Stack>
                                   </MenuItem>
@@ -1060,7 +1063,7 @@ const AssignSuppliers = () => {
                         <Grid item xs={12} md={4}>
                           <Button
                             variant="contained"
-                            color="primary"
+                            color="primary.contrastText"
                             onClick={handleAssignSupplier}
                             disabled={!selectedSupplierId}
                             fullWidth
@@ -1072,7 +1075,7 @@ const AssignSuppliers = () => {
                               fontWeight: 'bold',
                               '&:hover': { boxShadow: 4 }
                             }}
-                            endIcon={<ArrowForwardIcon />}
+                            endIcon={<ArrowForwardIcon sx={{ color: 'primary.contrastText' }} />}
                           >
                             Assign Sales Person
                           </Button>
@@ -1105,9 +1108,9 @@ const AssignSuppliers = () => {
                         Create New Sales Person
                       </Typography>
                       <Button
-                        startIcon={<AddIcon />}
+                        startIcon={<AddIcon sx={{ color: 'primary.contrastText' }} />}
                         variant="outlined"
-                        color="secondary"
+                        color="primary.contrastText"
                         onClick={() => setModalOpen(true)}
                         sx={{ 
                           borderRadius: 2,
@@ -1143,7 +1146,7 @@ const AssignSuppliers = () => {
                       width: 40
                     }}
                   >
-                    <AssignmentIcon />
+                      <AssignmentIcon sx={{ color: 'primary.contrastText' }} />
                   </Avatar>
                 }
               />
@@ -1364,12 +1367,16 @@ const AssignSuppliers = () => {
           }}
         >
           <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <Avatar sx={{ bgcolor: alpha(theme.palette.error.main, 0.1), color: 'error.main' }}>
-                <DeleteIcon />
-              </Avatar>
-              <Typography variant="h5" fontWeight="bold" color="error.main">
+            <Stack direction="column" alignItems="center" spacing={1.5}>
+              <Typography variant="h5" fontWeight="bold" color="primary.contrastText">
                 Remove Sales Person Assignment
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                This will only remove this specific sales person
+                <br />
+                Other sales persons assigned to this member will not be affected
+                <br />
+                You can assign this sales person again later if needed
               </Typography>
             </Stack>
           </DialogTitle>

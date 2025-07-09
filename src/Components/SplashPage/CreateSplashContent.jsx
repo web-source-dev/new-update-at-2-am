@@ -8,6 +8,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import './CreateSplashContent.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import DisplaySplashContent from './DisplaySplashContent';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const CreateSplashContent = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -230,10 +231,6 @@ const CreateSplashContent = () => {
     setCurrentCardIndex((prevIndex) => (prevIndex + 1) % formData.cards.length);
   };
 
-  const handlePrevCard = () => {
-    setCurrentCardIndex((prevIndex) => (prevIndex - 1 + formData.cards.length) % formData.cards.length);
-  };
-
   useEffect(() => {
     if (formData.displaySettings.autoPlay && formData.cards.length > 1) {
       const interval = setInterval(() => {
@@ -242,21 +239,6 @@ const CreateSplashContent = () => {
       return () => clearInterval(interval);
     }
   }, [formData.displaySettings.autoPlay, formData.cards.length]);
-
-  const getAnimationClass = (animation) => {
-    switch (animation) {
-      case 'fade':
-        return 'fade-animation';
-      case 'slide':
-        return 'slide-animation';
-      case 'zoom':
-        return 'zoom-animation';
-      case 'bounce':
-        return 'bounce-animation';
-      default:
-        return '';
-    }
-  };
 
   if (loading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -269,7 +251,7 @@ const CreateSplashContent = () => {
       p: 4, 
       bgcolor: '#ffffff',
       borderRadius: 3,
-      maxWidth: 1200,
+      maxWidth: 1500,
       margin: '0 auto',
       boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
       transition: '0.3s',
@@ -277,6 +259,10 @@ const CreateSplashContent = () => {
         boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
       }
     }}>
+      <Button variant="contained" color="primary" onClick={() => navigate('/dashboard/admin/splash-content')} sx={{ mb: 2, borderRadius: 2 }}>
+        <ArrowBackIcon color="primary.contrastText" />
+        Back
+      </Button>
       <Typography 
         variant="h4" 
         gutterBottom 
@@ -284,7 +270,7 @@ const CreateSplashContent = () => {
           textAlign: 'center', 
           mb: 4,
           fontWeight: 700,
-          color: '#1a237e'
+          color: 'primary.contrastText'
         }}
       >
         {isEditing ? 'Edit Splash Content' : 'Create Splash Content'}
@@ -298,18 +284,15 @@ const CreateSplashContent = () => {
 
       <Paper sx={{ p: 3, mb: 4, borderRadius: 2, boxShadow: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ color: '#1a237e', fontWeight: 600 }}>Cards</Typography>
+            <Typography variant="h6" sx={{ color: 'primary.contrastText', fontWeight: 600 }}>Cards</Typography>
             <Button 
               variant="contained" 
               color="primary" 
-              startIcon={<AddCircleOutlineIcon />} 
+              startIcon={<AddCircleOutlineIcon color="primary.contrastText" />} 
               onClick={addCard}
               sx={{ 
                 borderRadius: 2,
                 textTransform: 'none',
-                '&:hover': {
-                  backgroundColor: '#1976d2',
-                }
               }}
             >
               Add New Card
@@ -325,7 +308,7 @@ const CreateSplashContent = () => {
                 borderRadius: 2, 
                 border: '1px solid #e0e0e0',
                 position: 'relative',
-                boxShadow: 1,
+                boxShadow: 0,
                 transition: '0.3s',
                 '&:hover': {
                   boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
@@ -338,15 +321,17 @@ const CreateSplashContent = () => {
                   color="error" 
                   onClick={() => removeCard(index)}
                   sx={{ 
-                    bgcolor: '#ffebee',
-                    '&:hover': { bgcolor: '#ffcdd2' }
+                    bgcolor: 'primary.main',
+                    '&:hover': {
+                      bgcolor: 'primary.main',
+                    }
                   }}
                 >
-                  <RemoveCircleOutlineIcon />
+                  <RemoveCircleOutlineIcon color="error.main" />
                 </IconButton>
               </Box>
 
-              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: 'primary.contrastText' }}>
                 Card {index + 1}
               </Typography>
 
@@ -392,10 +377,10 @@ const CreateSplashContent = () => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="h6">CTA Buttons</Typography>
+                  <Typography variant="h6" color="primary.contrastText" fontWeight="bold">CTA Buttons</Typography>
                   {card.ctaButtons.map((cta, ctaIndex) => (
-                    <Grid container spacing={2} key={ctaIndex}>
-                      <Grid item xs={12} md={6}>
+                    <Grid container spacing={2} key={ctaIndex} sx={{ alignItems: 'center', mt: 1 }}>
+                      <Grid item xs={12} md={5.5}>
                         <TextField
                           fullWidth
                           label="Button Text"
@@ -405,7 +390,7 @@ const CreateSplashContent = () => {
                           sx={{ bgcolor: '#f8f9fa', borderRadius: 2 }}
                         />
                       </Grid>
-                      <Grid item xs={12} md={6}>
+                      <Grid item xs={12} md={5.5}>
                         <TextField
                           fullWidth
                           label="Button Link"
@@ -415,14 +400,14 @@ const CreateSplashContent = () => {
                           sx={{ bgcolor: '#f8f9fa', borderRadius: 2 }}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid item xs={12} md={1}>
                         <IconButton color="error" onClick={() => removeCtaButton(index, ctaIndex)}>
-                          <RemoveCircleOutlineIcon />
+                          <RemoveCircleOutlineIcon color="error.main" />
                         </IconButton>
                       </Grid>
                     </Grid>
                   ))}
-                  <Button variant="contained" color="primary" onClick={() => addCtaButton(index)}>
+                  <Button variant="contained" color="primary" onClick={() => addCtaButton(index)} sx={{ mt: 2 }}>
                     Add CTA Button
                   </Button>
                 </Grid>
@@ -432,7 +417,7 @@ const CreateSplashContent = () => {
         </Paper>
 
         <Paper sx={{ p: 3, mb: 4, borderRadius: 2, boxShadow: 2 }}>
-          <Typography variant="h6" sx={{ mb: 3, color: '#1a237e', fontWeight: 600 }}>Scheduling</Typography>
+          <Typography variant="h6" sx={{ mb: 3, color: 'primary.contrastText', fontWeight: 600 }}>Scheduling</Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <TextField
@@ -519,7 +504,7 @@ const CreateSplashContent = () => {
         </Paper>
 
         <Paper sx={{ p: 3, mb: 4, borderRadius: 2, boxShadow: 2 }}>
-          <Typography variant="h6" sx={{ mb: 3, color: '#1a237e', fontWeight: 600 }}>Targeting</Typography>
+          <Typography variant="h6" sx={{ mb: 3, color: 'primary.contrastText', fontWeight: 600 }}>Targeting</Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
@@ -563,7 +548,10 @@ const CreateSplashContent = () => {
               borderRadius: 2,
               textTransform: 'none',
               '&:hover': {
-                backgroundColor: '#1976d2',
+                backgroundColor: 'transparent',
+                color: 'primary.contrastText',
+                border: '1px solid',
+                borderColor: 'primary.contrastText',
               }
             }}
           >
@@ -571,16 +559,20 @@ const CreateSplashContent = () => {
           </Button>
           <Button
             variant="contained"
-            color="secondary"
+            color="primary.contrastText"
             size="large"
             onClick={() => setPreviewOpen(true)}
-            startIcon={<VisibilityIcon />}
+            startIcon={<VisibilityIcon color="primary.contrastText" />}
             sx={{ 
               minWidth: 150,
               borderRadius: 2,
+              color: 'primary.contrastText',
+              border: '1px solid',
+              borderColor: 'primary.contrastText',
               textTransform: 'none',
               '&:hover': {
-                backgroundColor: '#f50057',
+                backgroundColor: 'primary.main',
+                border:'none'
               }
             }}
           >

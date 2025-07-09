@@ -161,47 +161,6 @@ const Announcements = () => {
     setAnchorEl(null);
   };
 
-  const handleDownloadCSV = () => {
-    const csvData = announcements.map(announcement => ({
-      Title: announcement.title,
-      Content: announcement.content,
-      Category: announcement.category,
-      Priority: announcement.priority,
-      Event: announcement.event,
-      'Start Time': new Date(announcement.startTime).toLocaleString(),
-      'End Time': new Date(announcement.endTime).toLocaleString(),
-    }));
-
-    const csvContent = [
-      ['Title', 'Content', 'Category', 'Priority', 'Event', 'Start Time', 'End Time'],
-      ...csvData.map(announcement => Object.values(announcement)),
-    ]
-      .map(e => e.join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'announcements.csv');
-    handleDownloadClose();
-  };
-
-  const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text('Announcements', 20, 10);
-    doc.autoTable({
-      head: [['Title', 'Content', 'Category', 'Priority', 'Event', 'Start Time', 'End Time']],
-      body: announcements.map(announcement => [
-        announcement.title,
-        announcement.content,
-        announcement.category,
-        announcement.priority,
-        announcement.event,
-        new Date(announcement.startTime).toLocaleString(),
-        new Date(announcement.endTime).toLocaleString(),
-      ]),
-    });
-    doc.save('announcements.pdf');
-    handleDownloadClose();
-  };
 
   const filteredAnnouncements = announcements
     .filter(announcement => {
@@ -258,7 +217,7 @@ const Announcements = () => {
             variant="contained"
             color="primary"
             onClick={() => setShowAddPopup(true)}
-            startIcon={<Add />}
+            startIcon={<Add color="primary.contrastText" />}
           >
             Add Announcement
           </Button>
@@ -267,21 +226,21 @@ const Announcements = () => {
             <ViewToggleButton
               variant={view === 'list' ? 'contained' : 'outlined'}
               onClick={() => setView('list')}
-              startIcon={<ViewList />}
+              startIcon={<ViewList color="primary.contrastText" />}
             >
               List View
             </ViewToggleButton>
             <ViewToggleButton
               variant={view === 'grid' ? 'contained' : 'outlined'}
               onClick={() => setView('grid')}
-              startIcon={<ViewModule />}
+              startIcon={<ViewModule color="primary.contrastText" />}
             >
               Grid View
             </ViewToggleButton>
             <ViewToggleButton
               variant={view === 'table' ? 'contained' : 'outlined'}
               onClick={() => setView('table')}
-              startIcon={<TableChart />}
+              startIcon={<TableChart color="primary.contrastText" />}
               disabled={isMobile}
             >
               Table View
@@ -294,8 +253,8 @@ const Announcements = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Avatar sx={{ bgcolor: 'primary.main' }}>
-                <Assessment />
+              <Avatar sx={{ bgcolor: 'primary.contrastText' }}>
+                <Assessment color="primary.contrastText" />
               </Avatar>
               <Typography variant="h6">Total</Typography>
             </Box>
@@ -310,7 +269,7 @@ const Announcements = () => {
           <StatsCard>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Avatar sx={{ bgcolor: 'success.main' }}>
-                <ToggleOn />
+                <ToggleOn color="primary.contrastText" />
               </Avatar>
               <Typography variant="h6">Active</Typography>
             </Box>
@@ -327,7 +286,7 @@ const Announcements = () => {
           <StatsCard>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Avatar sx={{ bgcolor: 'error.main' }}>
-                <PriorityHigh />
+                <PriorityHigh color="primary.contrastText" />
               </Avatar>
               <Typography variant="h6">High Priority</Typography>
             </Box>
@@ -344,7 +303,7 @@ const Announcements = () => {
           <StatsCard>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Avatar sx={{ bgcolor: 'warning.main' }}>
-                <Event />
+                <Event color="primary.contrastText" />
               </Avatar>
               <Typography variant="h6">Events</Typography>
             </Box>
@@ -363,18 +322,19 @@ const Announcements = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Button
               onClick={() => setShowFilters(!showFilters)}
-              startIcon={<FilterAlt />}
-              endIcon={showFilters ? <ExpandLess /> : <ExpandMore />}
-              color="primary"
+              startIcon={<FilterAlt color="primary.contrastText" />}
+              endIcon={showFilters ? <ExpandLess color="primary.contrastText" /> : <ExpandMore color="primary.contrastText" />}
+              color="primary.contrastText"
             >
               Filters
             </Button>
             {activeFilters > 0 && (
               <Button
                 variant="text"
-                startIcon={<Clear />}
+                startIcon={<Clear color="primary.contrastText" />}
                 onClick={handleClearFilters}
                 size="small"
+                color="primary.contrastText"
               >
                 Clear All
               </Button>
@@ -410,7 +370,7 @@ const Announcements = () => {
                             }
                           }}
                           variant="outlined"
-                          color="primary"
+                          color="primary.contrastText"
                           sx={{
                             '&:hover': {
                               backgroundColor: 'primary.light',
@@ -434,7 +394,7 @@ const Announcements = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Search fontSize="small" />
+                          <Search fontSize="small" color="primary.contrastText" />
                         </InputAdornment>
                       ),
                     }}
@@ -549,7 +509,7 @@ const Announcements = () => {
               <Chip
                 label={`Category: ${filter.category}`}
                 onDelete={() => setFilter(prev => ({ ...prev, category: '' }))}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -557,7 +517,7 @@ const Announcements = () => {
               <Chip
                 label={`Status: ${filter.isActive === 'true' ? 'Active' : 'Inactive'}`}
                 onDelete={() => setFilter(prev => ({ ...prev, isActive: '' }))}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -565,7 +525,7 @@ const Announcements = () => {
               <Chip
                 label={`Priority: ${filter.priority}`}
                 onDelete={() => setFilter(prev => ({ ...prev, priority: '' }))}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -573,7 +533,7 @@ const Announcements = () => {
               <Chip
                 label={`Search: ${filter.search}`}
                 onDelete={() => setFilter(prev => ({ ...prev, search: '' }))}
-                color="primary"
+                color="primary.contrastText"
                 variant="outlined"
               />
             )}
@@ -597,7 +557,7 @@ const Announcements = () => {
                   }}
                 >
                   <CardContent>
-                    <Typography variant="h6" color="primary" fontWeight="bold">
+                    <Typography variant="h6" color="primary.contrastText" fontWeight="bold">
                       {announcement.title}
                     </Typography>
                     <Typography variant="body1" color="textSecondary" sx={{ marginBottom: '8px' }}>
@@ -614,7 +574,7 @@ const Announcements = () => {
                     <Switch
                       checked={announcement.isActive}
                       onChange={() => handleToggleActive(announcement._id, !announcement.isActive)}
-                      color="primary"
+                      color="primary.contrastText"
                     />
                     <Box>
                       <Tooltip title="Edit">
@@ -622,7 +582,7 @@ const Announcements = () => {
                           onClick={() => { setCurrentAnnouncement(announcement); setShowEditPopup(true); }}
                           sx={{ color: '#1976d2' }}
                         >
-                          <Edit />
+                          <Edit color="primary.contrastText" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
@@ -630,7 +590,7 @@ const Announcements = () => {
                           onClick={() => handleDeleteAnnouncement(announcement._id)} 
                           sx={{ color: '#d32f2f' }}
                         >
-                          <Delete />
+                          <Delete color="primary.contrastText" />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -657,7 +617,7 @@ const Announcements = () => {
                     <CardContent>
                       <Typography 
                         variant="h6" 
-                        color="primary" 
+                        color="primary.contrastText" 
                         fontWeight="bold" 
                         sx={{ marginBottom: '8px' }}
                       >
@@ -680,7 +640,7 @@ const Announcements = () => {
                       <Switch
                         checked={announcement.isActive}
                         onChange={() => handleToggleActive(announcement._id, !announcement.isActive)}
-                        color="primary"
+                        color="primary.contrastText"
                       />
                       <Box>
                         <Tooltip title="Edit">
@@ -688,7 +648,7 @@ const Announcements = () => {
                             onClick={() => { setCurrentAnnouncement(announcement); setShowEditPopup(true); }}
                             sx={{ color: '#1976d2' }}
                           >
-                            <Edit />
+                            <Edit color="primary.contrastText" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Delete">
@@ -696,7 +656,7 @@ const Announcements = () => {
                             onClick={() => handleDeleteAnnouncement(announcement._id)} 
                             sx={{ color: '#d32f2f' }}
                           >
-                            <Delete />
+                            <Delete color="primary.contrastText" />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -740,7 +700,7 @@ const Announcements = () => {
                         <TableCell>
                           <Chip 
                             label={announcement.priority} 
-                            color={announcement.priority === 'High' ? 'error' : 'primary'} 
+                            color={announcement.priority === 'High' ? 'error' : 'secondary'} 
                             variant="outlined"
                             sx={{ fontSize: '12px' }}
                           />
@@ -752,11 +712,11 @@ const Announcements = () => {
                           <Switch
                             checked={announcement.isActive}
                             onChange={() => handleToggleActive(announcement._id, !announcement.isActive)}
-                            color="primary"
+                            color="primary.contrastText"
                           />
                           <Tooltip title="Edit">
                             <IconButton onClick={() => { setCurrentAnnouncement(announcement); setShowEditPopup(true); }}>
-                              <Edit color="primary" />
+                              <Edit color="primary.contrastText" />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Delete">

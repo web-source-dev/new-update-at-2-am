@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, MenuItem,InputAdornment,Divider, Select, FormControl, InputLabel, Grid, Checkbox, ListItemText, IconButton, Menu, Chip, Pagination, TablePagination, Box, Collapse, Badge } from '@mui/material';
-import { Block, CheckCircle, Person, Search, Clear, GetApp, MoreVert, LockOpen, Login, Visibility, FilterAlt, ExpandMore, ExpandLess, Add } from '@mui/icons-material';
+import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, MenuItem,InputAdornment,Divider, Select, FormControl, InputLabel, Grid, Checkbox, ListItemText, IconButton, Menu, Chip, Pagination, TablePagination, Box, Collapse, Badge, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress, Fade } from '@mui/material';
+import { Block, CheckCircle, Person, Search, Clear, GetApp, MoreVert, LockOpen, Login, Visibility, FilterAlt, ExpandMore, ExpandLess, Add, CloudUpload, InfoOutlined } from '@mui/icons-material';
 import { DatePicker, LocalizationProvider } from '@mui/lab';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import axios from 'axios';
@@ -16,10 +16,6 @@ import { FilterTextField, FilterSelect, FilterFormControl, FilterDatePicker } fr
 import {
   ContentContainer,
   FilterContainer,
-  FilterHeader,
-  FilterGroup,
-  FilterGroupTitle,
-  FilterField
 } from '../../DashBoardComponents/StyledComponents';
 import { TableSkeleton } from '../../../Components/Skeletons/LoadingSkeletons';
 
@@ -148,52 +144,6 @@ const UserManagment = () => {
     setFilter({ role: '', isBlocked: '', search: '', sort: '', dateRange: [null, null] });
   };
 
-  const handleDownloadClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleDownloadClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleDownloadCSV = () => {
-    const csvData = users.map(user => ({
-      Name: user.name,
-      Email: user.email,
-      'Business Name': user.businessName,
-      Role: user.role,
-      'Created At': new Date(user.createdAt).toLocaleDateString(),
-    }));
-
-    const csvContent = [
-      ['Name', 'Email', 'Business Name', 'Role', 'Created At'],
-      ...csvData.map(user => Object.values(user)),
-    ]
-      .map(e => e.join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'users.csv');
-    handleDownloadClose();
-  };
-
-  const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text('User Management', 20, 10);
-    doc.autoTable({
-      head: [['Name', 'Email', 'Business Name', 'Role', 'Created At']],
-      body: users.map(user => [
-        user.name,
-        user.email,
-        user.businessName,
-        user.role,
-        new Date(user.createdAt).toLocaleDateString(),
-      ]),
-    });
-    doc.save('users.pdf');
-    handleDownloadClose();
-  };
-
   const handleViewUser = (userId) => {
     localStorage.setItem('user_id',userId)
     navigate(`/dashboard/admin/profile-management/${userId}`);
@@ -250,24 +200,27 @@ const UserManagment = () => {
   }
 
   return (
-    <Container style={{ overflowX: 'hidden' }}>
+    <Container maxWidth="xl" sx={{ overflowX: 'hidden', mt: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         User Management
       </Typography>
 
-      <Button
-        variant="contained"
-        color="primary.main"
-        onClick={handleOpenAddUser}
-        sx={{bgcolor:"primary.main",mb: 2  ,borderRadius: '50%', width: '40px', height: '40px'}}
-      >
-        <Add color='primary.contrastText' />
-      </Button>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        
+        <Button
+          variant="contained"
+          color="primary.main"
+          onClick={handleOpenAddUser}
+          sx={{bgcolor:"primary.main",mb: 2  ,borderRadius: '50%', width: '40px', height: '50px'}}
+        >
+          <Add color='primary.contrastText' />
+        </Button>
+      </Box>
       </Box>
 
-      <ContentContainer>
-        <Paper sx={{ mb: 3, p: 2 }}>
+      <ContentContainer sx={{boxShadow: 'none' ,border:'1px solid',borderColor: 'primary.contrastText' }}>
+        <Paper sx={{ mb: 3, p: 2}}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Button
               onClick={() => setShowFilters(!showFilters)}
@@ -581,6 +534,7 @@ const UserManagment = () => {
           />
         </Box>
       </ContentContainer>
+
       <AddUsers open={openAddUser} handleClose={handleCloseAddUser} refreshUsers={refreshUsers} />
       <Toast open={toast.open} message={toast.message} severity={toast.severity} handleClose={handleCloseToast} />
     </Container>

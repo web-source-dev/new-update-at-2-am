@@ -31,7 +31,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
-  color: theme.palette.common.white,
+  color: theme.palette.primary.contrastText,
   borderRadius: '4px',
   padding: theme.spacing(1, 3),
   textTransform: 'none',
@@ -39,9 +39,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: 500,
   '&:hover': {
     backgroundColor: theme.palette.primary.dark,
-    boxShadow: theme.shadows[4],
-    transform: 'translateY(-2px)',
-    transition: 'all 0.2s ease-in-out',
+    transform: 'translateY(0px)',
   },
 }));
 
@@ -80,17 +78,17 @@ const MediaCard = styled(Card)(({ theme }) => ({
 }));
 
 const NavigationButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.background.paper,
-  color: theme.palette.primary.main,
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
   '&:hover': {
-    backgroundColor: theme.palette.primary.light,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
     transform: 'scale(1.1)',
     transition: 'all 0.2s ease-in-out',
   },
   '&.Mui-disabled': {
     backgroundColor: theme.palette.action.disabledBackground,
-    color: theme.palette.action.disabled,
+    color: theme.palette.primary.contrastText,
   },
 }));
 
@@ -212,16 +210,15 @@ const handleCloseMedia = () => {
             right: 16,
             top: 16,
             zIndex: 1,
-            color: 'text.primary',
-            bgcolor: 'background.paper',
+            color: 'primary.contrastText',
+            bgcolor: 'primary.main',
             '&:hover': {
-              bgcolor: 'primary.light',
-              color: 'common.white',
-            },
+              bgcolor: 'primary.main',
+            }
           }}
           aria-label="close"
         >
-          <CloseIcon />
+          <CloseIcon color="primary.contrastText" />
         </IconButton>
 
         <Box sx={{ p: 4 }}>
@@ -316,7 +313,7 @@ const handleCloseMedia = () => {
                         disabled={currentCardIndex === 0}
                         aria-label="previous card"
                       >
-                        <NavigateBeforeIcon />
+                        <NavigateBeforeIcon color="primary.contrastText" />
                       </NavigationButton>
                     </span>
                   </Tooltip>
@@ -327,7 +324,7 @@ const handleCloseMedia = () => {
                         disabled={currentCardIndex === currentContent.cards.length - 1}
                         aria-label="next card"
                       >
-                        <NavigateNextIcon />
+                        <NavigateNextIcon color="primary.contrastText" />
                       </NavigationButton>
                     </span>
                   </Tooltip>
@@ -361,14 +358,13 @@ const handleCloseMedia = () => {
             top: 16,
             right: 16,
             bgcolor: 'background.paper',
-            color: 'text.primary',
+            color: 'primary.contrastText',
             '&:hover': {
-              bgcolor: 'primary.light',
-              color: 'common.white',
+              bgcolor: 'primary.main',
             },
           }}
         >
-          <CloseIcon />
+          <CloseIcon color="primary.contrastText" />
         </IconButton>
       </EnlargedMedia>
     </MediaModal>

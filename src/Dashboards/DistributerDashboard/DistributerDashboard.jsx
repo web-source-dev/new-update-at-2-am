@@ -60,7 +60,7 @@ const DistributerDashboard = () => {
       ]
     },
     { path: `all/committed/deals`, label: 'All Committed Deals' },
-    { path: `coop-members`, label: 'Co-op Members' },
+    { path: `coop-members`, label: 'Suppliers' },
     { path: `distributor/compare`, label: 'Compare Supply' },
   ];
 
@@ -80,9 +80,10 @@ const DistributerDashboard = () => {
               onClick={() => {
                 navigate(`offers/view/splash-content?id=${userId}&session=${userId}&role=distributor?offer=true`);
               }}
-              style={{
-                border: '2px solid #007bff',
-                color: '#007bff',
+              sx={{
+                border: '2px solid',
+                borderColor: 'primary.contrastText',
+                color: 'primary.contrastText',
                 backgroundColor: 'white',
                 padding: '10px 20px',
                 cursor: 'pointer',
@@ -92,15 +93,12 @@ const DistributerDashboard = () => {
                 textTransform: 'uppercase',
                 transition: 'background-color 0.3s ease',
                 marginRight: '20px',  
+                '&:hover': {
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                },
               }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#0056b3';
-                e.target.style.color = 'white';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'white';
-                e.target.style.color = '#007bff';
-              }}
+
             >
               Advertisements
             </Button>

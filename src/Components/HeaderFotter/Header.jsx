@@ -93,8 +93,6 @@ const Header = () => {
 
   const pages = [
     { title: 'Deals', path: '/deals-catlog', icon: <LocalOfferIcon /> },
-    { title: 'How it Works', path: '/howitworks', icon: <BusinessIcon /> },
-    { title: 'Support', path: '/support', icon: <SupportIcon /> },
   ];
 
   const settings = [

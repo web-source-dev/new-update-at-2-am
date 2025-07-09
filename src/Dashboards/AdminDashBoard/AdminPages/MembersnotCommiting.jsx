@@ -260,14 +260,15 @@ const MembersnotCommiting = () => {
     <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
-          <PersonOffIcon sx={{ mr: 1, verticalAlign: 'bottom' }} />
+          <PersonOffIcon sx={{ mr: 1, verticalAlign: 'bottom', color: 'primary.contrastText' }} />
           Members Not Committing
         </Typography>
         <Button 
           variant="outlined" 
-          startIcon={<RefreshIcon />} 
+          startIcon={<RefreshIcon color="primary.contrastText" />} 
           onClick={handleRefresh}
           disabled={isRefreshing}
+          sx={{ borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
         >
           {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
@@ -341,10 +342,10 @@ const MembersnotCommiting = () => {
       </Grid>
       
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} aria-label="inactive members tabs">
+        <Tabs value={activeTab} onChange={handleTabChange} aria-label="inactive members tabs" sx={{ color: 'primary.contrastText' }}>
           <Tab 
             label={
-              <Badge badgeContent={statistics.total} color="primary">
+              <Badge badgeContent={statistics.total} color="primary.contrastText">
                 All Members
               </Badge>
             } 
@@ -352,7 +353,7 @@ const MembersnotCommiting = () => {
           />
           <Tab 
             label={
-              <Badge badgeContent={statistics.neverCommitted} color="secondary">
+              <Badge badgeContent={statistics.neverCommitted} color="primary.contrastText">
                 Never Committed
               </Badge>
             } 
@@ -360,7 +361,7 @@ const MembersnotCommiting = () => {
           />
           <Tab 
             label={
-              <Badge badgeContent={statistics.recentInactive} color="info">
+              <Badge badgeContent={statistics.recentInactive} color="primary.contrastText">
                 Recent (30-60 days)
               </Badge>
             } 
@@ -368,7 +369,7 @@ const MembersnotCommiting = () => {
           />
           <Tab 
             label={
-              <Badge badgeContent={statistics.mediumTermInactive} color="warning">
+              <Badge badgeContent={statistics.mediumTermInactive} color="primary.contrastText">
                 Warning (60-90 days)
               </Badge>
             } 
@@ -376,7 +377,7 @@ const MembersnotCommiting = () => {
           />
           <Tab 
             label={
-              <Badge badgeContent={statistics.longTermInactive} color="error">
+                <Badge badgeContent={statistics.longTermInactive} color="primary.contrastText">
                 Critical (90+ days)
               </Badge>
             } 
@@ -396,7 +397,7 @@ const MembersnotCommiting = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon color="primary.contrastText" />
               </InputAdornment>
             ),
           }}
@@ -478,7 +479,7 @@ const MembersnotCommiting = () => {
                               variant="outlined"
                               color="error"
                               size="small"
-                              startIcon={<BlockIcon />}
+                              startIcon={<BlockIcon color="primary.contrastText" />}
                               onClick={() => openConfirmDialog(member._id, member.name)}
                               sx={{ borderRadius: 2 }}
                             >
@@ -513,7 +514,7 @@ const MembersnotCommiting = () => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          <BlockIcon color="error" sx={{ verticalAlign: 'middle', mr: 1 }} />
+          <BlockIcon color="primary.contrastText" sx={{ verticalAlign: 'middle', mr: 1 }} />
           {"Confirm Member Inactivation"}
         </DialogTitle>
         <DialogContent>

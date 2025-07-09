@@ -103,8 +103,8 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
             }
           }}
         >
-          <AddPhotoAlternateIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
-          <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'medium' }}>
+          <AddPhotoAlternateIcon sx={{ fontSize: 48, color: 'primary.contrastText', mb: 1 }} />
+          <Typography variant="h6" color="primary.contrastText" sx={{ fontWeight: 'medium' }}>
             Add Media From Library
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>

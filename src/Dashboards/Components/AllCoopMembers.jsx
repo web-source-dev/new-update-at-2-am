@@ -996,11 +996,11 @@ const AllCoopMembers = () => {
   );
 
   return (
-    <Box sx={{ p: 5 }}>
+    <Box sx={{ py: 5, px: 2 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={5}>
-        <Typography variant="h4">Co-op Members</Typography>
+        <Typography variant="h4">Suppliers</Typography>
         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-          <FormControl sx={{ minWidth: { xs: "100%", md: 250 } }}>
+          <FormControl sx={{ minWidth: { xs: "100%", md: 300 } }}>
             <InputLabel id="bulk-supplier-export-label">Export All Members for Supplier</InputLabel>
             <MuiSelect
               labelId="bulk-supplier-export-label"
@@ -1017,10 +1017,10 @@ const AllCoopMembers = () => {
                       <Typography>{supplier.name}</Typography>
                       <Badge 
                         badgeContent={memberCount} 
-                        color={memberCount > 0 ? "primary" : "error"}
+                        color={memberCount > 0 ? "primary.contrastText" : "error"}
                         sx={{ mr: 1 }}
                       >
-                        <GroupIcon fontSize="small" />
+                        <GroupIcon fontSize="small" color="primary.contrastText" />
                       </Badge>
                     </Stack>
                   </MenuItem>
@@ -1030,16 +1030,20 @@ const AllCoopMembers = () => {
           </FormControl>
           <Stack direction="row" spacing={2}>
             <Button
-              startIcon={<PeopleIcon />}
+              startIcon={<PeopleIcon sx={{ color: 'primary.contrastText' }} />}
               variant="contained"
-              color="secondary"
+              color="primary.contrastText"
+              sx={{
+                color: 'primary.contrastText',
+                backgroundColor: 'primary.main',
+              }}
               onClick={handleBulkSupplierExport}
               disabled={exportLoading || !bulkExportSupplierId}
             >
               Export Supplier Data
             </Button>
             <Button
-              startIcon={<DownloadIcon />}
+              startIcon={<DownloadIcon sx={{ color: 'primary.contrastText' }} />}
               variant="contained"
               color="primary"
               onClick={handleExportAllData}
@@ -1124,7 +1128,7 @@ const AllCoopMembers = () => {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton>
-                  <SearchIcon />
+                  <SearchIcon sx={{ color: 'primary.contrastText' }} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -1174,7 +1178,7 @@ const AllCoopMembers = () => {
               loading ? (
                 <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
               ) : (
-                <CalendarIcon color="action" sx={{ mr: 1 }} />
+                <CalendarIcon color="primary.contrastText" sx={{ mr: 1 }} />
               )
             }
             disabled={loading}
@@ -1205,7 +1209,7 @@ const AllCoopMembers = () => {
             justifyContent: 'center',
             height: '300px'
           }}>
-            <FilterOffIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2, opacity: 0.7 }} />
+            <FilterOffIcon sx={{ fontSize: 60, color: 'primary.contrastText', mb: 2, opacity: 0.7 }} />
             <Typography variant="h5" color="textSecondary" gutterBottom fontWeight="medium">
               No members found
             </Typography>
@@ -1216,18 +1220,15 @@ const AllCoopMembers = () => {
             </Typography>
             <Button 
               variant="contained"
-              color="primary"
+              color="primary.contrastText"
               onClick={handleResetFilters}
-              startIcon={<FilterOffIcon />}
+              startIcon={<FilterOffIcon sx={{ color: 'primary.contrastText' }} />}
               size="large"
               sx={{ 
                 px: 3, 
                 py: 1,
                 borderRadius: 2,
-                boxShadow: (theme) => theme.shadows[3],
-                '&:hover': {
-                  boxShadow: (theme) => theme.shadows[6],
-                }
+                backgroundColor: 'primary.main',
               }}
             >
               Reset All Filters
@@ -1287,19 +1288,19 @@ const AllCoopMembers = () => {
                     <Stack direction="row" spacing={1}>
                       <Button
                         component={Link}
-                        to={`/assign-supplier/${member.user._id}`}
+                        to={`/dashboard/distributor/assign-supplier/${member.user._id}`}
                         size="small"
                         variant="contained"
                         color="primary"
-                        startIcon={<ExternalLinkIcon />}
+                        startIcon={<ExternalLinkIcon sx={{ color: 'primary.contrastText' }} />}
                       >
                         {member.suppliers && member.suppliers.length > 0 ? "Manage Suppliers" : "Assign Suppliers"}
                       </Button>
                       <Button
                         size="small"
                         variant="outlined"
-                        color="primary"
-                        startIcon={<DownloadIcon />}
+                        color="primary.contrastText"
+                        startIcon={<DownloadIcon sx={{ color: 'primary.contrastText' }} />}
                         onClick={(e) => handleMenuOpen(e, member)}
                       >
                         Export

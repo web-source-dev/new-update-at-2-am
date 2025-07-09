@@ -172,7 +172,8 @@ const UploadForCompare = ({ dealId, dealName, distributorId, onUploadComplete })
             <Button
               variant="text"
               onClick={handleOpenHelpDialog}
-              startIcon={<InfoIcon />}
+              color="primary.contrastText"
+              startIcon={<InfoIcon sx={{ color: 'primary.contrastText' }} />}
               size="small"
             >
               Help
@@ -189,7 +190,8 @@ const UploadForCompare = ({ dealId, dealName, distributorId, onUploadComplete })
             variant="outlined"
             onClick={handleDownloadTemplate}
             sx={{ mt: 2 }}
-            startIcon={<DownloadIcon />}
+            color="primary.contrastText"
+            startIcon={<DownloadIcon sx={{ color: 'primary.contrastText' }} />}
           >
             Download Template
           </Button>
@@ -213,7 +215,7 @@ const UploadForCompare = ({ dealId, dealName, distributorId, onUploadComplete })
           {file && (
             <Alert severity="success" sx={{ mt: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <FileIcon sx={{ mr: 1 }} /> 
+                <FileIcon sx={{ mr: 1, color: 'primary.contrastText' }} /> 
                 {file.name} ({Math.round(file.size / 1024)} KB)
               </Box>
             </Alert>
@@ -272,7 +274,7 @@ const UploadForCompare = ({ dealId, dealName, distributorId, onUploadComplete })
             type="submit"
             disabled={uploading || !file || success}
             fullWidth
-            startIcon={uploading ? null : <UploadIcon />}
+            startIcon={uploading ? null : <UploadIcon sx={{ color: 'primary.contrastText' }} />}
           >
             {uploading ? (
               <>
@@ -295,7 +297,7 @@ const UploadForCompare = ({ dealId, dealName, distributorId, onUploadComplete })
         aria-labelledby="validation-dialog-title"
       >
         <DialogTitle id="validation-dialog-title" sx={{ display: 'flex', alignItems: 'center' }}>
-          <ErrorIcon color="error" sx={{ mr: 1 }} />
+          <ErrorIcon color="primary.contrastText" sx={{ mr: 1 }} />
           Validation Error
         </DialogTitle>
         <DialogContent>

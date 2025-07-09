@@ -618,7 +618,7 @@ const AllDealsAdmin = () => {
                   placeholder="Type to search..."
                   size="small"
                   InputProps={{
-                    endAdornment: <SearchIcon />,
+                    endAdornment: <SearchIcon color="primary.contrastText" />,
                   }}
                 />
               </Grid>
@@ -701,7 +701,7 @@ const AllDealsAdmin = () => {
               onClick={handleClearFilters}
               fullWidth
               size="small"
-              startIcon={<CloseIcon />}
+              startIcon={<CloseIcon color="primary.contrastText" />}
             >
               Clear Filters
             </Button>
@@ -730,7 +730,7 @@ const AllDealsAdmin = () => {
             {exportLoading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (<>
-              <GetApp />
+              <GetApp color="primary.contrastText" />
             </>)}
           </IconButton>
         </Box>
@@ -766,7 +766,7 @@ const AllDealsAdmin = () => {
                   fullWidth
                   startIcon={actionInProgress && selectedActionType === 'approve' ? 
                     <CircularProgress size={20} color="inherit" /> : 
-                    <CheckIcon />
+                    <CheckIcon color="primary.contrastText" />
                   }
                   onClick={() => handleBulkDealsAction('approve')}
                   disabled={actionInProgress || selectedDeals.length === 0}
@@ -783,7 +783,7 @@ const AllDealsAdmin = () => {
                   fullWidth
                   startIcon={actionInProgress && selectedActionType === 'decline' ? 
                     <CircularProgress size={20} color="inherit" /> : 
-                    <CloseIcon />
+                    <CloseIcon color="primary.contrastText"   />
                   }
                   onClick={() => handleBulkDealsAction('decline')}
                   disabled={actionInProgress || selectedDeals.length === 0}
@@ -951,7 +951,7 @@ const AllDealsAdmin = () => {
                           alignSelf: 'center'
                         }}
                       >
-                        <MoreVertIcon />
+                        <MoreVertIcon color="primary.contrastText" />
                       </IconButton>
                       {/* Show menu on desktop too */}
                       <IconButton
@@ -959,7 +959,7 @@ const AllDealsAdmin = () => {
                         onClick={(event) => handleMenuClick(event, deal)}
                         sx={{ display: { xs: 'none', sm: 'flex' } }}
                       >
-                        <MoreVertIcon />
+                        <MoreVertIcon color="primary.contrastText" />
                       </IconButton>
                     </Box>
                   </StyledTableCell>
@@ -1126,7 +1126,7 @@ const AllDealsAdmin = () => {
                                 <Chip 
                                   key={idx}
                                   label={`${sizeCommit.size}: $${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+ units`} 
-                                  color="primary" 
+                                  color="primary.contrastText" 
                                   size="small"
                                   variant="outlined"
                                   sx={{ mb: 0.5, fontSize: '0.7rem' }}
@@ -1136,7 +1136,7 @@ const AllDealsAdmin = () => {
                         ) : commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
                           <Chip 
                             label={`$${commitment.appliedDiscountTier.tierDiscount} at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
-                            color="primary" 
+                            color="primary.contrastText" 
                             size="small"
                             variant="outlined"
                           />
@@ -1170,7 +1170,7 @@ const AllDealsAdmin = () => {
   <Box sx={{ display: 'flex', gap: 1 }}>
     <Button
       variant="outlined"
-      color="primary"
+      color="primary.contrastText"
       onClick={() => {
         // Export only the commitments from the current dialog
         const csvData = selectedDeal.detailedCommitments.map(commitment => ({
@@ -1205,7 +1205,7 @@ const AllDealsAdmin = () => {
         const fileName = `${selectedDeal.name}-commitments-${format(new Date(), 'yyyy-MM-dd')}.csv`;
         saveAs(blob, fileName);
       }}
-      startIcon={<GetApp />}
+      startIcon={<GetApp color="primary.contrastText" />}
     >
       Export CSV
     </Button>
@@ -1268,7 +1268,7 @@ const AllDealsAdmin = () => {
           </Button>
           <Button
             onClick={handleConfirmAction}
-            color="primary"
+            color="primary.contrastText"
             variant="contained"
             disabled={actionInProgress}
             startIcon={actionInProgress ? <CircularProgress size={20} /> : null}

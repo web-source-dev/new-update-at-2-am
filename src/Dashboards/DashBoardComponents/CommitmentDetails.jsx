@@ -189,18 +189,17 @@ const CommitmentDetails = () => {
                 <Box sx={{ mb: 4 }}>
                     <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                         <Button
-                            startIcon={<ArrowBack />}
+                            startIcon={<ArrowBack color="primary.contrastText" />}
                             onClick={() => navigate(-1)}
                             variant="outlined"
-                            color="primary"
+                            color="primary.contrastText"
                             sx={{ 
                                 borderRadius: 3,
-                                borderColor: 'rgba(25, 118, 210, 0.2)',
-                                bgcolor: 'rgba(25, 118, 210, 0.04)',
+                                borderColor: 'primary.contrastText',
                                 transition: 'all 0.3s',
                                 '&:hover': {
                                     transform: 'translateX(-4px)',
-                                    bgcolor: 'rgba(25, 118, 210, 0.08)',
+                                    bgcolor: 'primary.main',
                                     borderColor: 'primary.main'
                                 }
                             }}
@@ -278,7 +277,7 @@ const CommitmentDetails = () => {
                                     <Box display="flex" alignItems="flex-start" mb={2}>
                                         <LocalOffer sx={{ 
                                             mr: 2, 
-                                            color: 'primary.main',
+                                            color: 'primary.contrastText',
                                             fontSize: 35,
                                             bgcolor: 'rgba(25, 118, 210, 0.08)',
                                             p: 1,
@@ -388,14 +387,14 @@ const CommitmentDetails = () => {
                             <Card elevation={0} sx={cardStyle}>
                                 <CardContent sx={{ p: 3 }}>
                                     <Typography variant="h6" gutterBottom sx={{ 
-                                        color: 'primary.main',
+                                        color: 'primary.contrastText',
                                         fontWeight: 600,
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 1,
                                         mb: 2
                                     }}>
-                                        <ShoppingCart fontSize="small" />
+                                        <ShoppingCart fontSize="small" color="primary.contrastText" />
                                         Size Commitments
                                     </Typography>
                                     <Divider sx={{ mb: 3, opacity: 0.1 }} />
@@ -493,14 +492,14 @@ const CommitmentDetails = () => {
                                     <Card elevation={0} sx={cardStyle}>
                                         <CardContent sx={{ p: 3 }}>
                                             <Typography variant="h6" gutterBottom sx={{ 
-                                                color: 'primary.main',
+                                                color: 'primary.contrastText',
                                                 fontWeight: 600,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: 1,
                                                 mb: 2
                                             }}>
-                                                <Person fontSize="small" />
+                                                <Person fontSize="small" color="primary.contrastText" />
                                                 User Information
                                             </Typography>
                                             <Divider sx={{ 
@@ -516,7 +515,7 @@ const CommitmentDetails = () => {
                                                         borderRadius: 2,
                                                         bgcolor: 'rgba(25, 118, 210, 0.08)'
                                                     }}>
-                                                        <Person sx={{ color: 'primary.main' }} />
+                                                        <Person sx={{ color: 'primary.contrastText' }} />
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="500">
                                                         {commitment.userId.name}
@@ -530,7 +529,7 @@ const CommitmentDetails = () => {
                                                         borderRadius: 2,
                                                         bgcolor: 'rgba(25, 118, 210, 0.08)'
                                                     }}>
-                                                        <Email sx={{ color: 'primary.main' }} />
+                                                        <Email sx={{ color: 'primary.contrastText' }} />
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="500">
                                                         {commitment.userId.email}
@@ -546,14 +545,14 @@ const CommitmentDetails = () => {
                                     <Card elevation={0} sx={cardStyle}>
                                         <CardContent sx={{ p: 3 }}>
                                             <Typography variant="h6" gutterBottom sx={{ 
-                                                color: 'primary.main',
+                                                color: 'primary.contrastText',
                                                 fontWeight: 600,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: 1,
                                                 mb: 2
                                             }}>
-                                                <Info fontSize="small" />
+                                                <Info fontSize="small" color="primary.contrastText" />
                                                 Commitment Summary
                                             </Typography>
                                             <Divider sx={{ mb: 3, opacity: 0.1 }} />
@@ -566,7 +565,7 @@ const CommitmentDetails = () => {
                                                         borderRadius: 2,
                                                         bgcolor: 'rgba(25, 118, 210, 0.08)'
                                                     }}>
-                                                        <ShoppingCart sx={{ color: 'primary.main' }} />
+                                                        <ShoppingCart sx={{ color: 'primary.contrastText' }} />
                                                     </Box>
                                                     <Box>
                                                         <Typography variant="body1" fontWeight="500">
@@ -595,7 +594,7 @@ const CommitmentDetails = () => {
                                                         borderRadius: 2,
                                                         bgcolor: 'rgba(25, 118, 210, 0.08)'
                                                     }}>
-                                                        <AttachMoney sx={{ color: 'primary.main' }} />
+                                                        <AttachMoney sx={{ color: 'primary.contrastText' }} />
                                                     </Box>
                                                     <Box>
                                                         <Typography variant="body1" fontWeight="500">
@@ -620,7 +619,7 @@ const CommitmentDetails = () => {
                                                         borderRadius: 2,
                                                         bgcolor: 'rgba(25, 118, 210, 0.08)'
                                                     }}>
-                                                        <CalendarToday sx={{ color: 'primary.main' }} />
+                                                        <CalendarToday sx={{ color: 'primary.contrastText' }} />
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="500">
                                                         Created: {new Date(commitment.createdAt).toLocaleDateString(undefined, {
@@ -687,14 +686,14 @@ const CommitmentDetails = () => {
                             <Card elevation={0} sx={cardStyle}>
                                 <CardContent sx={{ p: 3 }}>
                                     <Typography variant="h6" gutterBottom sx={{ 
-                                        color: 'primary.main',
+                                        color: 'primary.contrastText',
                                         fontWeight: 600,
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 1,
                                         mb: 2
                                     }}>
-                                        <CalendarToday fontSize="small" />
+                                        <CalendarToday fontSize="small" color="primary.contrastText" />
                                         Status Timeline
                                     </Typography>
                                     <Divider sx={{ 
@@ -708,13 +707,13 @@ const CommitmentDetails = () => {
                                                 <TimelineDot 
                                                     sx={{ 
                                                         boxShadow: '0 0 0 4px rgba(25, 118, 210, 0.12)',
-                                                        bgcolor: 'primary.main'
+                                                        bgcolor: 'primary.contrastText'
                                                     }} 
                                                 />
                                                 <TimelineConnector sx={{ bgcolor: 'primary.light' }} />
                                             </TimelineSeparator>
                                             <TimelineContent>
-                                                <Typography variant="body1" fontWeight="500" color="primary.main">
+                                                <Typography variant="body1" fontWeight="500" color="primary.contrastText">
                                                     Commitment Created
                                                 </Typography>
                                                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>

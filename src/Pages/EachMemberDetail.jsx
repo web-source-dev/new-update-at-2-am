@@ -120,7 +120,7 @@ const EachMemberDetail = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button 
               variant="contained" 
-              startIcon={<ArrowBackIcon />} 
+              startIcon={<ArrowBackIcon color="primary.contrastText" />} 
               onClick={handleGoBack}
             >
               Go Back
@@ -137,9 +137,9 @@ const EachMemberDetail = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Button 
         variant="outlined" 
-        startIcon={<ArrowBackIcon />} 
+        startIcon={<ArrowBackIcon color="primary.contrastText" />} 
         onClick={handleGoBack}
-        sx={{ mb: 2 }}
+        sx={{ mb: 2, borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
       >
         Back to Members
       </Button>
@@ -159,7 +159,7 @@ const EachMemberDetail = () => {
                 }}
               >
                 <img 
-                  src={member.logo} 
+                  src={member.logo || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'} 
                   alt={member.name} 
                   style={{ 
                     width: '100%', 
@@ -188,7 +188,7 @@ const EachMemberDetail = () => {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                  <EmailIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <EmailIcon sx={{ mr: 1, color: 'primary.contrastText' }} />
                   <Typography variant="body1">
                     <strong>Email:</strong> {member.email}
                   </Typography>
@@ -197,7 +197,7 @@ const EachMemberDetail = () => {
               
               <Grid item xs={12} sm={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                  <PhoneIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <PhoneIcon sx={{ mr: 1, color: 'primary.contrastText' }} />
                   <Typography variant="body1">
                     <strong>Phone:</strong> {member.phone || 'Not provided'}
                   </Typography>
@@ -206,7 +206,7 @@ const EachMemberDetail = () => {
               
               <Grid item xs={12} sm={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                  <BusinessIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <BusinessIcon sx={{ mr: 1, color: 'primary.contrastText' }} />
                   <Typography variant="body1">
                     <strong>Business Name:</strong> {member.businessName || 'Not provided'}
                   </Typography>
@@ -215,7 +215,7 @@ const EachMemberDetail = () => {
               
               <Grid item xs={12} sm={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                  <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <PersonIcon sx={{ mr: 1, color: 'primary.contrastText' }} />
                   <Typography variant="body1">
                     <strong>Contact Person:</strong> {member.contactPerson || 'Not provided'}
                   </Typography>

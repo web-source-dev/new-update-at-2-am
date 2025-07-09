@@ -26,20 +26,12 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Enhanced Styled Components matching home page theme
 const GradientHeroSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%)',
+  background: theme.palette.primary.main,
   color: 'white',
   position: 'relative',
   overflow: 'hidden',
   padding: '120px 0 80px 0',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'radial-gradient(circle at 20% 150%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%)',
-  }
+
 }));
 
 const AnimatedCard = styled(motion(Card))({
@@ -65,10 +57,10 @@ const GlassCard = styled(Paper)({
 const StyledTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
     '&:hover fieldset': {
-      borderColor: '#1a237e',
+      borderColor: 'primary.main',
     },
     '&.Mui-focused fieldset': {
-      borderColor: '#1a237e',
+      borderColor: 'primary.main',
     },
   },
 });
@@ -205,7 +197,7 @@ const ContactUs = () => {
       <Container maxWidth="lg" sx={{ py: 8 }}>
         {/* Support Features */}
         <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', color: '#1a237e', mb: 4 }}>
+          <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', color: 'primary.contrastText', mb: 4 }}>
             How We Can Help
           </Typography>
           <Grid container spacing={4}>
@@ -217,7 +209,7 @@ const ContactUs = () => {
                   transition={{ delay: index * 0.2 }}
                 >
                   <CardContent sx={{ textAlign: 'center' }}>
-                    <Box sx={{ color: '#1a237e', mb: 2 }}>{feature.icon}</Box>
+                    <Box sx={{ color: 'primary.contrastText', mb: 2 }}>{feature.icon}</Box>
                     <Typography variant="h5" sx={{ mb: 2 }}>
                       {feature.title}
                     </Typography>
@@ -235,7 +227,7 @@ const ContactUs = () => {
           {/* Contact Form */}
           <Grid item xs={12} md={8}>
             <GlassCard>
-              <Typography variant="h4" gutterBottom sx={{ color: '#1a237e', mb: 4 }}>
+              <Typography variant="h4" gutterBottom sx={{ color: 'primary.contrastText', mb: 4 }}>
                 Send Us a Message
               </Typography>
               <form onSubmit={handleSubmit}>
@@ -288,12 +280,13 @@ const ContactUs = () => {
                       type="submit"
                       variant="contained"
                       size="large"
-                      endIcon={<SendIcon />}
+                      endIcon={<SendIcon sx={{color:'primary.contrastText'}} />}
                       sx={{
-                        bgcolor: '#1a237e',
-                        '&:hover': {
-                          bgcolor: '#0d47a1'
-                        }
+                          bgcolor: 'primary.main',
+                          color: 'primary.contrastText',
+                          '&:hover': {
+                            bgcolor: 'primary.dark'
+                          }
                       }}
                     >
                       Send Message
@@ -316,7 +309,7 @@ const ContactUs = () => {
                   sx={{ mb: 2 }}
                 >
                   <CardContent>
-                    <Box sx={{ color: '#1a237e', mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ color: 'primary.contrastText', mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                       {info.icon}                      
                       <Typography variant="h6" gutterBottom>
                         {info.title}

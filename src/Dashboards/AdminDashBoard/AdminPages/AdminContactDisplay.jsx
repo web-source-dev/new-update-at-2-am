@@ -46,11 +46,11 @@ const AdminContactDisplay = () => {
   const getRoleColor = (role) => {
     switch(role) {
       case 'admin':
-        return '#1a237e';
+        return 'primary.main';
       case 'distributor':
-        return '#0d47a1';
+        return 'primary.main';
       default:
-        return '#01579b';
+        return 'primary.main';
     }
   };
 
@@ -196,12 +196,12 @@ const AdminContactDisplay = () => {
   }
 
   return (
-    <Box p={3}>
+    <Box py={3}>
       <Typography
         variant={isMobile ? "h5" : "h4"}
         gutterBottom
         sx={{
-          color: '#1a237e',
+          color: 'primary.contrastText',
           mb: 4,
           textAlign: isMobile ? 'center' : 'left'
         }}
@@ -236,12 +236,12 @@ const AdminContactDisplay = () => {
                           size="small"
                           sx={{
                             backgroundColor: getRoleColor(contact.user_role),
-                            color: 'white'
+                            color: 'primary.contrastText'
                           }}
                         />
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Chip
-                            icon={contact.status === 'resolved' ? <CheckCircleIcon /> : <PendingIcon />}
+                            icon={contact.status === 'resolved' ? <CheckCircleIcon color="primary.contrastText" /> : <PendingIcon color="primary.contrastText" />}
                             label={contact.status}
                             size="small"
                             color={contact.status === 'resolved' ? 'success' : 'warning'}
@@ -252,7 +252,7 @@ const AdminContactDisplay = () => {
                               color="success"
                               onClick={() => handleStatusUpdate(contact._id, 'resolved')}
                             >
-                              <DoneIcon />
+                              <DoneIcon color="primary.contrastText" />
                             </IconButton>
                           )}
                         </Box>
@@ -340,14 +340,14 @@ const AdminContactDisplay = () => {
                           size="small"
                           sx={{
                             backgroundColor: getRoleColor(contact.user_role),
-                            color: 'white'
+                            color: 'primary.contrastText'
                           }}
                         />
-                      </TableCell>
+                      </TableCell>  
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Chip
-                            icon={contact.status === 'resolved' ? <CheckCircleIcon /> : <PendingIcon />}
+                            icon={contact.status === 'resolved' ? <CheckCircleIcon color="primary.contrastText" /> : <PendingIcon color="primary.contrastText" />}
                             label={contact.status}
                             size="small"
                             color={contact.status === 'resolved' ? 'success' : 'warning'}
@@ -359,7 +359,7 @@ const AdminContactDisplay = () => {
                                 color="success"
                                 onClick={() => handleStatusUpdate(contact._id, 'resolved')}
                               >
-                                <DoneIcon />
+                                <DoneIcon color="primary.contrastText" />
                               </IconButton>
                             </Tooltip>
                           )}

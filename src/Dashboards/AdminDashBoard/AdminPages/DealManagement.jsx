@@ -259,11 +259,22 @@ const DealsManagment = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Button
             onClick={() => setShowFilters(!showFilters)}
-            startIcon={<FilterAlt />}
-            endIcon={showFilters ? <ExpandLess /> : <ExpandMore />}
+            startIcon={<FilterAlt color="primary.contrastText" />}
+            endIcon={showFilters ? <ExpandLess color="primary.contrastText" /> : <ExpandMore color="primary.contrastText" />}
             color="primary"
+            sx={{
+              color: 'primary.contrastText',
+              border: '1px solid',
+              borderColor: 'primary.contrastText',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'primary.contrastText',
+                border: '1px solid',
+                borderColor: 'primary.contrastText',
+              }
+            }}
           >
-            <Badge badgeContent={activeFilters} color="primary" sx={{ mr: 1 }}>
+            <Badge badgeContent={activeFilters} color="primary" sx={{ mr: 1, color: 'primary.contrastText' }}>
               Filters
             </Badge>
           </Button>
@@ -304,11 +315,13 @@ const DealsManagment = () => {
                           }
                         }}
                         variant="outlined"
-                        color="primary"
+                        color="primary.contrastText"
                         sx={{
                           '&:hover': {
-                            backgroundColor: 'primary.light',
-                            color: 'primary.contrastText'
+                            backgroundColor: 'primary.main',
+                            color: 'primary.contrastText',
+                            border: '1px solid',
+                            borderColor: 'primary.contrastText',
                           }
                         }}
                       />
@@ -328,7 +341,7 @@ const DealsManagment = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Search fontSize="small" />
+                        <Search fontSize="small" color="primary.contrastText" />
                       </InputAdornment>
                     ),
                   }}
@@ -422,7 +435,7 @@ const DealsManagment = () => {
             <Chip
               label={`Category: ${filter.category}`}
               onDelete={() => setFilter(prev => ({ ...prev, category: '' }))}
-              color="primary"
+              color="primary.contrastText"
               variant="outlined"
             />
           )}
@@ -430,7 +443,7 @@ const DealsManagment = () => {
             <Chip
               label={`Status: ${filter.status}`}
               onDelete={() => setFilter(prev => ({ ...prev, status: '' }))}
-              color="primary"
+              color="primary.contrastText"
               variant="outlined"
             />
           )}
@@ -438,7 +451,7 @@ const DealsManagment = () => {
             <Chip
               label={`Min Price: $${filter.minPrice}`}
               onDelete={() => setFilter(prev => ({ ...prev, minPrice: '' }))}
-              color="primary"
+              color="primary.contrastText"
               variant="outlined"
             />
           )}
@@ -446,7 +459,7 @@ const DealsManagment = () => {
             <Chip
               label={`Max Price: $${filter.maxPrice}`}
               onDelete={() => setFilter(prev => ({ ...prev, maxPrice: '' }))}
-              color="primary"
+              color="primary.contrastText"
               variant="outlined"
             />
           )}
@@ -454,7 +467,7 @@ const DealsManagment = () => {
             <Chip
               label={`Search: ${filter.search}`}
               onDelete={() => setFilter(prev => ({ ...prev, search: '' }))}
-              color="primary"
+              color="primary.contrastText"
               variant="outlined"
             />
           )}
@@ -463,7 +476,7 @@ const DealsManagment = () => {
               label={`Sort: ${filter.sortBy === 'price' ? 'Price' :
                 filter.sortBy === 'nameAsc' ? 'Name A to Z' : 'Name Z to A'}`}
               onDelete={() => setFilter(prev => ({ ...prev, sortBy: '' }))}
-              color="primary"
+              color="primary.contrastText"
               variant="outlined"
             />
           )}
@@ -474,14 +487,14 @@ const DealsManagment = () => {
           <Box>
             <Tooltip title="Add New Deal">
               {user_role === 'distributor' && (
-                <IconButton color="primary" onClick={() => navigate('/dashboard/distributor/deal/create')}>
-                  <Add />
+                <IconButton color="primary.contrastText" onClick={() => navigate('/dashboard/distributor/deal/create')}>
+                  <Add color="primary.contrastText" />
                 </IconButton>
               )}
             </Tooltip>
             <Tooltip title="Download">
-              <IconButton color="primary" onClick={handleDownloadClick}>
-                <GetApp />
+              <IconButton color="primary.contrastText" onClick={handleDownloadClick}>
+                <GetApp color="primary.contrastText" />
               </IconButton>
             </Tooltip>
             <Menu
@@ -494,18 +507,18 @@ const DealsManagment = () => {
             </Menu>
             <Tooltip title="Grid View">
               <IconButton color={layout === 'grid' ? 'primary' : 'default'} onClick={() => setLayout('grid')}>
-                <ViewModule />
+                <ViewModule color="primary.contrastText" />
               </IconButton>
             </Tooltip>
             <Tooltip title="List View">
               <IconButton color={layout === 'list' ? 'primary' : 'default'} onClick={() => setLayout('list')}>
-                <ViewList />
+                <ViewList color="primary.contrastText" />
               </IconButton>
             </Tooltip>
             {!isMobile && (
               <Tooltip title="Table View">
                 <IconButton color={layout === 'table' ? 'primary' : 'default'} onClick={() => setLayout('table')}>
-                  <ViewComfy />
+                  <ViewComfy color="primary.contrastText" />
                 </IconButton>
               </Tooltip>
             )}
@@ -619,7 +632,7 @@ const DealsManagment = () => {
                       label={deal.category} 
                       size="small" 
                       variant="outlined"
-                      color="primary"
+                      color="primary.contrastText"
                     />
                     {deal.sizes && deal.sizes.length > 1 && (
                       <Chip
@@ -653,7 +666,7 @@ const DealsManagment = () => {
                             label={sizeItem.size} 
                             size="small" 
                             variant="outlined" 
-                            sx={{ borderColor: 'primary.main' }}
+                            sx={{ borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
                           />
                         ))}
                       </Box>
@@ -771,13 +784,13 @@ const DealsManagment = () => {
                   {user_role === 'distributor' && (
                     <Tooltip title="Edit">
                       <Button variant="contained" color="primary" size="small" onClick={() => handleEdit(deal)}>
-                        <Edit fontSize="small" sx={{ mr: 1 }} /> Edit
+                        <Edit fontSize="small" sx={{ mr: 1 }} color="primary.contrastText" /> Edit
                       </Button>
                     </Tooltip>
                   )}
                   <Tooltip title="View">
                     <Button variant="outlined" color="info" size="small" onClick={() => handleView(deal._id)}>
-                      <Visibility fontSize="small" sx={{ mr: 1 }} /> View
+                      <Visibility fontSize="small" sx={{ mr: 1 }} color="primary.contrastText" /> View
                     </Button>
                   </Tooltip>
                   <Tooltip title={deal.status === 'active' ? 'Deactivate' : 'Activate'}>
@@ -791,7 +804,7 @@ const DealsManagment = () => {
                   <Tooltip title='Delete'>
                   {!deal.bulkAction && (
                            <Button variant="contained" color="error" size="small" onClick={() => handleDelete(deal._id)}>
-                              <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
+                              <Delete fontSize="small" sx={{ mr: 1 }} color="primary.contrastText" /> Delete
                             </Button>
                         )}
                   </Tooltip>
@@ -815,7 +828,7 @@ const DealsManagment = () => {
                   sx={{ objectFit: "cover", width: 80, mr: 2 }}
                 />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold"> 
                     {deal.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -825,12 +838,12 @@ const DealsManagment = () => {
                     <Chip
                       label="Mix & Match"
                       size="small"
-                      color="secondary"
+                      color="primary.contrastText"
                       sx={{
                         ml: 1,
                         fontWeight: 'bold',
                         background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
-                        color: 'white',
+                        color: 'primary.contrastText',
                         '& .MuiChip-label': { px: 1 }
                       }}
                     />
@@ -846,7 +859,7 @@ const DealsManagment = () => {
                           label={sizeItem.size} 
                           size="small" 
                           variant="outlined" 
-                          sx={{ borderColor: 'primary.light' }}
+                          sx={{ borderColor: 'primary.contrastText', color: 'primary.contrastText' }}
                         />
                       ))}
                     </Box>
@@ -870,33 +883,6 @@ const DealsManagment = () => {
                     Min Qty: {deal.minQtyForDiscount} | Members: {deal.totalCommitments}
                   </Typography>
 
-                  {/* Deal progress indicator for list view */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, mb: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ width: '40%' }}>
-                      Deal Progress: {deal.totalCommittedQuantity || 0} of {deal.minQtyForDiscount}
-                    </Typography>
-                    <Box sx={{ width: '50%', mr: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={Math.min(100, ((deal.totalCommittedQuantity || 0) / deal.minQtyForDiscount) * 100)}
-                        sx={{ height: 6, borderRadius: 5 }}
-                        color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? 'success' : 'primary'}
-                      />
-                    </Box>
-                    {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
-                      <Chip 
-                        label="LIVE" 
-                        color="success" 
-                        size="small"
-                        sx={{ fontSize: '0.75rem' }}
-                      />
-                    ) : (
-                      <Typography variant="caption" color="warning.main">
-                        {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more
-                      </Typography>
-                    )}
-                  </Box>
-
                   {deal.sizes && deal.sizes.some(size => size.discountTiers && size.discountTiers.length > 0) && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
                       <Typography variant="body2" color="text.secondary" fontWeight="medium">
@@ -911,7 +897,7 @@ const DealsManagment = () => {
                               label={`${size.size}: ${size.discountTiers.length} tier${size.discountTiers.length !== 1 ? 's' : ''}`}
                               size="small"
                               variant="outlined"
-                              color="primary"
+                              color="primary.contrastText"
                             />
                           ))}
                         {deal.sizes.filter(size => size.discountTiers && size.discountTiers.length > 0).length > 2 && (
@@ -952,7 +938,7 @@ const DealsManagment = () => {
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
-                  <MoreVert />
+                  <MoreVert color="primary.contrastText" />
                 </IconButton>
                 <Menu
                   anchorEl={anchorElMap[deal._id]}
@@ -961,11 +947,11 @@ const DealsManagment = () => {
                 >
                   {user_role === 'distributor' && (
                     <MenuItem onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
-                      <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                      <Edit sx={{ mr: 1 }} fontSize="small" color="primary.contrastText" /> Edit
                     </MenuItem>
                   )}
                   <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
-                    <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                    <Visibility sx={{ mr: 1 }} fontSize="small" color="primary.contrastText" /> View
                   </MenuItem>
                   <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
                   {!deal.bulkAction && (
@@ -977,7 +963,7 @@ const DealsManagment = () => {
                   </MenuItem>
                   {!deal.bulkAction && (
                            <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
-                              <Delete sx={{ mr: 1 }} fontSize="small" /> Delete
+                              <Delete sx={{ mr: 1 }} fontSize="small" color="primary.contrastText" /> Delete
                             </MenuItem>
                         )}
                 </Menu>
@@ -990,19 +976,19 @@ const DealsManagment = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow bgcolor="info.main">
-                <TableCell sx={{ color: '#fff' }}><strong>Image</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Name</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Sizes</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Price</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Deal Progress</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Ends At</strong></TableCell>
-                <TableCell sx={{ color: '#fff' }}><strong>Actions</strong></TableCell>
+              <TableRow sx={{ color: 'primary.contrastText', bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Image</strong></TableCell>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Name</strong></TableCell>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Sizes</strong></TableCell>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Price</strong></TableCell>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Deal Progress</strong></TableCell>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Ends At</strong></TableCell>
+                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedDeals.map((deal, index) => (
-                <TableRow key={deal._id} sx={{ backgroundColor: 'f9f9f9', height: '60px' }}>
+                <TableRow key={deal._id} sx={{height: '60px' }}>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <CardMedia
                       component="img"
@@ -1026,7 +1012,7 @@ const DealsManagment = () => {
                             />
                           ))
                         ) : (
-                          <Chip label="Standard" size="small" />
+                          <Chip label="Standard" size="small" color="primary.contrastText" />
                         )}
                       </Box>
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -1034,7 +1020,7 @@ const DealsManagment = () => {
                           label={deal.category} 
                           size="small" 
                           variant="outlined"
-                          color="primary"
+                          color="primary.contrastText"
                         />
                         {deal.sizes && deal.sizes.length > 1 && (
                           <Chip
@@ -1043,7 +1029,7 @@ const DealsManagment = () => {
                             sx={{
                               fontWeight: 'bold',
                               background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
-                              color: 'white',
+                              color: 'primary.contrastText',
                               '& .MuiChip-label': { px: 1 }
                             }}
                           />
@@ -1082,21 +1068,21 @@ const DealsManagment = () => {
                     </Box>
                     {(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? (
                       <Chip 
-                        label="LIVE" 
+                        label="COMPLETED" 
                         color="success" 
                         size="small"
                         sx={{ fontSize: '0.75rem', mt: 0.5 }}
                       />
                     ) : (
                       <Typography variant="caption" color="warning.main">
-                        {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more to go live
+                        {Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))} more to go
                       </Typography>
                     )}
                   </TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{new Date(deal.dealEndsAt).toLocaleString()}</TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
-                      <MoreVert />
+                      <MoreVert color="primary.contrastText" />
                     </IconButton>
                     <Menu
                       anchorEl={anchorElMap[deal._id]}
@@ -1105,11 +1091,11 @@ const DealsManagment = () => {
                     >
                       {user_role === 'distributor' && (
                         <MenuItem onClick={() => { handleEdit(deal); handleMenuClose(deal._id); }}>
-                          <Edit sx={{ mr: 1 }} fontSize="small" /> Edit
+                          <Edit sx={{ mr: 1 }} fontSize="small" color="primary.contrastText" /> Edit
                         </MenuItem>
                       )}
                       <MenuItem onClick={() => { handleView(deal._id); handleMenuClose(deal._id); }}>
-                        <Visibility sx={{ mr: 1 }} fontSize="small" /> View
+                        <Visibility sx={{ mr: 1 }} fontSize="small" color="primary.contrastText" /> View
                       </MenuItem>
                       <MenuItem onClick={() => { handleToggleChange(deal._id, deal.status); handleMenuClose(deal._id); }}>
                         {!deal.bulkAction && (
@@ -1121,7 +1107,7 @@ const DealsManagment = () => {
                       </MenuItem>
                       {!deal.bulkAction && (
                       <MenuItem onClick={() => { handleDelete(deal._id); handleMenuClose(deal._id); }}>
-                    <Delete sx={{ mr: 1 }} fontSize="small" /> Delete
+                    <Delete sx={{ mr: 1 }} fontSize="small" color="primary.contrastText" /> Delete
                   </MenuItem>
                       )}
                     </Menu>
@@ -1157,7 +1143,7 @@ const DealsManagment = () => {
               bgcolor: 'background.paper',
             },
             '.MuiTablePagination-selectIcon': {
-              color: 'primary.main',
+              color: 'primary.contrastText',
             },
           }}
         />
@@ -1165,14 +1151,14 @@ const DealsManagment = () => {
           count={Math.ceil(filteredDeals.length / rowsPerPage)}
           page={page + 1}
           onChange={(e, p) => setPage(p - 1)}
-          color="primary"
+          color="primary.contrastText"
           size={isMobile ? "small" : "medium"}
           sx={{
             '& .MuiPaginationItem-root': {
               borderRadius: 1,
               '&.Mui-selected': {
                 bgcolor: 'primary.main',
-                color: 'white',
+                color: 'primary.contrastText',
                 '&:hover': {
                   bgcolor: 'primary.dark',
                 },

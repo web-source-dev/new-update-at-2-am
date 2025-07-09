@@ -94,13 +94,13 @@ const AllTopMembers = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
       <Helmet>
         <title>NMGA - All Members</title>
         <meta name="description" content="NMGA All Members - View all members in the NMGA network" />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <Button onClick={() => navigate(-1)} sx={{ mb: 3 }}>Go Back</Button>
+      <Button onClick={() => navigate(-1)} sx={{ mb: 3 ,border:'1px solid',borderRadius:'10px', borderColor: 'primary.contrastText', color: 'primary.contrastText' }}>Go Back</Button>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1" gutterBottom>
@@ -143,7 +143,7 @@ const AllTopMembers = () => {
                     <TableRow key={member._id} hover>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
+                          <PersonIcon sx={{ mr: 1, color: 'primary.contrastText' }} />
                           {member.name}
                         </Box>
                       </TableCell>

@@ -38,9 +38,9 @@ import {
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 
-import { 
-  Check as CheckIcon, 
-  Close as CloseIcon, 
+import {
+  Check as CheckIcon,
+  Close as CloseIcon,
   Visibility as VisibilityIcon,
   Search as SearchIcon,
   GetApp,
@@ -107,7 +107,7 @@ const AcceptAllCommitments = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedDealId, setSelectedDealId] = useState(null);
 
-  
+
   const months = [
     { value: 1, label: 'January' },
     { value: 2, label: 'February' },
@@ -122,10 +122,10 @@ const AcceptAllCommitments = () => {
     { value: 11, label: 'November' },
     { value: 12, label: 'December' }
   ];
-const currentMonthValue = new Date().getMonth() + 1;
+  const currentMonthValue = new Date().getMonth() + 1;
 
-// Find the corresponding month object
-const currentMonth = months.find(month => month.value === currentMonthValue) || months[0];
+  // Find the corresponding month object
+  const currentMonth = months.find(month => month.value === currentMonthValue) || months[0];
   // New state for filters and pagination
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -264,10 +264,10 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
 
   const handleBulkAction = async (dealId, action) => {
     if (actionInProgress) return;
-    
+
     const deal = deals.find(d => d._id === dealId);
     const actionText = action === 'approve' ? 'approve' : 'decline';
-    
+
     handleConfirmDialogOpen(
       `Confirm ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
       `Are you sure you want to ${actionText} all pending commitments for "${deal.name}"?`,
@@ -276,7 +276,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
           setActionInProgress(true);
           setSelectedActionType(action);
           const endpoint = action === 'approve' ? 'bulk-approve-commitments' : 'bulk-decline-commitments';
-          
+
           await axios.post(`${process.env.REACT_APP_BACKEND_URL}/deals/allDeals/${endpoint}`, {
             dealId,
             distributorId
@@ -365,7 +365,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
           const status = action === 'approve' ? 'approved' : 'declined';
           const response = action === 'approve' ? 'Approved by distributor' : 'Declined by distributor';
 
-          await Promise.all(selectedCommitments.map(commitmentId => 
+          await Promise.all(selectedCommitments.map(commitmentId =>
             axios.post(`${process.env.REACT_APP_BACKEND_URL}/deals/allDeals/update-commitment-status`, {
               commitmentId,
               status,
@@ -428,12 +428,12 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
     const headers = Object.keys(data[0]);
     const csvContent = [
       headers.join(','),
-      ...data.map(row => 
+      ...data.map(row =>
         headers.map(header => {
           const value = row[header];
           // Handle values that contain commas by wrapping in quotes
-          return typeof value === 'string' && value.includes(',') 
-            ? `"${value}"` 
+          return typeof value === 'string' && value.includes(',')
+            ? `"${value}"`
             : value
         }).join(',')
       )
@@ -485,7 +485,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
       body: data.map(row => Object.values(row)),
       startY: yPos,
       theme: 'grid',
-      styles: { 
+      styles: {
         fontSize: 8,
         cellPadding: 1,
         overflow: 'linebreak'
@@ -594,14 +594,14 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
     <Box p={{ xs: 1, sm: 3 }}>
       {/* Filters Section - Make it stack on mobile */}
       <Paper sx={{ p: { xs: 1, sm: 2 }, mb: 2 }}>
-        <Grid 
-          container 
-          spacing={{ xs: 1, sm: 2 }} 
+        <Grid
+          container
+          spacing={{ xs: 1, sm: 2 }}
           direction={{ xs: 'column', sm: 'row' }}
         >
           <Grid item xs={12} sm={10}>
-            <Grid 
-              container 
+            <Grid
+              container
               spacing={{ xs: 1, sm: 2 }}
               direction={{ xs: 'column', sm: 'row' }}
             >
@@ -614,7 +614,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                   placeholder="Type to search..."
                   size="small"
                   InputProps={{
-                    endAdornment: <SearchIcon />,
+                    endAdornment: <SearchIcon sx={{ color: 'primary.contrastText' }} />,
                   }}
                 />
               </Grid>
@@ -674,13 +674,13 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             </Grid>
           </Grid>
           <Grid item xs={12} sm={2}>
-            <Button 
-              variant="outlined" 
-              color="error" 
+            <Button
+              variant="outlined"
+              color="error"
               onClick={handleClearFilters}
               fullWidth
               size="small"
-              startIcon={<CloseIcon />}
+              startIcon={<CloseIcon sx={{ color: 'primary.contrastText' }} />}
             >
               Clear Filters
             </Button>
@@ -689,36 +689,36 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
       </Paper>
 
       {/* Header Section - Stack elements on mobile */}
-      <Box 
-        display="flex" 
-        flexDirection={{ xs: 'column', sm: 'row' }} 
-        justifyContent="space-between" 
-        alignItems={{ xs: 'stretch', sm: 'center' }} 
+      <Box
+        display="flex"
+        flexDirection={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'stretch', sm: 'center' }}
         gap={2}
         mb={2}
       >
         <Box display="flex" flexDirection={{ xs: 'row', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={2}>
-        <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
-          Manage Deal Commitments
-        </Typography>
-        <IconButton
-            color="primary"
+          <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
+            Manage Deal Commitments
+          </Typography>
+          <IconButton
+            color="primary.contrastText"
             onClick={handleDownloadClick}
             disabled={!deals.length || exportLoading}
           >
             {exportLoading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (<>
-            
-            <GetApp />
+
+              <GetApp sx={{ color: 'primary.contrastText' }} />
             </>
             )}
           </IconButton>
         </Box>
-        <Box 
-          display="flex" 
+        <Box
+          display="flex"
           flexDirection={{ xs: 'row', sm: 'row' }}
-          gap={1} 
+          gap={1}
           alignItems="center"
         >
           {dealsWithPendingCommitments.length > 0 && (
@@ -734,26 +734,26 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                 }
                 label={<Typography sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>All</Typography>}
               />
-              <Box 
-                display="flex" 
-                gap={1} 
+              <Box
+                display="flex"
+                gap={1}
                 flexDirection={{ xs: 'row', sm: 'row' }}
                 width={{ xs: '100%', sm: 'auto' }}
               >
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="primary.contrastText"
                   size="small"
                   fullWidth
-                  startIcon={actionInProgress && selectedActionType === 'approve' ? 
-                    <CircularProgress size={20} color="inherit" /> : 
-                    <CheckIcon />
+                  startIcon={actionInProgress && selectedActionType === 'approve' ?
+                    <CircularProgress size={20} color="inherit" /> :
+                    <CheckIcon sx={{ color: 'primary.contrastText' }} />
                   }
                   onClick={() => handleBulkDealsAction('approve')}
                   disabled={actionInProgress || selectedDeals.length === 0}
                 >
-                  {actionInProgress && selectedActionType === 'approve' ? 
-                    'Approving...' : 
+                  {actionInProgress && selectedActionType === 'approve' ?
+                    'Approving...' :
                     `Approve (${selectedDeals.length})`
                   }
                 </Button>
@@ -762,15 +762,15 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                   color="error"
                   size="small"
                   fullWidth
-                  startIcon={actionInProgress && selectedActionType === 'decline' ? 
-                    <CircularProgress size={20} color="inherit" /> : 
-                    <CloseIcon />
+                  startIcon={actionInProgress && selectedActionType === 'decline' ?
+                    <CircularProgress size={20} color="inherit" /> :
+                    <CloseIcon sx={{ color: 'primary.contrastText' }} />
                   }
                   onClick={() => handleBulkDealsAction('decline')}
                   disabled={actionInProgress || selectedDeals.length === 0}
                 >
-                  {actionInProgress && selectedActionType === 'decline' ? 
-                    'Declining...' : 
+                  {actionInProgress && selectedActionType === 'decline' ?
+                    'Declining...' :
                     `Decline (${selectedDeals.length})`
                   }
                 </Button>
@@ -781,7 +781,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
       </Box>
 
       {/* Responsive Table */}
-      <TableContainer 
+      <TableContainer
         component={Paper}
         sx={{
           overflowX: 'auto',
@@ -837,16 +837,16 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                     ${deal.totalAmount !== 0 ? deal.totalAmount.toFixed(2) : deal.totalPAmount.toFixed(2)}
                   </StyledTableCell>
                   <StyledTableCell>
-                    <Box sx={{display:'flex',gap:2}}>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
                       {deal.bulkAction ? (
-                        <Chip 
-                          label={deal.bulkStatus} 
-                          color={deal.bulkStatus === "approved" ? "success" : "error"} 
-                          variant="outlined" 
+                        <Chip
+                          label={deal.bulkStatus}
+                          color={deal.bulkStatus === "approved" ? "success" : "error"}
+                          variant="outlined"
                         />
                       ) : (
-                        <Box 
-                          display="flex" 
+                        <Box
+                          display="flex"
                           gap={1}
                           sx={{
                             flexDirection: { xs: 'column', sm: 'row' },
@@ -883,12 +883,12 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                       <IconButton
                         size="small"
                         onClick={(event) => handleMenuClick(event, deal)}
-                        sx={{ 
+                        sx={{
                           display: { xs: 'flex', sm: 'none' },
                           alignSelf: 'center'
                         }}
                       >
-                        <MoreVertIcon />
+                        <MoreVertIcon sx={{ color: 'primary.contrastText' }} />
                       </IconButton>
                       {/* Show menu on desktop too */}
                       <IconButton
@@ -896,7 +896,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                         onClick={(event) => handleMenuClick(event, deal)}
                         sx={{ display: { xs: 'none', sm: 'flex' } }}
                       >
-                        <MoreVertIcon />
+                        <MoreVertIcon sx={{ color: 'primary.contrastText' }} />
                       </IconButton>
                     </Box>
                   </StyledTableCell>
@@ -910,8 +910,8 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                       No deals available
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {searchInput || selectedMonth || startDate || endDate ? 
-                        "No deals match your filter criteria" : 
+                      {searchInput || selectedMonth || startDate || endDate ?
+                        "No deals match your filter criteria" :
                         "You don't have any deals with commitments"}
                     </Typography>
                     {(searchInput || selectedMonth || startDate || endDate) && (
@@ -939,7 +939,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             count={totalPages}
             page={page}
             onChange={handlePageChange}
-            color="primary"
+            color="primary.contrastText"
             showFirstButton
             showLastButton
           />
@@ -984,9 +984,9 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                             {commitment.sizeCommitments.map((sizeCommit, idx) => (
                               <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                                 <Typography variant="body2">
-                                {sizeCommit.size}: {sizeCommit.quantity} × ${sizeCommit.pricePerUnit.toFixed(2)}
+                                  {sizeCommit.size}: {sizeCommit.quantity} × ${sizeCommit.pricePerUnit.toFixed(2)}
                                   {sizeCommit.appliedDiscountTier && (
-                                    <Chip 
+                                    <Chip
                                       label={`$${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+`}
                                       size="small"
                                       color="success"
@@ -994,7 +994,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                                       sx={{ ml: 1, height: 20, fontSize: '0.6rem' }}
                                     />
                                   )}
-                              </Typography>
+                                </Typography>
                               </Box>
                             ))}
                           </Box>
@@ -1002,9 +1002,9 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                           "N/A"
                         )}
                       </TableCell>
-                      <TableCell>{commitment.quantity || 
-                        (commitment.sizeCommitments ? 
-                          commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 
+                      <TableCell>{commitment.quantity ||
+                        (commitment.sizeCommitments ?
+                          commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) :
                           0)
                       }</TableCell>
                       <TableCell>
@@ -1013,10 +1013,10 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                             {commitment.sizeCommitments
                               .filter(sc => sc.appliedDiscountTier)
                               .map((sizeCommit, idx) => (
-                          <Chip 
+                                <Chip
                                   key={idx}
-                                  label={`${sizeCommit.size}: $${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+ units`} 
-                                  color="primary" 
+                                  label={`${sizeCommit.size}: $${sizeCommit.appliedDiscountTier.tierDiscount} at ${sizeCommit.appliedDiscountTier.tierQuantity}+ units`}
+                                  color="primary.contrastText"
                                   size="small"
                                   variant="outlined"
                                   sx={{ mb: 0.5, fontSize: '0.7rem' }}
@@ -1024,9 +1024,9 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                               ))}
                           </Box>
                         ) : commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierQuantity ? (
-                          <Chip 
-                            label={`$${commitment.appliedDiscountTier.tierDiscount} at ${commitment.appliedDiscountTier.tierQuantity}+ units`} 
-                            color="primary" 
+                          <Chip
+                            label={`$${commitment.appliedDiscountTier.tierDiscount} at ${commitment.appliedDiscountTier.tierQuantity}+ units`}
+                            color="primary.contrastText"
                             size="small"
                             variant="outlined"
                           />
@@ -1038,7 +1038,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
                           component="span"
                           sx={{
                             color: commitment.status === 'approved' ? 'success.main' :
-                                commitment.status === 'declined' ? 'error.main' :
+                              commitment.status === 'declined' ? 'error.main' :
                                 'warning.main'
                           }}
                         >
@@ -1056,60 +1056,60 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
           )}
         </DialogContent>
 
-<DialogActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-  <Box sx={{ display: 'flex', gap: 1 }}>
-    <Button
-      variant="outlined"
-      color="primary"
-      onClick={() => {
-        // Export only the commitments from the current dialog
-        const csvData = selectedDeal.detailedCommitments.map(commitment => ({
-          'Member Name': commitment.userId.businessName || commitment.userId.name,
-          'Size Details': commitment.sizeCommitments ? 
-            commitment.sizeCommitments.map(sc => `${sc.size}: ${sc.quantity}`).join(', ') : 'N/A',
-          'Total Quantity': commitment.sizeCommitments ? 
-            commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 0,
-          'Discount Applied': commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierDiscount ? 
-            `${commitment.appliedDiscountTier.tierDiscount}%` : 'None',
-          'Total Price': `$${commitment.totalPrice.toFixed(2)}`,
-          'Status': commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1),
-          'Date': format(new Date(commitment.createdAt), 'PP')
-        }));
+        <DialogActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              color="primary.contrastText"
+              onClick={() => {
+                // Export only the commitments from the current dialog
+                const csvData = selectedDeal.detailedCommitments.map(commitment => ({
+                  'Member Name': commitment.userId.businessName || commitment.userId.name,
+                  'Size Details': commitment.sizeCommitments ?
+                    commitment.sizeCommitments.map(sc => `${sc.size}: ${sc.quantity}`).join(', ') : 'N/A',
+                  'Total Quantity': commitment.sizeCommitments ?
+                    commitment.sizeCommitments.reduce((sum, item) => sum + item.quantity, 0) : 0,
+                  'Discount Applied': commitment.appliedDiscountTier && commitment.appliedDiscountTier.tierDiscount ?
+                    `${commitment.appliedDiscountTier.tierDiscount}%` : 'None',
+                  'Total Price': `$${commitment.totalPrice.toFixed(2)}`,
+                  'Status': commitment.status.charAt(0).toUpperCase() + commitment.status.slice(1),
+                  'Date': format(new Date(commitment.createdAt), 'PP')
+                }));
 
-        // Create CSV content
-        const headers = Object.keys(csvData[0]);
-        const csvContent = [
-          headers.join(','),
-          ...csvData.map(row => 
-            headers.map(header => {
-              const value = row[header];
-              return typeof value === 'string' && value.includes(',') 
-                ? `"${value}"` 
-                : value
-            }).join(',')
-          )
-        ].join('\n');
+                // Create CSV content
+                const headers = Object.keys(csvData[0]);
+                const csvContent = [
+                  headers.join(','),
+                  ...csvData.map(row =>
+                    headers.map(header => {
+                      const value = row[header];
+                      return typeof value === 'string' && value.includes(',')
+                        ? `"${value}"`
+                        : value
+                    }).join(',')
+                  )
+                ].join('\n');
 
-        // Download the file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const fileName = `${selectedDeal.name}-commitments-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-        saveAs(blob, fileName);
-      }}
-      startIcon={<GetApp />}
-    >
-      Export CSV
-    </Button>
-  </Box>
-  <Box sx={{ display: 'flex', gap: 1 }}>
-    <Button
-      variant="contained"
-      color="error"
-      onClick={() => setOpenDialog(false)}
-    >
-      Close
-    </Button>
-  </Box>
-</DialogActions>
+                // Download the file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const fileName = `${selectedDeal.name}-commitments-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+                saveAs(blob, fileName);
+              }}
+              startIcon={<GetApp sx={{ color: 'primary.contrastText' }} />}
+            >
+              Export CSV
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setOpenDialog(false)}
+            >
+              Close
+            </Button>
+          </Box>
+        </DialogActions>
       </Dialog>
 
       {/* Add Export Menu */}
@@ -1149,7 +1149,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={handleConfirmDialogClose}
             color="inherit"
             variant="outlined"
@@ -1190,7 +1190,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
       >
         {/* Show Approve/Decline only on mobile */}
         <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-          <MenuItem 
+          <MenuItem
             onClick={() => {
               handleBulkAction(selectedDealId._id, 'approve');
               handleMenuClose();
@@ -1202,7 +1202,7 @@ const currentMonth = months.find(month => month.value === currentMonthValue) || 
             </ListItemIcon>
             Approve
           </MenuItem>
-          <MenuItem 
+          <MenuItem
             onClick={() => {
               handleBulkAction(selectedDealId._id, 'decline');
               handleMenuClose();

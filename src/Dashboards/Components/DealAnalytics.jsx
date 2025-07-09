@@ -160,10 +160,10 @@ const DealAnalytics = () => {
       {/* Header with Deal Progress */}
       <Box display="flex" alignItems="center" mb={3} justifyContent="space-between">
         <IconButton onClick={() => navigate(-1)}>
-          <ArrowBack />
+          <ArrowBack color="primary.contrastText" />
         </IconButton>
         <IconButton onClick={fetchAnalytics}>
-          <Refresh />
+          <Refresh color="primary.contrastText" />
         </IconButton>
       </Box>
 
@@ -281,7 +281,7 @@ const DealAnalytics = () => {
           }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={2}>
-                <ShoppingCart />
+                <ShoppingCart color="primary.contrastText" />
                 <Box>
                   <Typography variant="h6">Total Revenue</Typography>
                   <Typography variant="h4">{formatCurrency(safeAccess(overview, 'totalRevenue'))}</Typography>
@@ -301,7 +301,7 @@ const DealAnalytics = () => {
           }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={2}>
-                <Assessment />
+                <Assessment color="primary.contrastText" />
                 <Box>
                   <Typography variant="h6">Total Commitments</Typography>
                   <Typography variant="h4">{formatNumber(safeAccess(overview, 'totalQuantity'))}</Typography>
@@ -321,7 +321,7 @@ const DealAnalytics = () => {
           }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={2}>
-                <People />
+                <People color="primary.contrastText" />
                 <Box>
                   <Typography variant="h6">Unique Members</Typography>
                   <Typography variant="h4">{formatNumber(safeAccess(overview, 'totalUniqueMembers'))}</Typography>
@@ -341,7 +341,7 @@ const DealAnalytics = () => {
           }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={2}>
-                <Timeline />
+                <Timeline color="primary.contrastText" />
                 <Box>
                   <Typography variant="h6">Peak Performance</Typography>
                   <Typography variant="h4">{formatNumber(safeAccess(overview, 'peakDayOrders'))}</Typography>
@@ -376,7 +376,7 @@ const DealAnalytics = () => {
                       <TableRow key={index} hover>
                         <TableCell>
                           <Box display="flex" alignItems="center" gap={1}>
-                            <TrendingUp color="success" />
+                            <TrendingUp color="primary.contrastText" />
                             <Box>
                               <Typography variant="body2">{member.name}</Typography>
                               <Typography variant="caption" color="textSecondary">

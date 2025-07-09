@@ -40,7 +40,10 @@ const TopMembersForDistributor = () => {
                     <Typography variant="h5" gutterBottom>
                         Top Members
                     </Typography>
-                    <Button bgColor='primary'  onClick={()=> navigate (`all/co-op-membors/${distributorId}`)}>
+                    <Button sx={{
+                        color: 'primary.contrastText',
+                    }}
+                     onClick={()=> navigate (`all/co-op-membors/${distributorId}`)}>
                         View All
                     </Button>
                 </Stack>
@@ -70,13 +73,13 @@ const TopMembersForDistributor = () => {
                                     </TableCell>
                                     <TableCell>{row.member.name}</TableCell>
                                     <TableCell>{row.member.email}</TableCell>
-                                    <TableCell>{row.quantity}</TableCell>
+                                    <TableCell>{row.totalCommitments}</TableCell>
                                     <TableCell>${row.totalSpent.toFixed(2)}</TableCell>
                                     <TableCell>
                                         <Typography
                                             variant="body2"
                                             sx={{
-                                                color: 'primary.main',
+                                                color: 'primary.contrastText',
                                                 cursor: 'pointer',
                                                 '&:hover': { textDecoration: 'underline' },
                                             }}

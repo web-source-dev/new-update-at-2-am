@@ -102,10 +102,14 @@ const SplashAgain = () => {
               <Divider />
               <CardActions sx={{ justifyContent: 'center', p: 2 }}>
                 <Button
-                  startIcon={<PreviewIcon />}
+                  startIcon={<PreviewIcon sx={{ color: 'primary.contrastText' }} />}
                   variant="outlined"
                   size="small"
                   onClick={() => handlePreview(content)}
+                  sx={{
+                    color: 'primary.contrastText',
+                    borderColor: 'primary.contrastText',
+                  }}
                 >
                   Preview
                 </Button>

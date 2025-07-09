@@ -272,17 +272,23 @@ const DefualtPage = () => {
 
   return (
     <div className="default-page">
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       {/* Quick Stats Section */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ bgcolor: '#1976d2', color: 'white' }}>
+          <Card sx={{ bgcolor: '#4caf5032', color: 'primary.contrastText' }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="h6">Total Users</Typography>
                   <Typography variant="h4">{userStats?.total || 0}</Typography>
                 </div>
-                <People sx={{ fontSize: 40 }} />
+                <People sx={{ fontSize: 40 }} color="primary.contrastText" />
               </Box>
               <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 +{userStats?.newThisMonth || 0} this month
@@ -292,14 +298,14 @@ const DefualtPage = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ bgcolor: '#2e7d32', color: 'white' }}>
+          <Card sx={{ bgcolor: '#fbde5941', color: 'primary.contrastText' }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="h6">Active Deals</Typography>
                   <Typography variant="h4">{dealStats?.active || 0}</Typography>
                 </div>
-                <ShoppingCart sx={{ fontSize: 40 }} />
+                <ShoppingCart sx={{ fontSize: 40 }} color="primary.contrastText" />
               </Box>
               <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 ${(dealStats?.totalRevenue || 0).toLocaleString()} total revenue
@@ -309,14 +315,14 @@ const DefualtPage = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ bgcolor: '#ed6c02', color: 'white' }}>
+          <Card sx={{ bgcolor: '#5ac9cd41', color: 'primary.contrastText' }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="h6">Distributors</Typography>
                   <Typography variant="h4">{userStats?.roles?.distributor || 0}</Typography>
                 </div>
-                <TrendingUp sx={{ fontSize: 40 }} />
+                <TrendingUp sx={{ fontSize: 40 }} color="primary.contrastText" />
               </Box>
               <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 Managing {dealStats?.total || 0} deals
@@ -326,14 +332,14 @@ const DefualtPage = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ bgcolor: '#d32f2f', color: 'white' }}>
+          <Card sx={{ bgcolor: '#ff980032', color: 'primary.contrastText' }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="h6">Blocked Users</Typography>
                   <Typography variant="h4">{userStats?.blocked || 0}</Typography>
                 </div>
-                <Block sx={{ fontSize: 40 }} />
+                <Block sx={{ fontSize: 40 }} color="primary.contrastText" />
               </Box>
               <Typography variant="body2" sx={{ mt: 1, color: 'primary.contrastText' }}>
                 {((userStats?.blocked || 0) / (userStats?.total || 1) * 100).toFixed(1)}% of total users

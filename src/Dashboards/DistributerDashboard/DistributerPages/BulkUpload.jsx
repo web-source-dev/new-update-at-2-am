@@ -111,8 +111,8 @@ const BulkUpload = () => {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Paper sx={{ p: 4, borderRadius: 2, maxWidth: 800, mx: 'auto' }}>
-                <Typography variant="h5" color="primary" gutterBottom sx={{ mb: 4 }}>
+            <Paper sx={{ p: 4, borderRadius: 2, maxWidth: 1200, mx: 'auto' }}>
+                <Typography variant="h5" color="primary.contrastText" gutterBottom sx={{ mb: 4 }}>
                     Bulk Upload Deals
                 </Typography>
                 
@@ -136,18 +136,15 @@ const BulkUpload = () => {
                         </Typography>
                         <Button
                             variant="outlined"
-                            startIcon={isDownloading ? <CircularProgress size={20} /> : <DownloadIcon />}
+                            startIcon={isDownloading ? <CircularProgress size={20} /> : <DownloadIcon sx={{ color: 'primary.contrastText' }} />}
                             onClick={handleDownloadTemplate}
                             disabled={isDownloading}
+                            color="primary.contrastText"
                             sx={{ 
                                 mt: 1,
                                 borderRadius: 2,
                                 px: 3,
                                 py: 1,
-                                '&:hover': {
-                                    backgroundColor: 'primary.main',
-                                    color: 'white'
-                                }
                             }}
                         >
                             {isDownloading ? 'Downloading...' : 'Download Template'}
@@ -180,13 +177,14 @@ const BulkUpload = () => {
                             <Button
                                 variant="contained"
                                 component="span"
-                                startIcon={loading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                                startIcon={loading ? <CircularProgress size={20} /> : <CloudUploadIcon sx={{ color: 'primary.contrastText' }} />}
                                 disabled={loading}
                                 sx={{ 
                                     mb: 1,
                                     borderRadius: 2,
                                     px: 3,
-                                    py: 1
+                                    py: 1,
+                                    color: 'primary.contrastText'
                                 }}
                             >
                                 {loading ? 'Uploading...' : 'Select CSV File'}
@@ -261,8 +259,9 @@ const BulkUpload = () => {
 
                     <Button
                         variant="contained"
-                        color="primary"
+                        color="primary.contrastText"
                         onClick={handleUpload}
+                        startIcon={loading ? <CircularProgress size={20} /> : <CloudUploadIcon sx={{ color: 'primary.contrastText' }} />}
                         disabled={!file || loading}
                         sx={{ 
                             py: 1.5,
@@ -271,9 +270,9 @@ const BulkUpload = () => {
                             alignSelf: 'center',
                             minWidth: 200,
                             boxShadow: 2,
-                            '&:hover': {
-                                boxShadow: 4
-                            }
+                            color: 'primary.contrastText',
+                            backgroundColor: 'primary.main',
+
                         }}
                     >
                         {loading ? (

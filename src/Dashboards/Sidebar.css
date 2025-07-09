@@ -64,6 +64,16 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
+/* Active link styles */
+.active-link {
+  background-color: rgba(0, 85, 164, 0.1) !important;
+  border-right: 4px solid rgba(0, 85, 164, 0.8);
+}
+
+.active-link .mui-text {
+  font-weight: 600;
+}
+
 /* Icons */
 .mui-icon {
   min-width: 40px;

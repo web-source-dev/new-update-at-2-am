@@ -34,16 +34,28 @@ const ViewSingleMember = () => {
 
     const totalCommitments = memberData.commitments.length;
     const totalSpent = memberData.commitments.reduce((sum, commitment) => sum + commitment.totalPrice, 0);
-    const totalQuantity = memberData.commitments.reduce((sum, commitment) => sum + commitment.quantity, 0);
+    const totalQuantity = memberData.commitments.reduce((sum, commitment) => {
+        // Sum quantities from all size commitments
+        const commitmentQuantity = commitment.sizeCommitments.reduce(
+            (sizeSum, sizeCommitment) => sizeSum + sizeCommitment.quantity, 0
+        );
+        return sum + commitmentQuantity;
+    }, 0);
 
     const rows = memberData.commitments.map(commitment => ({
         ...commitment,
-        id: commitment._id
+        id: commitment._id,
+        // Calculate total quantity for each commitment
+        quantity: commitment.sizeCommitments.reduce(
+            (sum, sizeCommitment) => sum + sizeCommitment.quantity, 0
+        )
     }));
 
     return (
         <>
-        <Button onClick={()=> navigate(-1)}><ArrowBack /></Button>
+        <Button sx={{
+            color: 'primary.contrastText',
+        }} onClick={()=> navigate(-1)}><ArrowBack color="primary.contrastText" /></Button>
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>Member Details</Typography>
 
@@ -67,7 +79,7 @@ const ViewSingleMember = () => {
                             <Typography color="textSecondary">Address</Typography>
                             <Typography>{memberData.member.address || 'N/A'}</Typography>
                         </Grid>
-                    </Grid>
+                    </Grid> 
                 </CardContent>
             </Card>
 
@@ -75,7 +87,7 @@ const ViewSingleMember = () => {
                 <Card sx={{ flex: 1 }}>
                     <CardContent>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <ShoppingCartIcon color="primary" />
+                            <ShoppingCartIcon color="primary.contrastText" />
                             <Box>
                                 <Typography variant="h6">{totalCommitments}</Typography>
                                 <Typography color="textSecondary">Total Commitments</Typography>
@@ -86,7 +98,7 @@ const ViewSingleMember = () => {
                 <Card sx={{ flex: 1 }}>
                     <CardContent>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <PersonIcon color="primary" />
+                            <PersonIcon color="primary.contrastText" />
                             <Box>
                                 <Typography variant="h6">{totalQuantity}</Typography>
                                 <Typography color="textSecondary">Total Quantity</Typography>
@@ -97,7 +109,7 @@ const ViewSingleMember = () => {
                 <Card sx={{ flex: 1 }}>
                     <CardContent>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <MoneyIcon color="primary" />
+                            <MoneyIcon color="primary.contrastText" />
                             <Box>
                                 <Typography variant="h6">${totalSpent.toFixed(2)}</Typography>
                                 <Typography color="textSecondary">Total Spent</Typography>

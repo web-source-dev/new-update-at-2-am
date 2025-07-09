@@ -448,8 +448,8 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                 </Typography>
                 <ActionButton 
                   variant="outlined" 
-                  color="primary" 
-                  startIcon={<AddIcon />}
+                  color="primary.contrastText" 
+                  startIcon={<AddIcon color="primary.contrastText" />}
                   onClick={handleAddTier}
                   disabled={!isValidInput}
                   size="small"
@@ -492,8 +492,9 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                   </Typography>
                   <ActionButton 
                     variant="outlined" 
+                    color="primary.contrastText"
                     onClick={handleAddTier}
-                    startIcon={<AddIcon />}
+                    startIcon={<AddIcon color="primary.contrastText" />}
                     size="small"
                     sx={{ mt: 1 }}
                   >
@@ -508,10 +509,10 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
                       secondaryAction={
                         <Box>
                           <StyledIconButton edge="end" aria-label="edit" onClick={() => handleEditTier(index)}>
-                            <EditIcon fontSize="small" />
+                            <EditIcon fontSize="small" color="primary.contrastText" />
                           </StyledIconButton>
                           <StyledIconButton edge="end" aria-label="delete" onClick={() => handleDeleteTier(index)} color="error">
-                            <DeleteIcon fontSize="small" />
+                            <DeleteIcon fontSize="small" color="primary.contrastText" />
                           </StyledIconButton>
                         </Box>
                       }
@@ -564,7 +565,7 @@ const SizeDialog = ({ open, onClose, onSave, initialSize }) => {
           onClick={handleSave} 
           variant="contained" 
           color="primary"
-          startIcon={<SaveIcon />}
+          startIcon={<SaveIcon color="primary.contrastText" />}
           sx={{ 
             borderRadius: 2,
             px: 3
@@ -793,7 +794,7 @@ const SizeDiscountTierDialog = ({ open, onClose, onSave, initialTier, basePrice 
           onClick={handleSave} 
           variant="contained" 
           color="primary"
-          startIcon={<SaveIcon />}
+          startIcon={<SaveIcon color="primary.contrastText" />}
           sx={{ 
             borderRadius: 2,
             px: 3
@@ -1035,25 +1036,26 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   const averageSavings = calculateAverageSavings();
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Button 
           variant="outlined" 
-          color="primary" 
+          color="primary.contrastText" 
           onClick={() => navigate(-1)}
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBackIcon color="primary.contrastText" />}
           sx={{ 
-            borderRadius: 8,
+            borderRadius: 2,
             px: 3,
             py: 1,
             fontWeight: 500,
             textTransform: 'none',
+            color: 'primary.contrastText',
           }}
         >
           Back to Deals
         </Button>
         
-        <Typography variant="h4" component="h1" fontWeight={600} color="primary">
+        <Typography variant="h4" component="h1" fontWeight={600} color="primary.contrastText">
           {initialData ? 'Edit Deal' : 'Create New Deal'}
         </Typography>
       </Box>
@@ -1066,7 +1068,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
               <Grid item xs={12}>
                 <SectionHeading>
                   <SectionTitle variant="h6">
-                    <LocalOfferIcon />
+                    <LocalOfferIcon color="primary.contrastText" />
                     Basic Information
                   </SectionTitle>
                 </SectionHeading>
@@ -1137,14 +1139,14 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
               <Grid item xs={12}>
                 <SectionHeading>
                   <SectionTitle variant="h6">
-                    <StraightenIcon />
+                    <StraightenIcon color="primary.contrastText" />
                     Size & Pricing Options
                   </SectionTitle>
                   
                   <ActionButton 
                     variant="contained" 
                     color="primary" 
-                    startIcon={<AddIcon />}
+                    startIcon={<AddIcon color="primary.contrastText" />}
                     onClick={handleAddSize}
                   >
                     Add Size
@@ -1168,8 +1170,9 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     </Typography>
                     <ActionButton 
                       variant="outlined" 
+                      color="primary.contrastText"
                       onClick={handleAddSize}
-                      startIcon={<AddIcon />}
+                      startIcon={<AddIcon color="primary.contrastText" />}
                     >
                       Add First Size
                     </ActionButton>
@@ -1191,10 +1194,10 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                                 </Typography>
                                 <Box>
                                   <StyledIconButton size="small" onClick={() => handleEditSize(index)}>
-                                    <EditIcon fontSize="small" />
+                                    <EditIcon fontSize="small" color="primary.contrastText" />
                                   </StyledIconButton>
                                   <StyledIconButton size="small" onClick={() => handleDeleteSize(index)} color="error">
-                                    <DeleteIcon fontSize="small" />
+                                    <DeleteIcon fontSize="small" color="primary.contrastText" />
                                   </StyledIconButton>
                                 </Box>
                               </Box>
@@ -1301,7 +1304,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
               <Grid item xs={12}>
                 <SectionHeading>
                   <SectionTitle variant="h6">
-                    <StorefrontIcon />
+                    <StorefrontIcon color="primary.contrastText" />
                     Volume Requirements
                   </SectionTitle>
                 </SectionHeading>
@@ -1343,7 +1346,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
               <Grid item xs={12}>
                 <SectionHeading>
                   <SectionTitle variant="h6">
-                    <CalendarMonthIcon />
+                    <CalendarMonthIcon color="primary.contrastText" />
                     Deal Timeframe
                   </SectionTitle>
                 </SectionHeading>
@@ -1399,7 +1402,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
               <Grid item xs={12}>
                 <SectionHeading>
                   <SectionTitle variant="h6">
-                    <InsertPhotoIcon />
+                    <InsertPhotoIcon color="primary.contrastText" />
                     Product Images
                   </SectionTitle>
                 </SectionHeading>
@@ -1421,7 +1424,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     variant="contained" 
                     color="primary"
                     disabled={isSubmitting || formData.sizes.length === 0}
-                    startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                    startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon color="primary.contrastText" />}
                   >
                     {isSubmitting ? 'Saving...' : (initialData ? 'Update Deal' : 'Create Deal')}
                   </SubmitButton>

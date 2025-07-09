@@ -1114,7 +1114,7 @@ const ViewSingleDeal = () => {
                   
                   {(deal?.totalCommittedQuantity || 0) >= (deal?.minQtyForDiscount || 0) ? (
                     <Alert severity="success" variant="outlined" sx={{ mb: 2 }}>
-                      <AlertTitle>Deal is LIVE!</AlertTitle>
+                      <AlertTitle>Deal is Committed!</AlertTitle>
                       <Typography variant="body2">
                         The minimum quantity threshold has been reached. This deal is now active and all commitments will be processed at the discounted rate.
                       </Typography>
@@ -1137,7 +1137,7 @@ const ViewSingleDeal = () => {
                     Size-Specific Volume Discount Tiers
                   </Typography>
                   
-                  <Alert severity="info" sx={{ mb: 2 }}>
+                  <Alert severity="info" color="primary.contrastText" sx={{ mb: 2 }}>
                     <AlertTitle>Collective Volume Discounts</AlertTitle>
                     <Typography variant="body2">
                       Discount tiers are applied based on the <strong>total quantity across all members</strong>. 
@@ -1217,7 +1217,7 @@ const ViewSingleDeal = () => {
                           <Chip 
                             size="small" 
                             label={`Your Selection: ${userQuantity} units`}
-                            color="primary"
+                            color="primary.contrastText"
                             variant="outlined"
                           />
                           <Chip 
@@ -1958,7 +1958,7 @@ const ViewSingleDeal = () => {
                           <Chip 
                             size="small" 
                             label={`Your Selection: ${userQuantity} units`}
-                            color="primary"
+                            color="primary.contrastText"
                             variant="outlined"
                           />
                           <Chip 
