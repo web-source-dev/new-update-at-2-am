@@ -28,3 +28,8 @@ code {
     monospace;
   color: var(--text-color);
 }
+
+/* hide scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
