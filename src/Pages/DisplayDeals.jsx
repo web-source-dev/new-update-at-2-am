@@ -78,6 +78,29 @@ const DisplayDeals = () => {
   const [splashContent, setSplashContent] = useState([]);
   const [activeTier, setActiveTier] = useState(null);
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    const userId = localStorage.getItem('user_id');
+    const userRole = localStorage.getItem('user_role');
+
+    if (userId && userRole) {
+      setIsLoggedIn(true);
+      setRole(userRole);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
+ const handleClick = () => {
+    if (isLoggedIn) {
+      const dashboardPath = `/dashboard/${role === 'member' ? 'co-op-member' : role}`;
+      navigate(dashboardPath);
+    } else {
+      navigate('/login');
+    }
+  };
+
   useEffect(() => {
     const fetchSplashContent = async () => {
       const userRole = localStorage.getItem('user_role');
@@ -1050,6 +1073,33 @@ const DisplayDeals = () => {
               >
                 Advertisements
               </Button>
+               <Button
+      variant="contained"
+      size="large"
+      onClick={handleClick}
+      startIcon={
+        isLoggedIn ? (
+          <DashboardIcon sx={{ color: 'primary.contrastText' }} />
+        ) : (
+          <LoginIcon sx={{ color: 'primary.contrastText' }} />
+        )
+      }
+      sx={{
+        backgroundColor: 'primary.main',
+        color: 'primary.contrastText',
+        borderRadius: '8px',
+        fontWeight: 600,
+        textTransform: 'none',
+        px: 4,
+        py: 1.5,
+        fontSize: '1rem',
+        '&:hover': {
+          backgroundColor: 'primary.dark',
+        },
+      }}
+    >
+      {isLoggedIn ? 'Go to Dashboard' : 'Login to Continue'}
+    </Button>
 
               {isMobile && (
                 <Box sx={{
