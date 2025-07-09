@@ -244,27 +244,29 @@ const LoginForm = () => {
       localStorage.setItem('token', token);
       localStorage.setItem('user_role', user.role);
       setToast({ open: true, message, severity: 'success' });
+      
+      const redirectPath = localStorage.getItem('redirectPath');
+      const redirectTo = redirectPath || '/deals-catlog';
+      
       if (user.role === 'admin') {
         localStorage.setItem('admin_id', user.id);
-        // For admin, open in new tab with auth params and redirect current window
+        // For admin, open in new tab with auth params
         const authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(user.role)}&admin_id=${encodeURIComponent(user.id)}`;
         window.open(`/dashboard/admin?${authParams}`, '_blank');
+        // Redirect current page to deals-catalog
+        setTimeout(() => window.location.href = redirectTo, 500);
       } else if (user.role === 'distributor') {
         localStorage.setItem('user_id', user.id);
-        // For distributor, open in new tab with auth params and redirect current window
+        // For distributor, open in new tab with auth params
         const authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(user.role)}&user_id=${encodeURIComponent(user.id)}`;
         window.open(`/dashboard/distributor?${authParams}`, '_blank');
+        // Redirect current page to deals-catalog
+        setTimeout(() => window.location.href = redirectTo, 500);
       } else {
         localStorage.setItem('user_id', user.id);
-        const redirectPath = localStorage.getItem('redirectPath');
         localStorage.removeItem('redirectPath');
-        // For regular members, check if we should just redirect or pass params
-        if (window.location.href.includes('wix') || window.location.href.includes('embedded')) {
-          // If we're in embedded mode, store locally but don't redirect
-          window.location.href = redirectPath || '/deals-catlog';
-        } else {
-          window.location.href = redirectPath || '/deals-catlog';
-        }
+        // For regular members, just redirect to deals-catalog
+        window.location.href = redirectTo;
       }
     } catch (error) {
       const errorData = error.response?.data;

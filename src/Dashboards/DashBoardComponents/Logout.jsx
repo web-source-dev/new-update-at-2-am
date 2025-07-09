@@ -13,7 +13,14 @@ const Logout = () => {
     try {
      
       localStorage.clear();
-      navigate('/login');
+     // Send logout message to Wix embedded iframe if it exists
+const iframe = document.querySelector('iframe'); // Adjust selector to your embedded login iframe
+if (iframe && iframe.contentWindow) {
+  iframe.contentWindow.postMessage('logout', 'https://www.nmgrocers.com/nmgrocercoop'); // Match the exact origin
+}
+
+// Then redirect or update UI
+window.location.href = '/login';
     } catch (error) {
       console.error('Error logging out:', error);
     }
