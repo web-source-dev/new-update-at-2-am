@@ -110,25 +110,6 @@ const App = () => {
           </Routes>
         </Router>
       </SnackbarProvider>
-      <Box
-        sx={{
-          position: "fixed",
-          bottom: 20,
-          left: { xs: "71%", sm: "80%", md: "90%", lg: "93%" }, // Adjust position based on screen size
-          transform: "translateX(-50%)",
-          color: "#fff", // Default color
-          px: 2,
-          py: 1,
-          borderRadius: 1,
-          fontWeight: "bold",
-          zIndex: 1000,
-          mixBlendMode: 'multiply'
-        }}
-      >
-        <a href="https://rtnglobal.site" target="_blank" rel="noopener noreferrer">
-          <img src="/RTNLOGO.jpg" width="200px" alt="RTN Global Logo" />
-        </a>
-      </Box>
     </ThemeProvider>
   );
 }
