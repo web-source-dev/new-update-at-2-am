@@ -33,7 +33,21 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const adminId = localStorage.getItem('admin_id');
-    if (!adminId || localStorage.getItem('user_role') !== 'admin') {
+    const userRole = localStorage.getItem('user_role');
+    
+    // If not logged in, check URL parameters
+    if ((!adminId || userRole !== 'admin') && window.location.search) {
+      // URL parameters will be handled by AllDashboard component
+      // Just wait a moment for them to be processed
+      setTimeout(() => {
+        const newAdminId = localStorage.getItem('admin_id');
+        const newUserRole = localStorage.getItem('user_role');
+        
+        if (!newAdminId || newUserRole !== 'admin') {
+          navigate('/login');
+        }
+      }, 100);
+    } else if (!adminId || userRole !== 'admin') {
       navigate('/login');
     }
   }, [navigate]);

@@ -97,7 +97,21 @@ const DisplayDeals = () => {
 const handleClick = () => {
   if (isLoggedIn) {
     const dashboardPath = `/dashboard/${role === 'member' ? 'co-op-member' : role}`;
-    window.open(dashboardPath, '_blank');
+    
+    // Add authentication parameters to the URL
+    const userId = localStorage.getItem('user_id');
+    const adminId = localStorage.getItem('admin_id');
+    const token = localStorage.getItem('token');
+    
+    let authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(role)}`;
+    
+    if (role === 'admin' && adminId) {
+      authParams += `&admin_id=${encodeURIComponent(adminId)}`;
+    } else if (userId) {
+      authParams += `&user_id=${encodeURIComponent(userId)}`;
+    }
+    
+    window.open(`${dashboardPath}?${authParams}`, '_blank');
   } else {
     window.open('/login', '_blank');
   }
@@ -1054,33 +1068,38 @@ const handleClick = () => {
                 </Typography>
               </Box>
             <Box sx={{display:'flex',gap:2}}>
-              <Button
-              onClick={() =>
-    window.open(
-      `/dashboard/co-op-member/offers/view/splash-content?id=${user_id}&session=${user_id}&role=distributor&offer=true`,
-      '_blank'
-    )
-  }
-                sx={{
-                  border: `2px solid ${theme.palette.primary.contrastText}`,
-                  color: theme.palette.primary.contrastText,
-                  backgroundColor: 'white',
-                  padding: { xs: '8px 16px', md: '10px 10px' },
-                  cursor: 'pointer',
-                  borderRadius: 25,
-                  fontSize: { xs: '12px', md: '16px' },
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                  transition: 'background-color 0.3s ease',
-                  marginRight: '4px',
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.contrastText,
-                    color: theme.palette.secondary.contrastText,
-                  },
-                }}
-              >
-                Advertisements
-              </Button>
+              {isLoggedIn && role === 'member' && (
+                <Button
+                  onClick={() => {
+                    const userId = localStorage.getItem('user_id');
+                    const token = localStorage.getItem('token');
+                    const userRole = localStorage.getItem('user_role');
+                    
+                    const authParams = `id=${userId}&session=${userId}&role=distributor&offer=true&token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(userRole)}&user_id=${encodeURIComponent(userId)}`;
+                    window.open(`/dashboard/co-op-member/offers/view/splash-content?${authParams}`, '_blank');
+                  }}
+                  sx={{
+                    border: '2px solid',
+                    borderColor: 'primary.contrastText',
+                    color: 'primary.contrastText',
+                    backgroundColor: 'white',
+                    padding: { xs: '4px 4px', md: '10px 10px' },
+                    cursor: 'pointer',
+                    borderRadius: 25,
+                    fontSize: { xs: '12px', md: '16px' },
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    transition: 'background-color 0.3s ease',
+                    marginRight: '4px',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.contrastText,
+                      color: theme.palette.secondary.contrastText,
+                    },
+                  }}
+                >
+                  Advertisements
+                </Button>
+              )}
                <Button
       variant="contained"
       size="large"

@@ -18,10 +18,12 @@ import {
   Alert
 } from '@mui/material';
 import PreviewIcon from '@mui/icons-material/Preview';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import DisplaySplashContent from '../../Components/SplashPage/DisplaySplashContent';
 
 const SplashAgain = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const userRole = localStorage.getItem('user_role');
   const [splashContents, setSplashContents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,39 @@ const SplashAgain = () => {
   const [previewContent, setPreviewContent] = useState(null);
   const [openPreview, setOpenPreview] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // Extract and save authentication data from URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const userRole = params.get('user_role');
+    const userId = params.get('user_id');
+    const adminId = params.get('admin_id');
+    
+    // If we have authentication data in the URL, save it to localStorage
+    if (token) localStorage.setItem('token', token);
+    if (userRole) localStorage.setItem('user_role', userRole);
+    if (userId) localStorage.setItem('user_id', userId);
+    if (adminId) localStorage.setItem('admin_id', adminId);
+    
+    // Clean the URL to remove sensitive data
+    if (token || userRole || userId || adminId) {
+      // Keep the id, session, role and offer params for backward compatibility
+      const id = params.get('id');
+      const session = params.get('session');
+      const role = params.get('role');
+      const offer = params.get('offer');
+      
+      let newParams = new URLSearchParams();
+      if (id) newParams.append('id', id);
+      if (session) newParams.append('session', session);
+      if (role) newParams.append('role', role);
+      if (offer) newParams.append('offer', offer);
+      
+      const cleanUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ''}`;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchSplashContents = async () => {

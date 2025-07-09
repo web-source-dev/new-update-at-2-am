@@ -246,15 +246,25 @@ const LoginForm = () => {
       setToast({ open: true, message, severity: 'success' });
       if (user.role === 'admin') {
         localStorage.setItem('admin_id', user.id);
-        window.location.href = '/dashboard/admin';
+        // For admin, open in new tab with auth params and redirect current window
+        const authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(user.role)}&admin_id=${encodeURIComponent(user.id)}`;
+        window.open(`/dashboard/admin?${authParams}`, '_blank');
       } else if (user.role === 'distributor') {
         localStorage.setItem('user_id', user.id);
-        window.location.href = '/dashboard/distributor';
+        // For distributor, open in new tab with auth params and redirect current window
+        const authParams = `token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(user.role)}&user_id=${encodeURIComponent(user.id)}`;
+        window.open(`/dashboard/distributor?${authParams}`, '_blank');
       } else {
         localStorage.setItem('user_id', user.id);
         const redirectPath = localStorage.getItem('redirectPath');
         localStorage.removeItem('redirectPath');
-        window.location.href = redirectPath || '/deals-catlog';
+        // For regular members, check if we should just redirect or pass params
+        if (window.location.href.includes('wix') || window.location.href.includes('embedded')) {
+          // If we're in embedded mode, store locally but don't redirect
+          window.location.href = redirectPath || '/deals-catlog';
+        } else {
+          window.location.href = redirectPath || '/deals-catlog';
+        }
       }
     } catch (error) {
       const errorData = error.response?.data;

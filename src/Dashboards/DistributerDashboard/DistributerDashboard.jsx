@@ -31,9 +31,23 @@ const DistributerDashboard = () => {
 
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
-    if (!userId || localStorage.getItem('user_role') === 'member') {
+    const userRole = localStorage.getItem('user_role');
+    
+    // If not logged in, check URL parameters
+    if ((!userId || userRole !== 'distributor') && window.location.search) {
+      // URL parameters will be handled by AllDashboard component
+      // Just wait a moment for them to be processed
+      setTimeout(() => {
+        const newUserId = localStorage.getItem('user_id');
+        const newUserRole = localStorage.getItem('user_role');
+        
+        if (!newUserId || newUserRole !== 'distributor') {
+          navigate('/login');
+        }
+      }, 100);
+    } else if (!userId || userRole !== 'distributor') {
       navigate('/login');
-    } 
+    }
   }, [navigate]);
 
   useEffect(() => {
@@ -78,7 +92,12 @@ const DistributerDashboard = () => {
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <Button
               onClick={() => {
-                navigate(`offers/view/splash-content?id=${userId}&session=${userId}&role=distributor?offer=true`);
+                const userId = localStorage.getItem('user_id');
+                const token = localStorage.getItem('token');
+                const userRole = localStorage.getItem('user_role');
+                
+                const authParams = `id=${userId}&session=${userId}&role=distributor&offer=true&token=${encodeURIComponent(token)}&user_role=${encodeURIComponent(userRole)}&user_id=${encodeURIComponent(userId)}`;
+                navigate(`offers/view/splash-content?${authParams}`);
               }}
               sx={{
                 border: '2px solid',
@@ -98,7 +117,6 @@ const DistributerDashboard = () => {
                   color: 'primary.contrastText',
                 },
               }}
-
             >
               Advertisements
             </Button>
