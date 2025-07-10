@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  TextField, 
-  Button, 
-  Container, 
-  Typography, 
-  Grid, 
-  Paper, 
-  Box, 
-  CircularProgress, 
-  InputAdornment, 
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Grid,
+  Paper,
+  Box,
+  CircularProgress,
+  InputAdornment,
   IconButton,
   Card,
   CardContent,
@@ -21,10 +21,10 @@ import {
   FormHelperText,
   Stack
 } from '@mui/material';
-import { 
-  Visibility, 
-  VisibilityOff, 
-  Email, 
+import {
+  Visibility,
+  VisibilityOff,
+  Email,
   Lock,
   CheckCircleOutline
 } from '@mui/icons-material';
@@ -79,22 +79,22 @@ const OtpInput = ({ length = 6, value, onChange, error }) => {
 
     const otpArray = pasteData.substring(0, length).split('');
     const newOtp = [...Array(length).fill('')];
-    
+
     otpArray.forEach((digit, index) => {
       newOtp[index] = digit;
       if (index < length - 1) {
         inputRefs[index + 1].current.focus();
       }
     });
-    
+
     setOtp(newOtp);
     onChange(newOtp.join(''));
   };
 
   return (
-    <Stack 
-      direction="row" 
-      spacing={1} 
+    <Stack
+      direction="row"
+      spacing={1}
       justifyContent="center"
       sx={{ mb: 2 }}
     >
@@ -108,7 +108,7 @@ const OtpInput = ({ length = 6, value, onChange, error }) => {
           onPaste={handlePaste}
           inputProps={{
             maxLength: 1,
-            style: { 
+            style: {
               textAlign: 'center',
               fontSize: '1.5rem',
               padding: '8px',
@@ -154,7 +154,7 @@ const LoginFormSkeleton = () => (
 
 const LoginForm = () => {
   const theme = useTheme();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -168,7 +168,7 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Email verification states
   const [verificationOpen, setVerificationOpen] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -186,6 +186,35 @@ const LoginForm = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  
+  useEffect(() => {
+    // Send message to Wix iframe
+    window.parent.postMessage({ type: "requestData" }, "*");
+  
+    const handleMessage = (event) => {
+      if (event.data?.type === "responseData") {
+        const { logout, url } = event.data;
+        console.log("Received from Wix:", event.data);
+  
+        if (logout) {
+          performLogout();
+        }
+      }
+    };
+  
+    window.addEventListener("message", handleMessage);
+  
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+  
+  function performLogout() {
+    console.log("Logging out from UI...");
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/login";
+  }
+
   
   useEffect(() => {
     let timer;
@@ -199,7 +228,7 @@ const LoginForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
@@ -207,12 +236,12 @@ const LoginForm = () => {
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    
+
     // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -223,7 +252,7 @@ const LoginForm = () => {
       ...formData,
       [name]: value
     });
-    
+
     // Clear error when user types
     if (errors[name]) {
       setErrors({
@@ -232,24 +261,11 @@ const LoginForm = () => {
       });
     }
   };
-// Add this in a <script> tag or React useEffect
-window.addEventListener('message', (event) => {
-  // Only accept logout messages from your own domain
-  if (event.origin !== 'https://nmga.rtnglobal.site') return;
-
-  if (event.data === 'logout') {
-    localStorage.clear();
-    console.log('✅ Token cleared from embedded login page.');
-
-    // Optional: Send confirmation back
-    event.source?.postMessage('logout-complete', event.origin);
-  }
-});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setLoading(true);
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/login`, formData);
@@ -257,10 +273,10 @@ window.addEventListener('message', (event) => {
       localStorage.setItem('token', token);
       localStorage.setItem('user_role', user.role);
       setToast({ open: true, message, severity: 'success' });
-      
+
       const redirectPath = localStorage.getItem('redirectPath');
       const redirectTo = redirectPath || '/deals-catlog';
-      
+
       if (user.role === 'admin') {
         localStorage.setItem('admin_id', user.id);
         // For admin, open in new tab with auth params
@@ -283,7 +299,7 @@ window.addEventListener('message', (event) => {
       }
     } catch (error) {
       const errorData = error.response?.data;
-      
+
       // Check if email verification is needed
       if (errorData?.needsVerification) {
         setUserId(errorData.userId);
@@ -297,29 +313,29 @@ window.addEventListener('message', (event) => {
       setLoading(false);
     }
   };
-  
+
   const handleVerifyOTP = async () => {
     if (!otp || otp.length < 6) {
       setOtpError('Please enter the complete verification code');
       return;
     }
-    
+
     setVerificationLoading(true);
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/register/verify-email`, {
         userId,
         otp
       });
-      
-      setToast({ 
-        open: true, 
-        message: response.data.message, 
-        severity: 'success' 
+
+      setToast({
+        open: true,
+        message: response.data.message,
+        severity: 'success'
       });
-      
+
       // Close verification dialog
       setVerificationOpen(false);
-      
+
       // Clear password field for security
       setFormData({
         ...formData,
@@ -337,16 +353,16 @@ window.addEventListener('message', (event) => {
     setResendDisabled(true);
     setCountdown(60); // 60 seconds cooldown
     setOtp(''); // Clear the OTP field
-    
+
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/register/resend-verification`, {
         email: userEmail
       });
-      
-      setToast({ 
-        open: true, 
-        message: response.data.message, 
-        severity: 'success' 
+
+      setToast({
+        open: true,
+        message: response.data.message,
+        severity: 'success'
       });
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to resend verification code.';
@@ -359,8 +375,8 @@ window.addEventListener('message', (event) => {
   };
 
   return (
-    <Container 
-      maxWidth="sm" 
+    <Container
+      maxWidth="sm"
       sx={{
         display: 'flex',
         justifyContent: 'center',
@@ -373,7 +389,7 @@ window.addEventListener('message', (event) => {
         {showSkeleton ? (
           <LoginFormSkeleton />
         ) : (
-          <Card 
+          <Card
             elevation={4}
             sx={{
               borderRadius: 2,
@@ -385,11 +401,11 @@ window.addEventListener('message', (event) => {
             }}
           >
             <CardContent sx={{ p: 4 }}>
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                gutterBottom 
-                sx={{ 
+              <Typography
+                variant="h4"
+                component="h1"
+                gutterBottom
+                sx={{
                   fontWeight: 600,
                   textAlign: 'center',
                   mb: 3,
@@ -398,7 +414,7 @@ window.addEventListener('message', (event) => {
               >
                 Welcome Back
               </Typography>
-              
+
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
@@ -415,7 +431,7 @@ window.addEventListener('message', (event) => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Email  color='primary.contrastText'/>
+                            <Email color='primary.contrastText' />
                           </InputAdornment>
                         ),
                       }}
@@ -435,13 +451,13 @@ window.addEventListener('message', (event) => {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Lock color='primary.contrastText'/>
+                            <Lock color='primary.contrastText' />
                           </InputAdornment>
                         ),
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton onClick={() => setShowPassword(!showPassword)}>
-                              {showPassword ? <VisibilityOff  color='primary.contrastText'/> : <Visibility  color='primary.contrastText'/>}
+                              {showPassword ? <VisibilityOff color='primary.contrastText' /> : <Visibility color='primary.contrastText' />}
                             </IconButton>
                           </InputAdornment>
                         ),
@@ -450,10 +466,10 @@ window.addEventListener('message', (event) => {
                   </Grid>
                   <Grid item xs={12}>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                      <Links 
-                        link="/forget-password" 
-                        linkText="Forgot Password?" 
-                        sx={{ 
+                      <Links
+                        link="/forget-password"
+                        linkText="Forgot Password?"
+                        sx={{
                           color: theme.palette.text.secondary,
                           '&:hover': {
                             color: theme.palette.primary.main
@@ -461,13 +477,13 @@ window.addEventListener('message', (event) => {
                         }}
                       />
                     </Box>
-                    <Button 
-                      type="submit" 
-                      variant="contained" 
-                      color="primary" 
-                      fullWidth 
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      fullWidth
                       disabled={loading}
-                      sx={{ 
+                      sx={{
                         py: 1.5,
                         fontWeight: 600,
                         fontSize: '1rem',
@@ -482,41 +498,41 @@ window.addEventListener('message', (event) => {
                   </Grid>
                 </Grid>
               </form>
-              
+
               <Divider sx={{ my: 3 }} />
-              
-              <Typography 
-                align="center" 
-                sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  fontSize: '16px', 
-                  gap: '8px' 
+
+              <Typography
+                align="center"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  fontSize: '16px',
+                  gap: '8px'
                 }}
               >
-                Don't have an account? 
-                <Links 
-                  link="/register" 
-                  linkText="Sign Up" 
+                Don't have an account?
+                <Links
+                  link="/register"
+                  linkText="Sign Up"
                   sx={{ fontWeight: 600 }}
                 />
               </Typography>
             </CardContent>
           </Card>
         )}
-        
-        <Toast 
-          open={toast.open} 
-          message={toast.message} 
-          severity={toast.severity} 
-          handleClose={handleClose} 
+
+        <Toast
+          open={toast.open}
+          message={toast.message}
+          severity={toast.severity}
+          handleClose={handleClose}
         />
-        
+
         {/* Email Verification Dialog */}
-        <Dialog 
-          open={verificationOpen} 
-          maxWidth="xs" 
+        <Dialog
+          open={verificationOpen}
+          maxWidth="xs"
           fullWidth
           PaperProps={{
             sx: {
@@ -531,34 +547,34 @@ window.addEventListener('message', (event) => {
               Verify Your Email
             </Typography>
           </DialogTitle>
-          
+
           <DialogContent>
             <Alert severity="info" sx={{ mb: 3, color: theme.palette.primary.contrastText }}>
               Your email needs to be verified before you can log in.
             </Alert>
-            
+
             <Typography variant="body1" sx={{ textAlign: 'center', mb: 3 }}>
-              We've sent a verification code to <strong>{userEmail}</strong>. 
+              We've sent a verification code to <strong>{userEmail}</strong>.
               Please enter the code below to verify your email address.
             </Typography>
-            
+
             <OtpInput
               length={6}
               value={otp}
               onChange={setOtp}
               error={otpError}
             />
-            
+
             {otpError && (
-              <Typography 
-                color="error" 
-                variant="body2" 
+              <Typography
+                color="error"
+                variant="body2"
                 sx={{ textAlign: 'center', mb: 2 }}
               >
                 {otpError}
               </Typography>
             )}
-            
+
             <Button
               fullWidth
               variant="contained"
@@ -569,7 +585,7 @@ window.addEventListener('message', (event) => {
             >
               {verificationLoading ? <CircularProgress size={24} /> : "Verify"}
             </Button>
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
               <Button
                 color="primary.contrastText"
@@ -577,8 +593,8 @@ window.addEventListener('message', (event) => {
                 onClick={handleResendOTP}
                 sx={{ textTransform: 'none' }}
               >
-                {resendDisabled 
-                  ? `Resend code in ${countdown}s` 
+                {resendDisabled
+                  ? `Resend code in ${countdown}s`
                   : "Didn't receive the code? Resend"}
               </Button>
             </Box>

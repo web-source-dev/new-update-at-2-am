@@ -13,33 +13,8 @@ const Logout = () => {
     try {
 
       localStorage.clear();
-      // Clear main site's token
-      localStorage.removeItem('token');
-
-      // Try to reach the login iframe embedded in Wix (if still open in browser)
-      const wixIframeURL = 'https://www.nmgrocers.com/nmgrocercoop'; // The Wix site where the iframe lives
-      const loginIframeOrigin = 'https://nmga.rtnglobal.site'; // Your own domain
-
-      // Step 1: Open a hidden iframe to the login page (which is embedded in Wix)
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = `${loginIframeOrigin}/login`; // Direct link to your login page
-      document.body.appendChild(iframe);
-
-      // Step 2: After iframe loads, send logout message
-      iframe.onload = () => {
-        iframe.contentWindow?.postMessage('logout', loginIframeOrigin);
-      };
-
-      // Step 3: Listen for logout confirmation (optional)
-      window.addEventListener('message', (event) => {
-        if (event.origin === loginIframeOrigin && event.data === 'logout-complete') {
-          console.log('✅ Embedded login also logged out.');
-          // Optional: redirect or update UI
-          window.location.href = '/login';
-        }
-      });
-
+      const wixSiteURL = 'https://www.nmgrocers.com/nmgrocercoop';
+      window.location.href = `${wixSiteURL}?logout=true`;
     } catch (error) {
       console.error('Error logging out:', error);
     }
