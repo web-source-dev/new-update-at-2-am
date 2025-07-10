@@ -117,6 +117,36 @@ const DisplayDeals = () => {
     }
   };
 
+
+    
+  useEffect(() => {
+    // Send message to Wix iframe
+    window.parent.postMessage({ type: "requestData" }, "*");
+  
+    const handleMessage = (event) => {
+      if (event.data?.type === "responseData") {
+        const { logout, url } = event.data;
+        console.log("Received from Wix:", event.data, logout, url);
+  
+        if (logout) {
+          performLogout();
+        }
+      }
+    };
+  
+    window.addEventListener("message", handleMessage);
+  
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+  
+  function performLogout() {
+    console.log("Logging out from UI...");
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/login";
+  }
+
+
   useEffect(() => {
     const fetchSplashContent = async () => {
       const userRole = localStorage.getItem('user_role');
