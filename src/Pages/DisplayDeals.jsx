@@ -143,7 +143,7 @@ const DisplayDeals = () => {
     console.log("Logging out from UI...");
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = "/login";
+    window.location.reload();
   }
 
 
