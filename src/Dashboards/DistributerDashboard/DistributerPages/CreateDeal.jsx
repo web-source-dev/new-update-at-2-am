@@ -845,6 +845,24 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     'SPECIALTIES', 'TEQUILA', 'UNKNOWN', 'VODKA','WINE'
   ];
 
+  // Function to get current month timeframe
+  const getCurrentMonthTimeframe = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    // Start of current month at 12AM
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    
+    // End of current month at 119PM
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59);
+    
+    return {
+      start: startOfMonth.toISOString().slice(0, 16),
+      end: endOfMonth.toISOString().slice(0, 16)
+    };
+  };
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -859,12 +877,14 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
         setMinEndDate(new Date(initialData.dealStartAt).toISOString().slice(0, 16));
       }
     } else {
-      // For new deals, set default start date to today
+      // For new deals, set default timeframe to current month
+      const timeframe = getCurrentMonthTimeframe();
       setFormData(prevState => ({
         ...prevState,
-        dealStartAt: today
+        dealStartAt: timeframe.start,
+        dealEndsAt: timeframe.end
       }));
-      setMinEndDate(today);
+      setMinEndDate(timeframe.start);
     }
   }, [initialData]);
 
@@ -1351,48 +1371,59 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   </SectionTitle>
                 </SectionHeading>
                 
+                <Alert severity="info" sx={{ mb: 0, borderRadius: 2 }}>
+                  <Typography variant="body2">
+                   You can not change the timeframe for the deal.
+                  </Typography>
+                </Alert>
+                
                 <Grid container spacing={3} sx={{ mt: 1 }}>
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Deal Starts At"
                       name="dealStartAt"
-                      type="date"
+                      type="datetime-local"
                       value={formData.dealStartAt}
                       onChange={handleChange}
                       fullWidth
                       required
+                      disabled={true}
                       InputLabelProps={{
                         shrink: true,
                       }}
                       InputProps={{ 
-                        sx: { borderRadius: 2 },
+                        sx: { 
+                          borderRadius: 2,
+                          backgroundColor: (theme) => alpha(theme.palette.action.disabled, 0.1),
+                        '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: (theme) => theme.palette.text.primary,
+                          }
+                        },
                       }}
-                      inputProps={{
-                        min: today, // Restrict to today and future dates
-                      }}
-                      helperText="Select a date and time from today onwards"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       label="Deal Ends At"
                       name="dealEndsAt"
-                      type="date"
+                      type="datetime-local"
                       value={formData.dealEndsAt}
                       onChange={handleChange}
                       fullWidth
                       required
+                      disabled={true}
                       InputLabelProps={{
                         shrink: true,
                       }}
                       InputProps={{ 
-                        sx: { borderRadius: 2 },
+                        sx: { 
+                          borderRadius: 2,
+                          backgroundColor: (theme) => alpha(theme.palette.action.disabled, 0.1),
+                        '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: (theme) => theme.palette.text.primary,
+                          }
+                        },
                       }}
-                      inputProps={{
-                        min: minEndDate, // Dynamically set based on start date
-                      }}
-                      helperText={formData.dealStartAt ? "Must be after the start date" : "Please select a start date first"}
-                      disabled={!formData.dealStartAt} // Disable until start date is selected
                     />
                   </Grid>
                 </Grid>

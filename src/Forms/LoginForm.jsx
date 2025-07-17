@@ -19,7 +19,8 @@ import {
   DialogContent,
   useTheme,
   FormHelperText,
-  Stack
+  Stack,
+  Link
 } from '@mui/material';
 import {
   Visibility,
@@ -188,7 +189,7 @@ const LoginForm = () => {
   }, []);
 
 
-  
+
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -362,137 +363,160 @@ const LoginForm = () => {
         {showSkeleton ? (
           <LoginFormSkeleton />
         ) : (
-          <Card
-            elevation={4}
-            sx={{
-              borderRadius: 2,
-              overflow: 'hidden',
-              transition: 'all 0.3s ease-in-out',
-              '&:hover': {
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-              }
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h4"
-                component="h1"
-                gutterBottom
-                sx={{
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  mb: 3,
-                  color: theme.palette.primary.contrastText
-                }}
-              >
-                Welcome Back
+          <>
+            <Box sx={{ mb: 4, textAlign: 'center' ,bgcolor:'primary.main',color:'primary.contrastText' ,borderRadius:2,p:2}}>
+              <Typography variant="h6" sx={{fontWeight:400}}>
+                Not a member?{' '}
+                <Link
+                  href="https://www.nmgrocers.com/membership"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    fontWeight: 'bold',
+                    color: theme.palette.primary.contrastText,
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  Join NMGA here
+                </Link>
               </Typography>
+            </Box>
+            <Card
+              elevation={4}
+              sx={{
+                borderRadius: 2,
+                overflow: 'hidden',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                }
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  gutterBottom
+                  sx={{
+                    fontWeight: 600,
+                    textAlign: 'center',
+                    mb: 3,
+                    color: theme.palette.primary.contrastText
+                  }}
+                >
+                  Welcome Back
+                </Typography>
 
-              <form onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      fullWidth
-                      required
-                      error={!!errors.email}
-                      helperText={errors.email}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Email color='primary.contrastText' />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={handleChange}
-                      fullWidth
-                      required
-                      error={!!errors.password}
-                      helperText={errors.password}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Lock color='primary.contrastText' />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton onClick={() => setShowPassword(!showPassword)}>
-                              {showPassword ? <VisibilityOff color='primary.contrastText' /> : <Visibility color='primary.contrastText' />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                      <Links
-                        link="/forget-password"
-                        linkText="Forgot Password?"
-                        sx={{
-                          color: theme.palette.text.secondary,
-                          '&:hover': {
-                            color: theme.palette.primary.main
-                          }
+                <form onSubmit={handleSubmit}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        fullWidth
+                        required
+                        error={!!errors.email}
+                        helperText={errors.email}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Email color='primary.contrastText' />
+                            </InputAdornment>
+                          ),
                         }}
                       />
-                    </Box>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      disabled={loading}
-                      sx={{
-                        py: 1.5,
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        '&:hover': {
-                          boxShadow: '0 6px 16px rgba(0,0,0,0.15)'
-                        }
-                      }}
-                    >
-                      {loading ? <CircularProgress size={24} /> : "Login"}
-                    </Button>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={handleChange}
+                        fullWidth
+                        required
+                        error={!!errors.password}
+                        helperText={errors.password}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Lock color='primary.contrastText' />
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <VisibilityOff color='primary.contrastText' /> : <Visibility color='primary.contrastText' />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <Links
+                          link="/forget-password"
+                          linkText="Forgot Password?"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            '&:hover': {
+                              color: theme.palette.primary.main
+                            }
+                          }}
+                        />
+                      </Box>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        disabled={loading}
+                        sx={{
+                          py: 1.5,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          '&:hover': {
+                            boxShadow: '0 6px 16px rgba(0,0,0,0.15)'
+                          }
+                        }}
+                      >
+                        {loading ? <CircularProgress size={24} /> : "Login"}
+                      </Button>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </form>
+                </form>
 
-              <Divider sx={{ my: 3 }} />
+                <Divider sx={{ my: 3 }} />
 
-              <Typography
-                align="center"
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  fontSize: '16px',
-                  gap: '8px'
-                }}
-              >
-                Don't have an account?
-                <Links
-                  link="/register"
-                  linkText="Sign Up"
-                  sx={{ fontWeight: 600 }}
-                />
-              </Typography>
-            </CardContent>
-          </Card>
+                <Typography
+                  align="center"
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontSize: '16px',
+                    gap: '8px',
+                    mb: 2
+                  }}
+                >
+                  Don't have an account?
+                  <Links
+                    link="/register"
+                    linkText="Sign Up"
+                    sx={{ fontWeight: 600 }}
+                  />
+                </Typography>
+              </CardContent>
+            </Card>
+          </>
         )}
 
         <Toast

@@ -23,6 +23,8 @@ import CoopMembersPage from '../Pages/CoopMembersPage';
 import AssignSupplierPage from '../Pages/AssignSupplierPage';
 import { Navigate } from 'react-router-dom';
 import Compare from '../../Compare/Compare';
+import MemberCommitments from './DistributerPages/MemberCommitments';
+import MemberDetails from './DistributerPages/MemberDetails';
 const DistributerDashboard = () => {
   const navigate  = useNavigate();
   let match = useMatch('/dashboard/distributor/*');
@@ -74,6 +76,7 @@ const DistributerDashboard = () => {
       ]
     },
     { path: `all/committed/deals`, label: 'All Committed Deals' },
+    { path: `Stores/Contacts`, label: 'Stores/Contacts' },
     { path: `coop-members`, label: 'Suppliers' },
     { path: `distributor/compare`, label: 'Compare Supply' },
   ];
@@ -179,6 +182,14 @@ const DistributerDashboard = () => {
             <Route path="distributor/compare" element={<>
               <AnnouncementToast event="deal_management" />
               <Compare />
+            </>} />
+            <Route path="Stores/Contacts" element={<>
+              <AnnouncementToast event="deal_management" />
+              <MemberCommitments />
+            </>} />
+            <Route path="Stores/Contacts/:memberId" element={<>
+              <AnnouncementToast event="deal_management" />
+              <MemberDetails />
             </>} />
           </Routes>
         </div>
