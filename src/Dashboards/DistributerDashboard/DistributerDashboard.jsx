@@ -25,6 +25,7 @@ import { Navigate } from 'react-router-dom';
 import Compare from '../../Compare/Compare';
 import MemberCommitments from './DistributerPages/MemberCommitments';
 import MemberDetails from './DistributerPages/MemberDetails';
+import MediaManager from '../../Components/MediaManager/MediaManager';
 const DistributerDashboard = () => {
   const navigate  = useNavigate();
   let match = useMatch('/dashboard/distributor/*');
@@ -34,20 +35,22 @@ const DistributerDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
     const userRole = localStorage.getItem('user_role');
+    const adminLogin = localStorage.getItem('adminLogin');
     
     // If not logged in, check URL parameters
-    if ((!userId || userRole !== 'distributor') && window.location.search) {
+    if ((!userId || (userRole !== 'distributor' && adminLogin !== 'true')) && window.location.search) {
       // URL parameters will be handled by AllDashboard component
       // Just wait a moment for them to be processed
       setTimeout(() => {
         const newUserId = localStorage.getItem('user_id');
         const newUserRole = localStorage.getItem('user_role');
+        const newAdminLogin = localStorage.getItem('adminLogin');
         
-        if (!newUserId || newUserRole !== 'distributor') {
+        if (!newUserId || (newUserRole !== 'distributor' && newAdminLogin !== 'true')) {
           navigate('/login');
         }
       }, 100);
-    } else if (!userId || userRole !== 'distributor') {
+    } else if (!userId || (userRole !== 'distributor' && adminLogin !== 'true')) {
       navigate('/login');
     }
   }, [navigate]);
@@ -79,6 +82,7 @@ const DistributerDashboard = () => {
     { path: `Stores/Contacts`, label: 'Stores/Contacts' },
     { path: `coop-members`, label: 'Suppliers' },
     { path: `distributor/compare`, label: 'Compare Supply' },
+    { path: `media`, label: 'Media' },
   ];
 
   return (
@@ -182,6 +186,10 @@ const DistributerDashboard = () => {
             <Route path="distributor/compare" element={<>
               <AnnouncementToast event="deal_management" />
               <Compare />
+            </>} />
+            <Route path="media" element={<>
+              <AnnouncementToast event="media" />
+              <MediaManager />
             </>} />
             <Route path="Stores/Contacts" element={<>
               <AnnouncementToast event="deal_management" />

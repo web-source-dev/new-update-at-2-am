@@ -80,7 +80,7 @@ const MediaToolbar = ({
               icon={<FolderIcon />}
               label={`${stats.total} files`}
               variant="outlined"
-              color="primary"
+              color="primary.contrastText"
               size="small"
             />
           </Tooltip>
@@ -179,7 +179,7 @@ const MediaToolbar = ({
       <Box sx={{ display: 'flex', ml: 'auto' }}>
         <Tooltip title="Grid View">
           <IconButton
-            color={viewModeValue === "grid" ? "primary" : "default"}
+            color={viewModeValue === "grid" ? "primary.contrastText" : "default"}
             onClick={() => onViewModeChange("grid")}
             size="small"
           >
@@ -188,7 +188,7 @@ const MediaToolbar = ({
         </Tooltip>
         <Tooltip title="List View">
           <IconButton
-            color={viewModeValue === "list" ? "primary" : "default"}
+            color={viewModeValue === "list" ? "primary.contrastText" : "default"}
             onClick={() => onViewModeChange("list")}
             size="small"
           >
@@ -201,9 +201,10 @@ const MediaToolbar = ({
       {!selectorMode && (
         <Button
           variant="outlined"
-          startIcon={<CreateNewFolderIcon />}
+          startIcon={<CreateNewFolderIcon color="primary.contrastText" />}
           onClick={() => setNewFolderDialogOpen(true)}
           size="small"
+          color="primary.contrastText"
           sx={{ 
             display: { xs: 'none', sm: 'inline-flex' } 
           }}

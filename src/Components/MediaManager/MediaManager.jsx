@@ -7,7 +7,8 @@ import {
   Divider,
   CircularProgress,
   Container,
-  useTheme
+  useTheme,
+  Button
 } from "@mui/material";
 import MediaLibrary from "./MediaLibrary";
 import MediaToolbar from "./MediaToolbar";
@@ -354,9 +355,20 @@ const MediaManager = ({
   return (
     <Container maxWidth="xl" sx={{ mt: selectorMode ? 0 : 3, mb: selectorMode ? 0 : 6, height: selectorMode ? '100%' : 'auto' }}>
       {!selectorMode && (
-        <Typography variant="h4" gutterBottom>
-          Media Manager
-        </Typography>
+        <>
+          <Typography variant="h4" gutterBottom>
+            Media Manager
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setUploadDialogOpen(true)}
+            >
+              Add Media
+            </Button>
+          </Box>
+        </>
       )}
       
       <Paper 

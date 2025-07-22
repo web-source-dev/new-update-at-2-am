@@ -335,7 +335,7 @@ const FolderTree = ({
               )}
               
               <ListItemIcon sx={{ minWidth: 36 }}>
-                {isSelected ? <FolderOpenIcon color="primary" /> : <FolderIcon />}
+                {isSelected ? <FolderOpenIcon color="primary.contrastText" /> : <FolderIcon />}
               </ListItemIcon>
               
               <ListItemText 
@@ -410,7 +410,7 @@ const FolderTree = ({
             }}
           >
             <ListItemIcon sx={{ minWidth: { xs: 30, md: 36 } }}>
-              <HomeIcon color={selectedFolder === "root" ? "primary" : "action"} 
+              <HomeIcon color={selectedFolder === "root" ? "primary.contrastText" : "action"} 
                 fontSize="small" />
             </ListItemIcon>
             <ListItemText 

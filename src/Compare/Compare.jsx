@@ -49,18 +49,11 @@ const Compare = () => {
   
   // Get user info from localStorage
   const userId = localStorage.getItem('user_id') || '';
-  const userRole = localStorage.getItem('user_role') || '';
   
   useEffect(() => {
-    // Only distributors should access this page
-    if (userRole !== 'distributor') {
-      navigate('/dashboard');
-      return;
-    }
-    
     fetchDeals();
     generateAvailableMonths();
-  }, [userRole, navigate]);
+  }, [navigate]);
   
   // Generate a list of available months (current month and past 12 months)
   const generateAvailableMonths = () => {

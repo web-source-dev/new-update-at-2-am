@@ -28,20 +28,22 @@ const MemberDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
     const userRole = localStorage.getItem('user_role');
+    const adminLogin = localStorage.getItem('adminLogin');
 
     // If not logged in, check URL parameters
-    if ((!userId || userRole !== 'member') && window.location.search) {
+    if ((!userId || (userRole !== 'member' && adminLogin !== 'true')) && window.location.search) {
       // URL parameters will be handled by AllDashboard component
       // Just wait a moment for them to be processed
       setTimeout(() => {
         const newUserId = localStorage.getItem('user_id');
         const newUserRole = localStorage.getItem('user_role');
+        const newAdminLogin = localStorage.getItem('adminLogin');
 
-        if (!newUserId || newUserRole !== 'member') {
+        if (!newUserId || (newUserRole !== 'member' && newAdminLogin !== 'true')) {
           navigate('/login');
         }
       }, 100);
-    } else if (!userId || userRole !== 'member') {
+    } else if (!userId || (userRole !== 'member' && adminLogin !== 'true')) {
       navigate('/login');
     }
   }, [navigate]);

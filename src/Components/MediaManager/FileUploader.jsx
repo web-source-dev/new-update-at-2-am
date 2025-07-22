@@ -326,7 +326,7 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
         sx={{ 
           p: { xs: 1, sm: 2 }, 
           mb: 2, 
-          border: `2px dashed ${isDragging ? 'primary.main' : 'rgba(0, 0, 0, 0.1)'}`,
+          border: `2px dashed ${isDragging ? 'primary.contrastText' : 'rgba(0, 0, 0, 0.1)'}`,
           backgroundColor: isDragging ? 'rgba(25, 118, 210, 0.04)' : 'rgba(0, 0, 0, 0.01)',
           borderRadius: 2,
           textAlign: 'center',
@@ -355,7 +355,7 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
         }}>
           <CloudUploadIcon sx={{ 
             fontSize: { xs: 40, sm: 60 }, 
-            color: 'primary.main', 
+            color: 'primary.contrastText', 
             opacity: 0.7, 
             mb: 1 
           }} />
@@ -385,7 +385,7 @@ const FileUploader = ({ onUpload, onRemove, initialImages = [], disabled = false
             Supported file types: Images, Videos, PDFs, Documents
           </Typography>
           {uploading && (
-            <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
+            <Typography variant="body2" color="primary.contrastText" sx={{ mt: 1 }}>
               Uploading files... Please wait.
             </Typography>
           )}

@@ -107,6 +107,7 @@ const UserManagment = () => {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user_id', response.data.user_id);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('adminLogin', true);
         showToast(response.data.message, 'success');
         switch (response.data.user.role) {
           case 'member':

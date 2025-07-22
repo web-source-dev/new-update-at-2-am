@@ -109,7 +109,7 @@ const MediaSelectorWrapper = ({ onMediaSelect, onCancel }) => {
           variant="contained"
           startIcon={<CloudUploadIcon />}
           onClick={() => setUploadDialogOpen(true)}
-          color="primary"
+          color="primary.contrastText"
         >
           Upload New Media
         </Button>
@@ -141,7 +141,7 @@ const MediaSelectorWrapper = ({ onMediaSelect, onCancel }) => {
           
           <Button
             variant="contained"
-            color="primary"
+            color="primary.contrastText"
             onClick={handleAdd}
             disabled={!selectedMedia || isLoading}
             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}

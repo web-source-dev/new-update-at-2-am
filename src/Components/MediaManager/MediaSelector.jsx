@@ -196,7 +196,7 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     backdropFilter: 'blur(4px)',
                     '& .MuiChip-icon': {
-                      color: getMediaType(url) === 'image' ? 'primary.main' : 'error.main'
+                      color: getMediaType(url) === 'image' ? 'primary.contrastText' : 'error.main'
                     }
                   }}
                 />
@@ -210,7 +210,7 @@ const MediaSelector = ({ selectedMedia = [], onSelect, onRemove }) => {
               }}>
                 <IconButton 
                   size="small" 
-                  color="primary" 
+                  color="primary.contrastText" 
                   onClick={() => handlePreviewOpen(url)}
                   aria-label="view"
                   sx={{ 

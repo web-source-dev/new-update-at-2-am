@@ -109,7 +109,7 @@ const MediaLibrary = ({
                 boxShadow: 6
               },
               ...(selectedMedia?._id === media._id ? {
-                border: `2px solid ${theme.palette.primary.main}`,
+                border: `2px solid ${theme.palette.primary.contrastText}`,
                 boxShadow: 4
               } : {})
             }}
@@ -520,7 +520,7 @@ const MediaLibrary = ({
             count={pagination.totalPages}
             page={pagination.currentPage}
             onChange={onPageChange}
-            color="primary"
+            color="primary.contrastText"
             showFirstButton
             showLastButton
           />
