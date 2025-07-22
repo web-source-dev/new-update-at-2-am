@@ -366,7 +366,7 @@ const LoginForm = () => {
           <>
             <Box sx={{ mb: 4, textAlign: 'center' ,bgcolor:'primary.main',color:'primary.contrastText' ,borderRadius:2,p:2}}>
               <Typography variant="h6" sx={{fontWeight:400}}>
-                Not a member?{' '}
+                Not a Co-op Member?{' '}
                 <Link
                   href="https://www.nmgrocers.com/membership"
                   target="_blank"
