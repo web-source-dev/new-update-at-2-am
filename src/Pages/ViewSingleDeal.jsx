@@ -99,6 +99,23 @@ const ViewSingleDeal = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Check if commitment period has ended
+  const isCommitmentPeriodEnded = () => {
+    if (!deal?.commitmentEndsAt) return false;
+    const commitmentEndDate = new Date(deal.commitmentEndsAt);
+    const now = new Date();
+    return now > commitmentEndDate;
+  };
+
+  // Check if commitment period is active
+  const isCommitmentPeriodActive = () => {
+    if (!deal?.commitmentStartAt || !deal?.commitmentEndsAt) return true; // Default to true if dates not set
+    const commitmentStartDate = new Date(deal.commitmentStartAt);
+    const commitmentEndDate = new Date(deal.commitmentEndsAt);
+    const now = new Date();
+    return now >= commitmentStartDate && now <= commitmentEndDate;
+  };
+
   useEffect(() => {
     // Create socket connection
     const newSocket = io(process.env.REACT_APP_BACKEND_URL);
@@ -1477,6 +1494,25 @@ const ViewSingleDeal = () => {
                     </Box>
                   </Box>
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Schedule sx={{ color: '#000000' }} fontSize="small" />
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Commitment Period
+                      </Typography>
+                      <Typography variant="body1" fontWeight="500">
+                        {deal?.commitmentStartAt && deal?.commitmentEndsAt ? (
+                          <>
+                            {new Date(deal.commitmentStartAt).toLocaleDateString()} - {new Date(deal.commitmentEndsAt).toLocaleDateString()}
+                          </>
+                        ) : (
+                          'Not specified'
+                        )}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
                 <Grid item xs={12}>
                   <Divider sx={{ my: 1 }} />
                 </Grid>
@@ -1494,6 +1530,47 @@ const ViewSingleDeal = () => {
                   </Box>
                 </Grid>
               </Grid>
+
+              {/* Commitment Period Status */}
+              {deal?.commitmentStartAt && deal?.commitmentEndsAt && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2 }}>
+                  <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                    Commitment Period Status
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    {isCommitmentPeriodEnded() ? (
+                      <Chip
+                        size="small"
+                        label="Period Ended"
+                        color="error"
+                        sx={{ fontWeight: 'bold' }}
+                      />
+                    ) : !isCommitmentPeriodActive() ? (
+                      <Chip
+                        size="small"
+                        label="Not Started"
+                        color="warning"
+                        sx={{ fontWeight: 'bold' }}
+                      />
+                    ) : (
+                      <Chip
+                        size="small"
+                        label="Active"
+                        color="success"
+                        sx={{ fontWeight: 'bold' }}
+                      />
+                    )}
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {isCommitmentPeriodEnded() 
+                      ? `Commitment period ended on ${new Date(deal.commitmentEndsAt).toLocaleDateString()}`
+                      : !isCommitmentPeriodActive()
+                      ? `Commitment period starts on ${new Date(deal.commitmentStartAt).toLocaleDateString()}`
+                      : `Commitment period is active until ${new Date(deal.commitmentEndsAt).toLocaleDateString()}`
+                    }
+                  </Typography>
+                </Box>
+              )}
             </Paper>
 
             {/* Distributor Info Card */}
@@ -1660,49 +1737,45 @@ const ViewSingleDeal = () => {
               borderColor: 'divider',
               zIndex: 1
             }}>
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleGetDeal}
-                disabled={isCommitting}
-                sx={{ 
-                  py: 1.5,
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  boxShadow: 2,
-                  background: userCommitment ? theme.palette.success.main : theme.palette.primary.main,
-                  '&:hover': {
-                    boxShadow: 4,
-                  background: userCommitment ? theme.palette.success.main : theme.palette.primary.main,
-                  }
-                }}
-                startIcon={userCommitment ? <EditIcon sx={{ color: '#000000' }} /> : <AddShoppingCart sx={{ color: '#000000' }} />}
-              >
-                {userCommitment ? 'Update Your Commitment' : 'Make Commitment'}
-              </Button>
-              {/* <IconButton
-                color="error"
-                onClick={toggleFavorite}
-                disabled={isFavoriteLoading}
-                sx={{
-                  border: '1px solid',
-                  borderRadius: 2,
-                  width: 56,
-                  height: 56,
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                    boxShadow: 2
-                  }
-                }}
-              >
-                {isFavoriteLoading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />
-                )}
-              </IconButton> */}
+              {isCommitmentPeriodEnded() ? (
+                <Alert severity="warning" sx={{ width: '100%', borderRadius: 2 }}>
+                  <AlertTitle>Commitment Period Ended</AlertTitle>
+                  <Typography variant="body2">
+                    The commitment period for this deal ended on {new Date(deal?.commitmentEndsAt).toLocaleDateString()}. 
+                    You can no longer make new commitments to this deal.
+                  </Typography>
+                </Alert>
+              ) : !isCommitmentPeriodActive() ? (
+                <Alert severity="info" sx={{ width: '100%', borderRadius: 2 }}>
+                  <AlertTitle>Commitment Period Not Started</AlertTitle>
+                  <Typography variant="body2">
+                    The commitment period for this deal starts on {new Date(deal?.commitmentStartAt).toLocaleDateString()}. 
+                    You can make commitments during the active period.
+                  </Typography>
+                </Alert>
+              ) : (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleGetDeal}
+                  disabled={isCommitting}
+                  sx={{ 
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    boxShadow: 2,
+                    background: userCommitment ? theme.palette.success.main : theme.palette.primary.main,
+                    '&:hover': {
+                      boxShadow: 4,
+                    background: userCommitment ? theme.palette.success.main : theme.palette.primary.main,
+                    }
+                  }}
+                  startIcon={userCommitment ? <EditIcon sx={{ color: '#000000' }} /> : <AddShoppingCart sx={{ color: '#000000' }} />}
+                >
+                  {userCommitment ? 'Update Your Commitment' : 'Make Commitment'}
+                </Button>
+              )}
             </Box>
           </Box>
         </Grid>

@@ -24,18 +24,19 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import CategoryIcon from '@mui/icons-material/Category';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import MediaManager, { MediaSelector, MediaUploader } from '../../../Components/MediaManager';
+import { differenceInCalendarMonths, endOfMonth, format, isAfter, isBefore, isSameMonth, parse, startOfMonth } from 'date-fns';
 
 // Styled components for enhanced design
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
+  padding: '4px 0px',
   borderRadius: 16,
-  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-  background: `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+  boxShadow: 'none',
+  background: 'transparent',
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s ease-in-out',
   '&:hover': {
-    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
+    boxShadow: 'none',
   }
 }));
 
@@ -807,6 +808,106 @@ const SizeDiscountTierDialog = ({ open, onClose, onSave, initialTier, basePrice 
   );
 };
 
+// --- Month/Year Deal Deadlines Table ---
+function generateDealMonthsTable() {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-11
+  
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  
+  const table = [];
+  
+  // Generate for current year and next year
+  for (let year = currentYear; year <= currentYear + 1; year++) {
+    months.forEach((month, monthIndex) => {
+      // Skip past months in current year
+      if (year === currentYear && monthIndex < currentMonth) {
+        return;
+      }
+      
+      // Calculate deadline (2-3 days before the month starts)
+      const monthStart = new Date(year, monthIndex, 1);
+      const deadline = new Date(monthStart);
+      deadline.setDate(deadline.getDate() - 3); // 3 days before month starts
+      
+      // Deal timeframe is the complete month
+      const timeframeStart = new Date(year, monthIndex, 1);
+      const timeframeEnd = new Date(year, monthIndex + 1, 0); // Last day of month
+      
+      // Commitment timeframe based on the provided table
+      let commitmentStart, commitmentEnd;
+      
+      if (month === 'September' && year === 2025) {
+        commitmentStart = new Date(2025, 8, 1); // Sep 1, 2025
+        commitmentEnd = new Date(2025, 8, 12); // Sep 12, 2025
+      } else if (month === 'October' && year === 2025) {
+        commitmentStart = new Date(2025, 9, 1); // Oct 1, 2025
+        commitmentEnd = new Date(2025, 9, 10); // Oct 10, 2025
+      } else if (month === 'November' && year === 2025) {
+        commitmentStart = new Date(2025, 10, 1); // Nov 1, 2025
+        commitmentEnd = new Date(2025, 10, 11); // Nov 11, 2025
+      } else if (month === 'December' && year === 2025) {
+        commitmentStart = new Date(2025, 11, 1); // Dec 1, 2025
+        commitmentEnd = new Date(2025, 11, 10); // Dec 10, 2025
+      } else if (month === 'January' && year === 2026) {
+        commitmentStart = new Date(2026, 0, 1); // Jan 1, 2026
+        commitmentEnd = new Date(2026, 0, 10); // Jan 10, 2026
+      } else if (month === 'February' && year === 2026) {
+        commitmentStart = new Date(2026, 1, 1); // Feb 1, 2026
+        commitmentEnd = new Date(2026, 1, 9); // Feb 9, 2026
+      } else if (month === 'March' && year === 2026) {
+        commitmentStart = new Date(2026, 2, 1); // Mar 1, 2026
+        commitmentEnd = new Date(2026, 2, 12); // Mar 12, 2026
+      } else if (month === 'April' && year === 2026) {
+        commitmentStart = new Date(2026, 3, 1); // Apr 1, 2026
+        commitmentEnd = new Date(2026, 3, 10); // Apr 10, 2026
+      } else if (month === 'May' && year === 2026) {
+        commitmentStart = new Date(2026, 4, 1); // May 1, 2026
+        commitmentEnd = new Date(2026, 4, 10); // May 10, 2026
+      } else if (month === 'June' && year === 2026) {
+        commitmentStart = new Date(2026, 5, 1); // Jun 1, 2026
+        commitmentEnd = new Date(2026, 5, 11); // Jun 11, 2026
+      } else if (month === 'July' && year === 2026) {
+        commitmentStart = new Date(2026, 6, 1); // Jul 1, 2026
+        commitmentEnd = new Date(2026, 6, 11); // Jul 11, 2026
+      } else if (month === 'August' && year === 2026) {
+        commitmentStart = new Date(2026, 7, 1); // Aug 1, 2026
+        commitmentEnd = new Date(2026, 7, 10); // Aug 10, 2026
+      } else {
+        // Default: commitment period is first 10 days of the month
+        commitmentStart = new Date(year, monthIndex, 1);
+        commitmentEnd = new Date(year, monthIndex, 10);
+      }
+      
+      table.push({
+        month,
+        year,
+        deadline: deadline.toISOString().split('T')[0],
+        timeframeStart: timeframeStart.toISOString().split('T')[0],
+        timeframeEnd: timeframeEnd.toISOString().split('T')[0],
+        commitmentStart: commitmentStart.toISOString().split('T')[0],
+        commitmentEnd: commitmentEnd.toISOString().split('T')[0]
+      });
+    });
+  }
+  
+  return table;
+}
+
+const DEAL_MONTHS_TABLE = generateDealMonthsTable();
+
+function getAvailableDealMonths() {
+  const now = new Date();
+  return DEAL_MONTHS_TABLE.filter(row => {
+    // Only show months that are this month or in the future
+    const monthDate = parse(`${row.month} ${row.year}`, 'MMMM yyyy', new Date());
+    return isAfter(endOfMonth(monthDate), now) || isSameMonth(monthDate, now);
+  });
+}
+
 const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   const user_id = localStorage.getItem('user_id');
   const navigate = useNavigate();
@@ -817,8 +918,10 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     distributor: user_id,
     category: '',
     dealEndsAt: '',
-    minQtyForDiscount: '',
     dealStartAt: '',
+    commitmentStartAt: '',
+    commitmentEndsAt: '',
+    minQtyForDiscount: '',
     singleStoreDeals: '',
     images: [],
   });
@@ -837,6 +940,13 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   // Dialogs state
   const [sizeDialogOpen, setSizeDialogOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedDealMonth, setSelectedDealMonth] = useState(null);
+  const availableDealMonths = getAvailableDealMonths();
+
+  // Find the selected month row
+  const selectedMonthRow = selectedDealMonth
+    ? DEAL_MONTHS_TABLE.find(row => `${row.month} ${row.year}` === selectedDealMonth)
+    : null;
 
   // Define categories
   const categories = [
@@ -869,6 +979,8 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
         ...initialData,
         dealEndsAt: initialData.dealEndsAt ? new Date(initialData.dealEndsAt).toISOString().slice(0, 16) : '',
         dealStartAt: initialData.dealStartAt ? new Date(initialData.dealStartAt).toISOString().slice(0, 16) : '',
+        commitmentStartAt: initialData.commitmentStartAt ? new Date(initialData.commitmentStartAt).toISOString().slice(0, 16) : '',
+        commitmentEndsAt: initialData.commitmentEndsAt ? new Date(initialData.commitmentEndsAt).toISOString().slice(0, 16) : '',
         sizes: initialData.sizes || [],
       });
       
@@ -977,6 +1089,14 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
       return;
     }
     
+    // Set deal timeframe based on selected month
+    if (selectedMonthRow) {
+      formData.dealStartAt = selectedMonthRow.timeframeStart;
+      formData.dealEndsAt = selectedMonthRow.timeframeEnd;
+      formData.commitmentStartAt = selectedMonthRow.commitmentStart;
+      formData.commitmentEndsAt = selectedMonthRow.commitmentEnd;
+    }
+    
     try {
       setIsSubmitting(true);
       setLoading(true);
@@ -1056,8 +1176,8 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   const averageSavings = calculateAverageSavings();
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4,px: 0 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between',flexWrap: 'wrap', alignItems: 'center', mb: 2,gap: 2 }}>
         <Button 
           variant="outlined" 
           color="primary.contrastText" 
@@ -1370,32 +1490,61 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     Deal Timeframe
                   </SectionTitle>
                 </SectionHeading>
-                
-                <Alert severity="info" sx={{ mb: 0, borderRadius: 2 }}>
-                  <Typography variant="body2">
-                   You can not change the timeframe for the deal.
-                  </Typography>
-                </Alert>
-                
+
+                {/* Improved Month/Year Selection Dropdown inside Deal Timeframe */}
+                <Box sx={{ mt: 3, display: 'flex',flexDirection: {xs: 'column', md: 'row'}, alignItems: 'center', gap: 2 }}>
+                  <FormControl required sx={{ width: '100%' }}>
+                    <InputLabel id="deal-month-select-label">Select Deal Month</InputLabel>
+                    <Select
+                      labelId="deal-month-select-label"
+                      id="deal-month-select"
+                      value={selectedDealMonth || ''}
+                      onChange={e => setSelectedDealMonth(e.target.value)}
+                      sx={{ borderRadius: 2, background: '#fff' }}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: { borderRadius: 2, maxHeight: 48 * 6 },
+                        },
+                      }}
+                      displayEmpty
+                    >
+                      {availableDealMonths.map(row => (
+                        <MenuItem key={`${row.month} ${row.year}`} value={`${row.month} ${row.year}`}>{`${row.month} ${row.year}`}</MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>
+                      Choose the month for which this deal will be active. Dates below will update accordingly.
+                    </FormHelperText>
+                  </FormControl>
+                  {selectedMonthRow && (
+                    <Alert severity="info" sx={{ ml: 2, borderRadius: 2 ,width: '100%'}}>
+                      <strong>Deadline to post deals:</strong> {format(new Date(selectedMonthRow.deadline), 'PPP')}<br />
+                      <strong>Deal Time Frame:</strong> {format(new Date(selectedMonthRow.timeframeStart), 'PPP')} - {format(new Date(selectedMonthRow.timeframeEnd), 'PPP')}<br />
+                      <strong>Commitment Time Frame:</strong> {format(new Date(selectedMonthRow.commitmentStart), 'PPP')} - {format(new Date(selectedMonthRow.commitmentEnd), 'PPP')}<br />
+                      <span style={{ color: '#888', fontSize: 13 }}>You can still create deals for this month after the deadline, but this is the recommended posting window.</span>
+                    </Alert>
+                  )}
+                </Box>
+
                 <Grid container spacing={3} sx={{ mt: 1 }}>
                   <Grid item xs={12} md={6}>
                     <TextField
-                      label="Deal Starts At"
-                      name="dealStartAt"
+                      label="Commitment Starts At"
+                      name="commitmentStartAt"
                       type="datetime-local"
-                      value={formData.dealStartAt}
-                      onChange={handleChange}
+                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentStart), 'yyyy-MM-dd\'T\'00:00') : ''}
+                      onChange={() => {}}
                       fullWidth
                       required
-                      disabled={true}
+                      disabled
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      InputProps={{ 
-                        sx: { 
+                      InputProps={{
+                        sx: {
                           borderRadius: 2,
                           backgroundColor: (theme) => alpha(theme.palette.action.disabled, 0.1),
-                        '& .MuiInputBase-input.Mui-disabled': {
+                          '& .MuiInputBase-input.Mui-disabled': {
                             WebkitTextFillColor: (theme) => theme.palette.text.primary,
                           }
                         },
@@ -1404,22 +1553,22 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
-                      label="Deal Ends At"
-                      name="dealEndsAt"
+                      label="Commitment Ends At"
+                      name="commitmentEndsAt"
                       type="datetime-local"
-                      value={formData.dealEndsAt}
-                      onChange={handleChange}
+                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentEnd), 'yyyy-MM-dd\'T\'23:59') : ''}
+                      onChange={() => {}}
                       fullWidth
                       required
-                      disabled={true}
+                      disabled
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      InputProps={{ 
-                        sx: { 
+                      InputProps={{
+                        sx: {
                           borderRadius: 2,
                           backgroundColor: (theme) => alpha(theme.palette.action.disabled, 0.1),
-                        '& .MuiInputBase-input.Mui-disabled': {
+                          '& .MuiInputBase-input.Mui-disabled': {
                             WebkitTextFillColor: (theme) => theme.palette.text.primary,
                           }
                         },

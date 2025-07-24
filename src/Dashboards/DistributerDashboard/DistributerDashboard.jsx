@@ -96,7 +96,7 @@ const DistributerDashboard = () => {
       <div style={{ display: 'flex', width: '100%' }}>
         <Sidebar match={match} links={links} />
         <div style={{ flexGrow: 1, padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center',borderBottom: '1px solid #e0e0e0',paddingBottom: '10px' }}>
           <Button
               onClick={() => {
                 const userId = localStorage.getItem('user_id');
@@ -111,7 +111,7 @@ const DistributerDashboard = () => {
                 borderColor: 'primary.contrastText',
                 color: 'primary.contrastText',
                 backgroundColor: 'white',
-                padding: '10px 20px',
+                padding: 1,
                 cursor: 'pointer',
                 borderRadius: 25,
                 fontSize: '16px',

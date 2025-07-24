@@ -83,6 +83,23 @@ const DisplayDeals = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState(null);
 
+  // Check if commitment period has ended
+  const isCommitmentPeriodEnded = (deal) => {
+    if (!deal?.commitmentEndsAt) return false;
+    const commitmentEndDate = new Date(deal.commitmentEndsAt);
+    const now = new Date();
+    return now > commitmentEndDate;
+  };
+
+  // Check if commitment period is active
+  const isCommitmentPeriodActive = (deal) => {
+    if (!deal?.commitmentStartAt || !deal?.commitmentEndsAt) return true; // Default to true if dates not set
+    const commitmentStartDate = new Date(deal.commitmentStartAt);
+    const commitmentEndDate = new Date(deal.commitmentEndsAt);
+    const now = new Date();
+    return now >= commitmentStartDate && now <= commitmentEndDate;
+  };
+
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
     const userRole = localStorage.getItem('user_role');
@@ -360,6 +377,26 @@ const DisplayDeals = () => {
         open: true,
         message: 'Only Co-op members can commit to deals',
         severity: 'warning'
+      });
+      return;
+    }
+
+    // Check if commitment period has ended
+    if (isCommitmentPeriodEnded(deal)) {
+      setToast({
+        open: true,
+        message: `The commitment period for this deal ended on ${new Date(deal.commitmentEndsAt).toLocaleDateString()}. You can no longer make commitments to this deal.`,
+        severity: 'warning'
+      });
+      return;
+    }
+
+    // Check if commitment period has not started yet
+    if (!isCommitmentPeriodActive(deal)) {
+      setToast({
+        open: true,
+        message: `The commitment period for this deal starts on ${new Date(deal.commitmentStartAt).toLocaleDateString()}. You can make commitments during the active period.`,
+        severity: 'info'
       });
       return;
     }
@@ -965,7 +1002,7 @@ const DisplayDeals = () => {
 
               {/* Deal status info */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                   <Chip
                     size="small"
                     label={`Min: ${deal.minQtyForDiscount || 0}`}
@@ -976,7 +1013,7 @@ const DisplayDeals = () => {
                   <Chip
                     size="small"
                     label={`Left: ${Math.max(0, deal.minQtyForDiscount - (deal.totalCommittedQuantity || 0))}`}
-                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? "success" : "primary"}
+                    color={(deal.totalCommittedQuantity || 0) >= deal.minQtyForDiscount ? "success" : "primary.contrastText"}
                     variant="outlined"
                     sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                   />
@@ -985,6 +1022,30 @@ const DisplayDeals = () => {
                       size="small"
                       label="Committed"
                       color="primary"
+                      sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
+                    />
+                  )}
+                  {isCommitmentPeriodEnded(deal) && (
+                    <Chip
+                      size="small"
+                      label="Commitment Ended"
+                      color="error"
+                      sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
+                    />
+                  )}
+                  {!isCommitmentPeriodActive(deal) && !isCommitmentPeriodEnded(deal) && (
+                    <Chip
+                      size="small"
+                      label="Not Started"
+                      color="warning"
+                      sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
+                    />
+                  )}
+                  {isCommitmentPeriodActive(deal) && (
+                    <Chip
+                      size="small"
+                      label="Active"
+                      color="success"
                       sx={{ borderRadius: 1, height: 20, '& .MuiChip-label': { px: 1, py: 0 } }}
                     />
                   )}
@@ -1007,6 +1068,18 @@ const DisplayDeals = () => {
                   </Typography>
                 )}
               </Box>
+
+              {/* Commitment Period Info */}
+              {deal.commitmentStartAt && deal.commitmentEndsAt && (
+                <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 1 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Commitment Period:
+                  </Typography>
+                  <Typography variant="caption" fontWeight="medium">
+                    {new Date(deal.commitmentStartAt).toLocaleDateString()} - {new Date(deal.commitmentEndsAt).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
 
             <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
@@ -1020,16 +1093,46 @@ const DisplayDeals = () => {
               >
                 View Deal
               </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                size="small"
-                onClick={() => handleOpenGetDeal(deal)}
-                sx={{ borderRadius: 1 }}
-                startIcon={isCommitted ? <EditIcon color={theme.palette.primary.dark || 'primary'} /> : <AddShoppingCart color={theme.palette.primary.dark || 'primary'} />}
-              >
-                {isCommitted ? 'Update' : 'Commit'}
-              </Button>
+              {isCommitmentPeriodEnded(deal) ? (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  disabled
+                  sx={{ 
+                    borderRadius: 1,
+                    color: theme.palette.text.disabled,
+                    borderColor: theme.palette.text.disabled
+                  }}
+                >
+                  Commitment Ended
+                </Button>
+              ) : !isCommitmentPeriodActive(deal) ? (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  disabled
+                  sx={{ 
+                    borderRadius: 1,
+                    color: theme.palette.text.disabled,
+                    borderColor: theme.palette.text.disabled
+                  }}
+                >
+                  Not Started
+                </Button>
+              ) : (
+                <Button
+                  fullWidth
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpenGetDeal(deal)}
+                  sx={{ borderRadius: 1 }}
+                  startIcon={isCommitted ? <EditIcon color={theme.palette.primary.dark || 'primary'} /> : <AddShoppingCart color={theme.palette.primary.dark || 'primary'} />}
+                >
+                  {isCommitted ? 'Update' : 'Commit'}
+                </Button>
+              )}
             </Box>
           </Card>
         </Grid>
@@ -1490,15 +1593,60 @@ const DisplayDeals = () => {
         >
           <DialogTitle sx={{ pb: 1 }}>
             {selectedDeal && (
-              <Typography variant="h6" fontWeight="bold">
-                {userCommitments.includes(selectedDeal._id) ? 'Update Your Commitment' : 'Make New Commitment'}: {selectedDeal.name}
-              </Typography>
+              <Box>
+                <Typography variant="h6" fontWeight="bold">
+                  {userCommitments.includes(selectedDeal._id) ? 'Update Your Commitment' : 'Make New Commitment'}: {selectedDeal.name}
+                </Typography>
+                {selectedDeal.commitmentStartAt && selectedDeal.commitmentEndsAt && (
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Commitment Period:
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label={`${new Date(selectedDeal.commitmentStartAt).toLocaleDateString()} - ${new Date(selectedDeal.commitmentEndsAt).toLocaleDateString()}`}
+                      color={isCommitmentPeriodEnded(selectedDeal) ? "error" : !isCommitmentPeriodActive(selectedDeal) ? "warning" : "success"}
+                      variant="outlined"
+                    />
+                  </Box>
+                )}
+              </Box>
             )}
           </DialogTitle>
           <DialogContent sx={{ pt: '16px !important' }}>
             {selectedDeal && (
               <Grid container spacing={3}>
                 <Grid item xs={12} md={8}>
+                  {/* Commitment Period Status Alert */}
+                  {selectedDeal.commitmentStartAt && selectedDeal.commitmentEndsAt && (
+                    <Box sx={{ mb: 3 }}>
+                      {isCommitmentPeriodEnded(selectedDeal) ? (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                          <AlertTitle>Commitment Period Ended</AlertTitle>
+                          <Typography variant="body2">
+                            The commitment period for this deal ended on {new Date(selectedDeal.commitmentEndsAt).toLocaleDateString()}. 
+                            You can no longer make new commitments to this deal.
+                          </Typography>
+                        </Alert>
+                      ) : !isCommitmentPeriodActive(selectedDeal) ? (
+                        <Alert severity="warning" sx={{ mb: 2 }}>
+                          <AlertTitle>Commitment Period Not Started</AlertTitle>
+                          <Typography variant="body2">
+                            The commitment period for this deal starts on {new Date(selectedDeal.commitmentStartAt).toLocaleDateString()}. 
+                            You can make commitments during the active period.
+                          </Typography>
+                        </Alert>
+                      ) : (
+                        <Alert severity="success" sx={{ mb: 2 }}>
+                          <AlertTitle>Commitment Period Active</AlertTitle>
+                          <Typography variant="body2">
+                            The commitment period is currently active. You can make commitments until {new Date(selectedDeal.commitmentEndsAt).toLocaleDateString()}.
+                          </Typography>
+                        </Alert>
+                      )}
+                    </Box>
+                  )}
+
                   <Typography variant="h6" gutterBottom>
                     Size & Quantity Selection
                   </Typography>
