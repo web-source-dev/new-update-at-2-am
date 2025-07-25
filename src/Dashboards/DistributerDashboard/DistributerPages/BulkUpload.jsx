@@ -59,6 +59,8 @@ const BulkUpload = () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
+
+            setMessage({ type: 'success', text: 'Template downloaded successfully' });
         } catch (error) {
             console.error('Error downloading template:', error);
             setMessage({ type: 'error', text: 'Error downloading template. Please try again later.' });
