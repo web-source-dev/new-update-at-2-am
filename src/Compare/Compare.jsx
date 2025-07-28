@@ -42,7 +42,7 @@ const Compare = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-  const [monthFilter, setMonthFilter] = useState('current'); // Default to current month
+  const [monthFilter, setMonthFilter] = useState('all'); // Default to current month
   const [availableMonths, setAvailableMonths] = useState([]);
   
   const navigate = useNavigate();

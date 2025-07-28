@@ -37,15 +37,41 @@ const ManageDeals = () => {
   });
 
   const location = useLocation();
-  const [filter, setFilter] = useState({
-    category: '',
-    status: '',
-    minPrice: '',
-    maxPrice: '',
-    search: '',
-    sortBy: '',
-    month: new Date().getMonth() + 1, // Initialize with current month
-  });
+  
+  // Load filters from localStorage on component mount
+  const getInitialFilters = () => {
+    try {
+      const savedFilters = localStorage.getItem('manageDealsFilters');
+      if (savedFilters) {
+        const parsedFilters = JSON.parse(savedFilters);
+        // Ensure all filter properties exist with defaults
+        return {
+          category: parsedFilters.category || '',
+          status: parsedFilters.status || '',
+          minPrice: parsedFilters.minPrice || '',
+          maxPrice: parsedFilters.maxPrice || '',
+          search: parsedFilters.search || '',
+          sortBy: parsedFilters.sortBy || '',
+          month: parsedFilters.month || new Date().getMonth() + 1,
+        };
+      }
+    } catch (error) {
+      console.error('Error loading filters from localStorage:', error);
+    }
+    
+    // Default filters if no saved data
+    return {
+      category: '',
+      status: '',
+      minPrice: '',
+      maxPrice: '',
+      search: '',
+      sortBy: '',
+      month: new Date().getMonth() + 1,
+    };
+  };
+
+  const [filter, setFilter] = useState(getInitialFilters);
   const { userId } = useParams();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:600px)');
@@ -78,7 +104,7 @@ const ManageDeals = () => {
         const params = { ...filter };
         
         // Only include month parameter if it has a value
-        if (params.month === "") {
+        if (!params.month || params.month === "") {
           delete params.month;
         }
         
@@ -243,11 +269,35 @@ const ManageDeals = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilter({ ...filter, [name]: value });
+    const newFilter = { ...filter, [name]: value };
+    setFilter(newFilter);
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+    } catch (error) {
+      console.error('Error saving filters to localStorage:', error);
+    }
   };
 
   const handleClearFilters = () => {
-    setFilter({ category: '', status: '', minPrice: '', maxPrice: '', search: '', sortBy: '', month: new Date().getMonth() + 1 });
+    const defaultFilters = { 
+      category: '', 
+      status: '', 
+      minPrice: '', 
+      maxPrice: '', 
+      search: '', 
+      sortBy: '', 
+      month: new Date().getMonth() + 1 
+    };
+    setFilter(defaultFilters);
+    
+    // Clear from localStorage
+    try {
+      localStorage.removeItem('manageDealsFilters');
+    } catch (error) {
+      console.error('Error clearing filters from localStorage:', error);
+    }
   };
 
   const handleCloseToast = () => {
@@ -517,7 +567,12 @@ The new deal will be created with the following settings:
 
   const FiltersContent = () => {
     const [showFilters, setShowFilters] = useState(false);
-    const activeFilters = Object.values(filter).filter(value => value !== '').length;
+    const activeFilters = Object.entries(filter).filter(([key, value]) => {
+      if (key === 'month') {
+        return value && value !== '';
+      }
+      return value !== '';
+    }).length;
 
     return (
       <Box sx={{ width: '100%', mb: 3 }}>
@@ -562,7 +617,16 @@ The new deal will be created with the following settings:
                         <Chip
                           key={cat}
                           label={cat}
-                          onClick={() => handleFilterChange({ target: { name: 'category', value: cat } })}
+                          onClick={() => {
+                            const newFilter = { ...filter, category: cat };
+                            setFilter(newFilter);
+                            // Save to localStorage
+                            try {
+                              localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                            } catch (error) {
+                              console.error('Error saving filters to localStorage:', error);
+                            }
+                          }}
                           variant="outlined"
                           color="primary.contrastText"
                           sx={{
@@ -614,11 +678,20 @@ The new deal will be created with the following settings:
                 <Grid item xs={12} md={4}>
                   <FilterFormControl fullWidth>
                     <InputLabel>Month</InputLabel>
-                    <FilterSelect
-                      value={filter.month}
-                      onChange={(e) => setFilter({ ...filter, month: e.target.value })}
-                      label="Month"
-                    >
+                                          <FilterSelect
+                        value={filter.month}
+                        onChange={(e) => {
+                          const newFilter = { ...filter, month: e.target.value };
+                          setFilter(newFilter);
+                          // Save to localStorage
+                          try {
+                            localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                          } catch (error) {
+                            console.error('Error saving filters to localStorage:', error);
+                          }
+                        }}
+                        label="Month"
+                      >
                       <MenuItem value=""><em>All Months</em></MenuItem>
                       <MenuItem value={1}>January</MenuItem>
                       <MenuItem value={2}>February</MenuItem>
@@ -718,15 +791,31 @@ The new deal will be created with the following settings:
             {filter.search && (
               <Chip
                 label={`Search: ${filter.search}`}
-                onDelete={() => handleFilterChange({ target: { name: 'search', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, search: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
             )}
-            {filter.month && (
+            {filter.month && filter.month !== "" && (
               <Chip
                 label={`Month: ${filter.month}`}
-                onDelete={() => handleFilterChange({ target: { name: 'month', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, month: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
@@ -734,7 +823,15 @@ The new deal will be created with the following settings:
             {filter.category && (
               <Chip
                 label={`Category: ${filter.category}`}
-                onDelete={() => handleFilterChange({ target: { name: 'category', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, category: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
@@ -742,7 +839,15 @@ The new deal will be created with the following settings:
             {filter.status && (
               <Chip
                 label={`Status: ${filter.status}`}
-                onDelete={() => handleFilterChange({ target: { name: 'status', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, status: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
@@ -750,7 +855,15 @@ The new deal will be created with the following settings:
             {filter.minPrice && (
               <Chip
                 label={`Min Price: $${filter.minPrice}`}
-                onDelete={() => handleFilterChange({ target: { name: 'minPrice', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, minPrice: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
@@ -758,7 +871,15 @@ The new deal will be created with the following settings:
             {filter.maxPrice && (
               <Chip
                 label={`Max Price: $${filter.maxPrice}`}
-                onDelete={() => handleFilterChange({ target: { name: 'maxPrice', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, maxPrice: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
@@ -766,7 +887,15 @@ The new deal will be created with the following settings:
             {filter.sortBy && (
               <Chip
                 label={`Sorted by: ${filter.sortBy.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
-                onDelete={() => handleFilterChange({ target: { name: 'sortBy', value: '' } })}
+                onDelete={() => {
+                  const newFilter = { ...filter, sortBy: '' };
+                  setFilter(newFilter);
+                  try {
+                    localStorage.setItem('manageDealsFilters', JSON.stringify(newFilter));
+                  } catch (error) {
+                    console.error('Error saving filters to localStorage:', error);
+                  }
+                }}
                 color="primary.contrastText"
                 variant="outlined"
               />
