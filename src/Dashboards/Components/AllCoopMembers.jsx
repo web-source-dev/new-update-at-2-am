@@ -104,15 +104,6 @@ const AllCoopMembers = () => {
   const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
-    if (user_role !== "distributor") {
-      setSnackbar({
-        open: true,
-        message: "Access Denied: Only distributors can access this page",
-        severity: "error"
-      });
-      return;
-    }
-
     const fetchData = async () => {
       try {
         setLoading(true);

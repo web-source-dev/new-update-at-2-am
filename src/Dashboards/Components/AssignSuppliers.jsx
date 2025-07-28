@@ -212,12 +212,6 @@ const AssignSuppliers = () => {
   const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
-    if (user_role !== "distributor") {
-      alert("Access Denied: Only distributors can access this page");
-      navigate(-1);
-      return;
-    }
-
     const fetchData = async () => {
       try {
         setLoading(true);
