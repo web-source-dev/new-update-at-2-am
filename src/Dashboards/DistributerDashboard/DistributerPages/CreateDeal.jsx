@@ -840,66 +840,42 @@ function generateDealMonthsTable() {
       // Commitment timeframe based on the provided table
       let commitmentStart, commitmentEnd;
       
-      if (month === 'September' && year === 2025) {
+      if (month === 'August' && year === 2025) {
+        commitmentStart = new Date(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00
+        commitmentEnd = new Date(2025, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59
+      } else if (month === 'September' && year === 2025) {
         commitmentStart = new Date(2025, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 8, 12, 23, 59, 59, 999); // Sep 12, 2025 at 23:59:59
+        commitmentEnd = new Date(2025, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 23:59:59
       } else if (month === 'October' && year === 2025) {
         commitmentStart = new Date(2025, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 9, 10, 23, 59, 59, 999); // Oct 10, 2025 at 23:59:59
+        commitmentEnd = new Date(2025, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 23:59:59
       } else if (month === 'November' && year === 2025) {
         commitmentStart = new Date(2025, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 10, 11, 23, 59, 59, 999); // Nov 11, 2025 at 23:59:59
+        commitmentEnd = new Date(2025, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 23:59:59
       } else if (month === 'December' && year === 2025) {
         commitmentStart = new Date(2025, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 00:00:00
         commitmentEnd = new Date(2025, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 23:59:59
       } else if (month === 'January' && year === 2026) {
-        commitmentStart = new Date(2026, 0, 1, 0, 0, 0, 0); // Jan 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 0, 10, 23, 59, 59, 999); // Jan 10, 2026 at 23:59:59
+        commitmentStart = new Date(2025, 11, 29, 0, 0, 0, 0); // Dec 29, 2025 at 00:00:00
+        commitmentEnd = new Date(2026, 0, 9, 23, 59, 59, 999); // Jan 9, 2026 at 23:59:59
       } else if (month === 'February' && year === 2026) {
-        commitmentStart = new Date(2026, 1, 1, 0, 0, 0, 0); // Feb 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 1, 9, 23, 59, 59, 999); // Feb 9, 2026 at 23:59:59
+        commitmentStart = new Date(2026, 1, 2, 0, 0, 0, 0); // Feb 2, 2026 at 00:00:00
+        commitmentEnd = new Date(2026, 1, 12, 23, 59, 59, 999); // Feb 12, 2026 at 23:59:59
       } else if (month === 'March' && year === 2026) {
-        commitmentStart = new Date(2026, 2, 1, 0, 0, 0, 0); // Mar 1, 2026 at 00:00:00
+        commitmentStart = new Date(2026, 2, 2, 0, 0, 0, 0); // Mar 2, 2026 at 00:00:00
         commitmentEnd = new Date(2026, 2, 12, 23, 59, 59, 999); // Mar 12, 2026 at 23:59:59
       } else if (month === 'April' && year === 2026) {
         commitmentStart = new Date(2026, 3, 1, 0, 0, 0, 0); // Apr 1, 2026 at 00:00:00
         commitmentEnd = new Date(2026, 3, 10, 23, 59, 59, 999); // Apr 10, 2026 at 23:59:59
       } else if (month === 'May' && year === 2026) {
-        commitmentStart = new Date(2026, 4, 1, 0, 0, 0, 0); // May 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 4, 10, 23, 59, 59, 999); // May 10, 2026 at 23:59:59
+        commitmentStart = new Date(2026, 3, 30, 0, 0, 0, 0); // Apr 30, 2026 at 00:00:00
+        commitmentEnd = new Date(2026, 4, 11, 23, 59, 59, 999); // May 11, 2026 at 23:59:59
       } else if (month === 'June' && year === 2026) {
         commitmentStart = new Date(2026, 5, 1, 0, 0, 0, 0); // Jun 1, 2026 at 00:00:00
         commitmentEnd = new Date(2026, 5, 11, 23, 59, 59, 999); // Jun 11, 2026 at 23:59:59
       } else if (month === 'July' && year === 2026) {
-        commitmentStart = new Date(2026, 6, 1, 0, 0, 0, 0); // Jul 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 6, 11, 23, 59, 59, 999); // Jul 11, 2026 at 23:59:59
-      } else if (month === 'August' && year === 2026) {
-        commitmentStart = new Date(2026, 7, 1, 0, 0, 0, 0); // Aug 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 7, 10, 23, 59, 59, 999); // Aug 10, 2026 at 23:59:59
-      } else if (month === 'August' && year === 2025) {
-        commitmentStart = new Date(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 7, 10, 23, 59, 59, 999); // Aug 10, 2025 at 23:59:59
-      } else if (month === 'July' && year === 2025) {
-        commitmentStart = new Date(2025, 6, 1, 0, 0, 0, 0); // Jul 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 6, 11, 23, 59, 59, 999); // Jul 11, 2025 at 23:59:59
-      } else if (month === 'June' && year === 2025) {
-        commitmentStart = new Date(2025, 5, 1, 0, 0, 0, 0); // Jun 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 5, 11, 23, 59, 59, 999); // Jun 11, 2025 at 23:59:59
-      } else if (month === 'May' && year === 2025) {
-        commitmentStart = new Date(2025, 4, 1, 0, 0, 0, 0); // May 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 4, 10, 23, 59, 59, 999); // May 10, 2025 at 23:59:59
-      } else if (month === 'April' && year === 2025) {
-        commitmentStart = new Date(2025, 3, 1, 0, 0, 0, 0); // Apr 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 3, 10, 23, 59, 59, 999); // Apr 10, 2025 at 23:59:59
-      } else if (month === 'March' && year === 2025) {
-        commitmentStart = new Date(2025, 2, 1, 0, 0, 0, 0); // Mar 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 2, 12, 23, 59, 59, 999); // Mar 12, 2025 at 23:59:59
-      } else if (month === 'February' && year === 2025) {
-        commitmentStart = new Date(2025, 1, 1, 0, 0, 0, 0); // Feb 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 1, 9, 23, 59, 59, 999); // Feb 9, 2025 at 23:59:59
-      } else if (month === 'January' && year === 2025) {
-        commitmentStart = new Date(2025, 0, 1, 0, 0, 0, 0); // Jan 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 0, 10, 23, 59, 59, 999); // Jan 10, 2025 at 23:59:59
+        commitmentStart = new Date(2026, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00
+        commitmentEnd = new Date(2026, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59
       } else {
         // Default: commitment period is first 10 days of the month
         commitmentStart = new Date(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00
