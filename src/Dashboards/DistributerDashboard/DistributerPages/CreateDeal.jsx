@@ -840,7 +840,10 @@ function generateDealMonthsTable() {
       // Commitment timeframe based on the provided table
       let commitmentStart, commitmentEnd;
       
-      if (month === 'August' && year === 2025) {
+      if (month === 'July' && year === 2025) {
+        commitmentStart = new Date(2025, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00
+        commitmentEnd = new Date(2025, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59
+      } else if (month === 'August' && year === 2025) {
         commitmentStart = new Date(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00
         commitmentEnd = new Date(2025, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59
       } else if (month === 'September' && year === 2025) {
@@ -876,6 +879,21 @@ function generateDealMonthsTable() {
       } else if (month === 'July' && year === 2026) {
         commitmentStart = new Date(2026, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00
         commitmentEnd = new Date(2026, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59
+      }else if (month === 'August' && year === 2026) {
+        commitmentStart = new Date(2026, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00
+        commitmentEnd = new Date(2026, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59
+      } else if (month === 'September' && year === 2026) {
+        commitmentStart = new Date(2026, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 00:00:00
+        commitmentEnd = new Date(2026, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 23:59:59
+      } else if (month === 'October' && year === 2026) {
+        commitmentStart = new Date(2026, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 00:00:00
+        commitmentEnd = new Date(2026, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 23:59:59
+      } else if (month === 'November' && year === 2026) {
+        commitmentStart = new Date(2026, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 00:00:00
+        commitmentEnd = new Date(2026, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 23:59:59
+      } else if (month === 'December' && year === 2026) {
+        commitmentStart = new Date(2026, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 00:00:00
+        commitmentEnd = new Date(2026, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 23:59:59
       } else {
         // Default: commitment period is first 10 days of the month
         commitmentStart = new Date(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00
@@ -1544,8 +1562,8 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     <TextField
                       label="Commitment Starts At"
                       name="commitmentStartAt"
-                      type="datetime-local"
-                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentStart), 'yyyy-MM-dd\'T\'00:00') : ''}
+                      type="date"
+                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentStart), 'yyyy-MM-dd') : ''}
                       onChange={() => {}}
                       fullWidth
                       required
@@ -1568,8 +1586,8 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                     <TextField
                       label="Commitment Ends At"
                       name="commitmentEndsAt"
-                      type="datetime-local"
-                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentEnd), 'yyyy-MM-dd\'T\'23:59') : ''}
+                      type="date"
+                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentEnd), 'yyyy-MM-dd') : ''}
                       onChange={() => {}}
                       fullWidth
                       required
