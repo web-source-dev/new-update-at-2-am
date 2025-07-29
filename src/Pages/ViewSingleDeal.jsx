@@ -63,6 +63,7 @@ import {
 import axios from 'axios';
 import Toast from '../Components/Toast/Toast';
 import { io } from 'socket.io-client';
+import PriceDisclaimer from '../Components/PriceDisclaimer';
 
 // Helper function to determine if the media is a video
 const isVideoUrl = (url) => {
@@ -982,6 +983,8 @@ const ViewSingleDeal = () => {
                       </TableBody>
                     </Table>
                   </TableContainer>
+                  
+                  <PriceDisclaimer variant="text" sx={{ mt: 1 }} />
                 </Box>
               )}
 
@@ -1886,6 +1889,9 @@ const ViewSingleDeal = () => {
                                   {effectivePrice < size.discountPrice ? `was $${size.discountPrice.toFixed(2)}` : `was $${(appliedTier ? appliedTier.tierDiscount : size.discountPrice).toFixed(2)}`}
                                 </Typography>
                               )}
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem', fontStyle: 'italic' }}>
+                                per bottle
+                              </Typography>
                             </TableCell>
                             <TableCell align="right">
                               <TextField
@@ -1905,6 +1911,9 @@ const ViewSingleDeal = () => {
                                 color={priceWillChange ? (effectivePrice < size.discountPrice ? "success.main" : "error.main") : "primary.contrastText"}
                               >
                                 ${subtotal.toFixed(2)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem', fontStyle: 'italic' }}>
+                                case total
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -1939,13 +1948,13 @@ const ViewSingleDeal = () => {
                     Size-Specific Volume Discount Tiers
                   </Typography>
                   
-                  <Alert severity="info" sx={{ mb: 2 }}>
-                    <AlertTitle>Collective Volume Discounts</AlertTitle>
-                    <Typography variant="body2">
-                      Discount tiers are applied based on the <strong>total quantity across all members</strong>. 
-                      When the collective total for a size reaches a tier threshold, <strong>all members</strong> receive that discount pricing automatically!
-                    </Typography>
-                  </Alert>
+                                        <Alert severity="info" sx={{ mb: 2 }}>
+                        <AlertTitle>Collective Volume Discounts</AlertTitle>
+                        <Typography variant="body2">
+                          Discount tiers are applied based on the <strong>total quantity across all members</strong>.
+                          When the collective total for a size reaches a tier threshold, <strong>all members</strong> receive that discount pricing automatically!
+                        </Typography>
+                      </Alert>
                   
                   {deal.sizes.map((size, sizeIndex) => {
                     if (!size.discountTiers || size.discountTiers.length === 0) return null;
@@ -2230,6 +2239,8 @@ const ViewSingleDeal = () => {
                   </Typography>
                 </Box>
               </Paper>
+              
+              <PriceDisclaimer variant="text" sx={{ mb: 2 }} />
               
               <Alert 
                 severity="info" 

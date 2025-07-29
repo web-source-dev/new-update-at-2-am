@@ -48,6 +48,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import DisplaySplashContent from "../Components/SplashPage/DisplaySplashContent";
+import PriceDisclaimer from "../Components/PriceDisclaimer";
 
 // Helper function to determine if the media is a video
 const isVideoUrl = (url) => {
@@ -1743,7 +1744,7 @@ const DisplayDeals = () => {
                               <TableCell align="right">
                                 <Typography
                                   variant="body1"
-                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.primary.main}
+                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.primary.contrastText}
                                 >
                                   ${effectivePrice.toFixed(2)}
                                 </Typography>
@@ -1756,6 +1757,9 @@ const DisplayDeals = () => {
                                     {effectivePrice < size.discountPrice ? `was $${size.discountPrice.toFixed(2)}` : `was $${(appliedTier ? appliedTier.tierDiscount : size.discountPrice).toFixed(2)}`}
                                   </Typography>
                                 )}
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.8rem' }}>
+                                  per bottle
+                                </Typography>
                               </TableCell>
                               <TableCell align="right">
                                 <TextField
@@ -1772,9 +1776,12 @@ const DisplayDeals = () => {
                                 <Typography
                                   variant="body1"
                                   fontWeight="medium"
-                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.main) : theme.palette.inherit.main}
+                                  color={priceWillChange ? (effectivePrice < size.discountPrice ? theme.palette.success.main : theme.palette.error.contrastText) : theme.palette.primary.contrastText}
                                 >
                                   ${subtotal.toFixed(2)}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.8rem' }}>
+                                  case total
                                 </Typography>
                               </TableCell>
                             </TableRow>
@@ -1887,7 +1894,7 @@ const DisplayDeals = () => {
                               <Chip
                                 size="small"
                                 label={`Your Selection: ${userQuantity} units` || '0 units'}
-                                color="primary"
+                                color="primary.contrastText"
                                 variant="outlined"
                               />
                               <Chip
@@ -1955,7 +1962,7 @@ const DisplayDeals = () => {
                                   >
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                       <Typography variant="body1">
-                                        ${tier.tierDiscount.toFixed(2)} per unit at {tier.tierQuantity}+ units
+                                        ${tier.tierDiscount.toFixed(2)} per bottle at {tier.tierQuantity}+ units
                                       </Typography>
                                     </Box>
                                     <Box>
@@ -2021,6 +2028,7 @@ const DisplayDeals = () => {
                       </Typography>
                     </Box>
                   )}
+
                 </Grid>
 
                 <Grid item xs={12} md={4}>
@@ -2063,6 +2071,8 @@ const DisplayDeals = () => {
                       </Typography>
                     </Box>
                   </Paper>
+
+                  <PriceDisclaimer variant="text" sx={{ mb: 2 }} />
 
                   <Alert
                     severity="info"
