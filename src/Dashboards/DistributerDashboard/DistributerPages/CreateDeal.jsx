@@ -820,6 +820,19 @@ function generateDealMonthsTable() {
   
   const table = [];
   
+  // Helper function to create UTC dates to avoid timezone issues
+  const createUTCDate = (year, month, day, hour = 0, minute = 0, second = 0, millisecond = 0) => {
+    return new Date(Date.UTC(year, month, day, hour, minute, second, millisecond));
+  };
+  
+  // Helper function to format date as YYYY-MM-DD from UTC date
+  const formatDateUTC = (date) => {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
   // Generate for current year and next year
   for (let year = currentYear; year <= currentYear + 1; year++) {
     months.forEach((month, monthIndex) => {
@@ -828,94 +841,88 @@ function generateDealMonthsTable() {
         return;
       }
       
-      // Calculate deadline (3 days before the month starts)
-      const monthStart = new Date(year, monthIndex, 1);
+      // Calculate deadline (3 days before the month starts) - using UTC
+      const monthStart = createUTCDate(year, monthIndex, 1);
       const deadline = new Date(monthStart);
-      deadline.setDate(deadline.getDate() - 3); // 3 days before month starts
+      deadline.setUTCDate(deadline.getUTCDate() - 3); // 3 days before month starts
       
-      // Deal timeframe is the complete month (1st to last day)
-      const timeframeStart = new Date(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00
-      const timeframeEnd = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999); // Last day at 23:59:59
+      // Deal timeframe is the complete month (1st to last day) - using UTC
+      const timeframeStart = createUTCDate(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00 UTC
+      // Get the last day of the current month by going to day 0 of next month
+      const lastDayOfMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+      const timeframeEnd = createUTCDate(year, monthIndex, lastDayOfMonth, 23, 59, 59, 999); // Last day at 23:59:59 UTC
       
-      // Commitment timeframe based on the provided table
+      // Commitment timeframe based on the provided table - using UTC
       let commitmentStart, commitmentEnd;
       
       if (month === 'July' && year === 2025) {
-        commitmentStart = new Date(2025, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00
-        commitmentEnd = new Date(2025, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2025, 5, 29, 0, 0, 0, 0); // Jun 29, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2025, 6, 10, 23, 59, 59, 999); // Jul 10, 2025 at 23:59:59 UTC
       } else if (month === 'August' && year === 2025) {
-        commitmentStart = new Date(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2025, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59 UTC
       } else if (month === 'September' && year === 2025) {
-        commitmentStart = new Date(2025, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2025, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2025, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 23:59:59 UTC
       } else if (month === 'October' && year === 2025) {
-        commitmentStart = new Date(2025, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2025, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2025, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 23:59:59 UTC
       } else if (month === 'November' && year === 2025) {
-        commitmentStart = new Date(2025, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2025, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2025, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 23:59:59 UTC
       } else if (month === 'December' && year === 2025) {
-        commitmentStart = new Date(2025, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2025, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2025, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2025, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 23:59:59 UTC
       } else if (month === 'January' && year === 2026) {
-        commitmentStart = new Date(2025, 11, 29, 0, 0, 0, 0); // Dec 29, 2025 at 00:00:00
-        commitmentEnd = new Date(2026, 0, 9, 23, 59, 59, 999); // Jan 9, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2025, 11, 29, 0, 0, 0, 0); // Dec 29, 2025 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 0, 9, 23, 59, 59, 999); // Jan 9, 2026 at 23:59:59 UTC
       } else if (month === 'February' && year === 2026) {
-        commitmentStart = new Date(2026, 1, 2, 0, 0, 0, 0); // Feb 2, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 1, 12, 23, 59, 59, 999); // Feb 12, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2026, 1, 2, 0, 0, 0, 0); // Feb 2, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 1, 12, 23, 59, 59, 999); // Feb 12, 2026 at 23:59:59 UTC
       } else if (month === 'March' && year === 2026) {
-        commitmentStart = new Date(2026, 2, 2, 0, 0, 0, 0); // Mar 2, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 2, 12, 23, 59, 59, 999); // Mar 12, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2026, 2, 2, 0, 0, 0, 0); // Mar 2, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 2, 12, 23, 59, 59, 999); // Mar 12, 2026 at 23:59:59 UTC
       } else if (month === 'April' && year === 2026) {
-        commitmentStart = new Date(2026, 3, 1, 0, 0, 0, 0); // Apr 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 3, 10, 23, 59, 59, 999); // Apr 10, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2026, 3, 1, 0, 0, 0, 0); // Apr 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 3, 10, 23, 59, 59, 999); // Apr 10, 2026 at 23:59:59 UTC
       } else if (month === 'May' && year === 2026) {
-        commitmentStart = new Date(2026, 3, 30, 0, 0, 0, 0); // Apr 30, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 4, 11, 23, 59, 59, 999); // May 11, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2026, 3, 30, 0, 0, 0, 0); // Apr 30, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 4, 11, 23, 59, 59, 999); // May 11, 2026 at 23:59:59 UTC
       } else if (month === 'June' && year === 2026) {
-        commitmentStart = new Date(2026, 5, 1, 0, 0, 0, 0); // Jun 1, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 5, 11, 23, 59, 59, 999); // Jun 11, 2026 at 23:59:59
+        commitmentStart = createUTCDate(2026, 5, 1, 0, 0, 0, 0); // Jun 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 5, 11, 23, 59, 59, 999); // Jun 11, 2026 at 23:59:59 UTC
       } else if (month === 'July' && year === 2026) {
-        commitmentStart = new Date(2026, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00
-        commitmentEnd = new Date(2026, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59
-      }else if (month === 'August' && year === 2026) {
-        commitmentStart = new Date(2026, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2026, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2026, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59 UTC
+      } else if (month === 'August' && year === 2026) {
+        commitmentStart = createUTCDate(2026, 7, 1, 0, 0, 0, 0); // Aug 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 7, 12, 23, 59, 59, 999); // Aug 12, 2026 at 23:59:59 UTC
       } else if (month === 'September' && year === 2026) {
-        commitmentStart = new Date(2026, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2026, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2026, 8, 1, 0, 0, 0, 0); // Sep 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 8, 10, 23, 59, 59, 999); // Sep 10, 2026 at 23:59:59 UTC
       } else if (month === 'October' && year === 2026) {
-        commitmentStart = new Date(2026, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2026, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2026, 9, 1, 0, 0, 0, 0); // Oct 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 9, 11, 23, 59, 59, 999); // Oct 11, 2026 at 23:59:59 UTC
       } else if (month === 'November' && year === 2026) {
-        commitmentStart = new Date(2026, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2026, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2026, 10, 1, 0, 0, 0, 0); // Nov 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 10, 10, 23, 59, 59, 999); // Nov 10, 2026 at 23:59:59 UTC
       } else if (month === 'December' && year === 2026) {
-        commitmentStart = new Date(2026, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 00:00:00
-        commitmentEnd = new Date(2026, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 23:59:59
+        commitmentStart = createUTCDate(2026, 11, 1, 0, 0, 0, 0); // Dec 1, 2026 at 00:00:00 UTC
+        commitmentEnd = createUTCDate(2026, 11, 10, 23, 59, 59, 999); // Dec 10, 2026 at 23:59:59 UTC
       } else {
         // Default: commitment period is first 10 days of the month
-        commitmentStart = new Date(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00
-        commitmentEnd = new Date(year, monthIndex, 10, 23, 59, 59, 999); // 10th day at 23:59:59
+        commitmentStart = createUTCDate(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00 UTC
+        commitmentEnd = createUTCDate(year, monthIndex, 10, 23, 59, 59, 999); // 10th day at 23:59:59 UTC
       }
-      
-      // Helper function to format date as YYYY-MM-DD without timezone issues
-      const formatDateLocal = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
       
       table.push({
         month,
         year,
-        deadline: formatDateLocal(deadline),
-        timeframeStart: formatDateLocal(timeframeStart),
-        timeframeEnd: formatDateLocal(timeframeEnd),
-        commitmentStart: formatDateLocal(commitmentStart),
-        commitmentEnd: formatDateLocal(commitmentEnd)
+        deadline: formatDateUTC(deadline),
+        timeframeStart: formatDateUTC(timeframeStart),
+        timeframeEnd: formatDateUTC(timeframeEnd),
+        commitmentStart: formatDateUTC(commitmentStart),
+        commitmentEnd: formatDateUTC(commitmentEnd)
       });
     });
   }
@@ -929,9 +936,21 @@ function getAvailableDealMonths() {
   const now = new Date();
   return DEAL_MONTHS_TABLE.filter(row => {
     // Only show months that are this month or in the future
-    const monthDate = parse(`${row.month} ${row.year}`, 'MMMM yyyy', new Date());
-    return isAfter(endOfMonth(monthDate), now) || isSameMonth(monthDate, now);
+    // Create UTC date for comparison to avoid timezone issues
+    const monthDate = new Date(Date.UTC(row.year, getMonthIndex(row.month), 1));
+    const lastDayOfMonth = new Date(Date.UTC(row.year, getMonthIndex(row.month) + 1, 0)).getUTCDate();
+    const monthEnd = new Date(Date.UTC(row.year, getMonthIndex(row.month), lastDayOfMonth, 23, 59, 59, 999));
+    return isAfter(monthEnd, now) || isSameMonth(monthDate, now);
   });
+}
+
+// Helper function to get month index from month name
+function getMonthIndex(monthName) {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return months.indexOf(monthName);
 }
 
 const CreateDeal = ({ initialData, onClose, onSubmit }) => {
@@ -984,14 +1003,15 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
   // Function to get current month timeframe
   const getCurrentMonthTimeframe = () => {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+    const currentYear = now.getUTCFullYear();
+    const currentMonth = now.getUTCMonth();
     
-    // Start of current month at 12AM
-    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    // Start of current month at 00:00:00 UTC
+    const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0, 0));
     
-    // End of current month at 119PM
-    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59);
+    // End of current month at 23:59:59 UTC
+    const lastDayOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0)).getUTCDate();
+    const endOfMonth = new Date(Date.UTC(currentYear, currentMonth, lastDayOfMonth, 23, 59, 59, 999));
     
     return {
       start: startOfMonth.toISOString().slice(0, 16),
@@ -1117,10 +1137,34 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     
     // Set deal timeframe based on selected month
     if (selectedMonthRow) {
-      formData.dealStartAt = selectedMonthRow.timeframeStart;
-      formData.dealEndsAt = selectedMonthRow.timeframeEnd;
-      formData.commitmentStartAt = selectedMonthRow.commitmentStart;
-      formData.commitmentEndsAt = selectedMonthRow.commitmentEnd;
+      // Convert UTC dates to ISO strings for backend
+      const dealStartUTC = new Date(Date.UTC(
+        parseInt(selectedMonthRow.timeframeStart.split('-')[0]),
+        parseInt(selectedMonthRow.timeframeStart.split('-')[1]) - 1,
+        parseInt(selectedMonthRow.timeframeStart.split('-')[2])
+      ));
+      const dealEndUTC = new Date(Date.UTC(
+        parseInt(selectedMonthRow.timeframeEnd.split('-')[0]),
+        parseInt(selectedMonthRow.timeframeEnd.split('-')[1]) - 1,
+        parseInt(selectedMonthRow.timeframeEnd.split('-')[2]),
+        23, 59, 59, 999
+      ));
+      const commitmentStartUTC = new Date(Date.UTC(
+        parseInt(selectedMonthRow.commitmentStart.split('-')[0]),
+        parseInt(selectedMonthRow.commitmentStart.split('-')[1]) - 1,
+        parseInt(selectedMonthRow.commitmentStart.split('-')[2])
+      ));
+      const commitmentEndUTC = new Date(Date.UTC(
+        parseInt(selectedMonthRow.commitmentEnd.split('-')[0]),
+        parseInt(selectedMonthRow.commitmentEnd.split('-')[1]) - 1,
+        parseInt(selectedMonthRow.commitmentEnd.split('-')[2]),
+        23, 59, 59, 999
+      ));
+      
+      formData.dealStartAt = dealStartUTC.toISOString();
+      formData.dealEndsAt = dealEndUTC.toISOString();
+      formData.commitmentStartAt = commitmentStartUTC.toISOString();
+      formData.commitmentEndsAt = commitmentEndUTC.toISOString();
     }
     
     try {
@@ -1544,9 +1588,9 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   </FormControl>
                   {selectedMonthRow && (
                     <Alert severity="info" sx={{ ml: 2, borderRadius: 2 ,width: '100%'}}>
-                      <strong>Deadline to post deals:</strong> {format(new Date(selectedMonthRow.deadline), 'PPP')}<br />
-                      <strong>Deal Time Frame:</strong> {format(new Date(selectedMonthRow.timeframeStart), 'PPP')} - {format(new Date(selectedMonthRow.timeframeEnd), 'PPP')}<br />
-                      <strong>Commitment Time Frame:</strong> {format(new Date(selectedMonthRow.commitmentStart), 'PPP')} - {format(new Date(selectedMonthRow.commitmentEnd), 'PPP')}<br />
+                      <strong>Deadline to post deals:</strong> {format(new Date(selectedMonthRow.deadline + 'T00:00:00.000Z'), 'PPP')}<br />
+                      <strong>Deal Time Frame:</strong> {format(new Date(selectedMonthRow.timeframeStart + 'T00:00:00.000Z'), 'PPP')} - {format(new Date(selectedMonthRow.timeframeEnd + 'T00:00:00.000Z'), 'PPP')}<br />
+                      <strong>Commitment Time Frame:</strong> {format(new Date(selectedMonthRow.commitmentStart + 'T00:00:00.000Z'), 'PPP')} - {format(new Date(selectedMonthRow.commitmentEnd + 'T00:00:00.000Z'), 'PPP')}<br />
                       <span style={{ color: '#888', fontSize: 13 }}>You can still create deals for this month after the deadline, but this is the recommended posting window.</span>
                     </Alert>
                   )}
@@ -1563,7 +1607,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                       label="Commitment Starts At"
                       name="commitmentStartAt"
                       type="date"
-                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentStart), 'yyyy-MM-dd') : ''}
+                      value={selectedMonthRow ? selectedMonthRow.commitmentStart : ''}
                       onChange={() => {}}
                       fullWidth
                       required
@@ -1587,7 +1631,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                       label="Commitment Ends At"
                       name="commitmentEndsAt"
                       type="date"
-                      value={selectedMonthRow ? format(new Date(selectedMonthRow.commitmentEnd), 'yyyy-MM-dd') : ''}
+                      value={selectedMonthRow ? selectedMonthRow.commitmentEnd : ''}
                       onChange={() => {}}
                       fullWidth
                       required
