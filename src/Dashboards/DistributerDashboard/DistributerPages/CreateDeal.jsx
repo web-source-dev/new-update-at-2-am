@@ -1588,9 +1588,24 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   </FormControl>
                   {selectedMonthRow && (
                     <Alert severity="info" sx={{ ml: 2, borderRadius: 2 ,width: '100%'}}>
-                      <strong>Deadline to post deals:</strong> {new Date(selectedMonthRow.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}<br />
-                      <strong>Deal Time Frame:</strong> {new Date(selectedMonthRow.timeframeStart).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(selectedMonthRow.timeframeEnd).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}<br />
-                      <strong>Commitment Time Frame:</strong> {new Date(selectedMonthRow.commitmentStart).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(selectedMonthRow.commitmentEnd).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}<br />
+                      <strong>Deadline to post deals:</strong> {(() => {
+                        const [year, month, day] = selectedMonthRow.deadline.split('-');
+                        return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                      })()}<br />
+                      <strong>Deal Time Frame:</strong> {(() => {
+                        const [startYear, startMonth, startDay] = selectedMonthRow.timeframeStart.split('-');
+                        const [endYear, endMonth, endDay] = selectedMonthRow.timeframeEnd.split('-');
+                        const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        return `${startDate} - ${endDate}`;
+                      })()}<br />
+                      <strong>Commitment Time Frame:</strong> {(() => {
+                        const [startYear, startMonth, startDay] = selectedMonthRow.commitmentStart.split('-');
+                        const [endYear, endMonth, endDay] = selectedMonthRow.commitmentEnd.split('-');
+                        const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        return `${startDate} - ${endDate}`;
+                      })()}<br />
                       <span style={{ color: '#888', fontSize: 13 }}>You can still create deals for this month after the deadline, but this is the recommended posting window.</span>
                     </Alert>
                   )}
