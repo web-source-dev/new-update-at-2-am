@@ -810,8 +810,11 @@ const SizeDiscountTierDialog = ({ open, onClose, onSave, initialTier, basePrice 
 
 // --- Month/Year Deal Deadlines Table ---
 function generateDealMonthsTable() {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth(); // 0-11
+  // Get current date in New Mexico timezone (Mountain Time)
+  const newMexicoTime = new Date().toLocaleString("en-US", {timeZone: "America/Denver"});
+  const currentDate = new Date(newMexicoTime);
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth(); // 0-11
   
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -820,16 +823,18 @@ function generateDealMonthsTable() {
   
   const table = [];
   
-  // Helper function to create UTC dates to avoid timezone issues
-  const createUTCDate = (year, month, day, hour = 0, minute = 0, second = 0, millisecond = 0) => {
-    return new Date(Date.UTC(year, month, day, hour, minute, second, millisecond));
+  // Helper function to create New Mexico timezone dates
+  const createNewMexicoDate = (year, month, day, hour = 0, minute = 0, second = 0, millisecond = 0) => {
+    // Create the date in local timezone first
+    const date = new Date(year, month, day, hour, minute, second, millisecond);
+    return date;
   };
   
-  // Helper function to format date as YYYY-MM-DD from UTC date
-  const formatDateUTC = (date) => {
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
+  // Helper function to format date as YYYY-MM-DD
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
   
@@ -841,88 +846,88 @@ function generateDealMonthsTable() {
         return;
       }
       
-      // Calculate deadline (3 days before the month starts) - using UTC
-      const monthStart = createUTCDate(year, monthIndex, 1);
+      // Calculate deadline (3 days before the month starts) - New Mexico time
+      const monthStart = createNewMexicoDate(year, monthIndex, 1);
       const deadline = new Date(monthStart);
-      deadline.setUTCDate(deadline.getUTCDate() - 3); // 3 days before month starts
+      deadline.setDate(deadline.getDate() - 3); // 3 days before month starts
       
-      // Deal timeframe is the complete month (1st to last day) - using UTC
-      const timeframeStart = createUTCDate(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00 UTC
-      // Get the last day of the current month by going to day 0 of next month
-      const lastDayOfMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
-      const timeframeEnd = createUTCDate(year, monthIndex, lastDayOfMonth, 23, 59, 59, 999); // Last day at 23:59:59 UTC
+      // Deal timeframe is the complete month (1st to last day) - New Mexico time
+      const timeframeStart = createNewMexicoDate(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 12:00 AM New Mexico time
+      // Get the last day of the current month
+      const lastDayOfMonth = new Date(year, monthIndex + 1, 0).getDate();
+      const timeframeEnd = createNewMexicoDate(year, monthIndex, lastDayOfMonth, 23, 59, 59, 999); // Last day at 11:59 PM New Mexico time
       
-      // Commitment timeframe based on the provided table - using UTC
+      // Commitment timeframe based on the provided table - New Mexico time
       let commitmentStart, commitmentEnd;
       
       if (month === 'July' && year === 2025) {
-        commitmentStart = createUTCDate(2025, 5, 29, 0, 0, 0, 0); // Jun 29, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2025, 6, 10, 23, 59, 59, 999); // Jul 10, 2025 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 5, 29, 0, 0, 0, 0); // Jun 29, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2025, 6, 10, 23, 59, 59, 999); // Jul 10, 2025 at 11:59 PM New Mexico time
       } else if (month === 'August' && year === 2025) {
-        commitmentStart = createUTCDate(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2025, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 7, 1, 0, 0, 0, 0); // Aug 1, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2025, 7, 12, 23, 59, 59, 999); // Aug 12, 2025 at 11:59 PM New Mexico time
       } else if (month === 'September' && year === 2025) {
-        commitmentStart = createUTCDate(2025, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2025, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 8, 1, 0, 0, 0, 0); // Sep 1, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2025, 8, 10, 23, 59, 59, 999); // Sep 10, 2025 at 11:59 PM New Mexico time
       } else if (month === 'October' && year === 2025) {
-        commitmentStart = createUTCDate(2025, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2025, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 9, 1, 0, 0, 0, 0); // Oct 1, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2025, 9, 11, 23, 59, 59, 999); // Oct 11, 2025 at 11:59 PM New Mexico time
       } else if (month === 'November' && year === 2025) {
-        commitmentStart = createUTCDate(2025, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2025, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 10, 1, 0, 0, 0, 0); // Nov 1, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2025, 10, 10, 23, 59, 59, 999); // Nov 10, 2025 at 11:59 PM New Mexico time
       } else if (month === 'December' && year === 2025) {
-        commitmentStart = createUTCDate(2025, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2025, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 11, 1, 0, 0, 0, 0); // Dec 1, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2025, 11, 10, 23, 59, 59, 999); // Dec 10, 2025 at 11:59 PM New Mexico time
       } else if (month === 'January' && year === 2026) {
-        commitmentStart = createUTCDate(2025, 11, 29, 0, 0, 0, 0); // Dec 29, 2025 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 0, 9, 23, 59, 59, 999); // Jan 9, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2025, 11, 29, 0, 0, 0, 0); // Dec 29, 2025 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 0, 9, 23, 59, 59, 999); // Jan 9, 2026 at 11:59 PM New Mexico time
       } else if (month === 'February' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 1, 2, 0, 0, 0, 0); // Feb 2, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 1, 12, 23, 59, 59, 999); // Feb 12, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 1, 2, 0, 0, 0, 0); // Feb 2, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 1, 12, 23, 59, 59, 999); // Feb 12, 2026 at 11:59 PM New Mexico time
       } else if (month === 'March' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 2, 2, 0, 0, 0, 0); // Mar 2, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 2, 12, 23, 59, 59, 999); // Mar 12, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 2, 2, 0, 0, 0, 0); // Mar 2, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 2, 12, 23, 59, 59, 999); // Mar 12, 2026 at 11:59 PM New Mexico time
       } else if (month === 'April' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 3, 1, 0, 0, 0, 0); // Apr 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 3, 10, 23, 59, 59, 999); // Apr 10, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 3, 1, 0, 0, 0, 0); // Apr 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 3, 10, 23, 59, 59, 999); // Apr 10, 2026 at 11:59 PM New Mexico time
       } else if (month === 'May' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 3, 30, 0, 0, 0, 0); // Apr 30, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 4, 11, 23, 59, 59, 999); // May 11, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 3, 30, 0, 0, 0, 0); // Apr 30, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 4, 11, 23, 59, 59, 999); // May 11, 2026 at 11:59 PM New Mexico time
       } else if (month === 'June' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 5, 1, 0, 0, 0, 0); // Jun 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 5, 11, 23, 59, 59, 999); // Jun 11, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 5, 1, 0, 0, 0, 0); // Jun 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 5, 11, 23, 59, 59, 999); // Jun 11, 2026 at 11:59 PM New Mexico time
       } else if (month === 'July' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 5, 29, 0, 0, 0, 0); // Jun 29, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 6, 10, 23, 59, 59, 999); // Jul 10, 2026 at 11:59 PM New Mexico time
       } else if (month === 'August' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 7, 1, 0, 0, 0, 0); // Aug 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 7, 12, 23, 59, 59, 999); // Aug 12, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 7, 1, 0, 0, 0, 0); // Aug 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 7, 12, 23, 59, 59, 999); // Aug 12, 2026 at 11:59 PM New Mexico time
       } else if (month === 'September' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 8, 1, 0, 0, 0, 0); // Sep 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 8, 10, 23, 59, 59, 999); // Sep 10, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 8, 1, 0, 0, 0, 0); // Sep 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 8, 10, 23, 59, 59, 999); // Sep 10, 2026 at 11:59 PM New Mexico time
       } else if (month === 'October' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 9, 1, 0, 0, 0, 0); // Oct 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 9, 11, 23, 59, 59, 999); // Oct 11, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 9, 1, 0, 0, 0, 0); // Oct 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 9, 11, 23, 59, 59, 999); // Oct 11, 2026 at 11:59 PM New Mexico time
       } else if (month === 'November' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 10, 1, 0, 0, 0, 0); // Nov 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 10, 10, 23, 59, 59, 999); // Nov 10, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 10, 1, 0, 0, 0, 0); // Nov 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 10, 10, 23, 59, 59, 999); // Nov 10, 2026 at 11:59 PM New Mexico time
       } else if (month === 'December' && year === 2026) {
-        commitmentStart = createUTCDate(2026, 11, 1, 0, 0, 0, 0); // Dec 1, 2026 at 00:00:00 UTC
-        commitmentEnd = createUTCDate(2026, 11, 10, 23, 59, 59, 999); // Dec 10, 2026 at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(2026, 11, 1, 0, 0, 0, 0); // Dec 1, 2026 at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(2026, 11, 10, 23, 59, 59, 999); // Dec 10, 2026 at 11:59 PM New Mexico time
       } else {
         // Default: commitment period is first 10 days of the month
-        commitmentStart = createUTCDate(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 00:00:00 UTC
-        commitmentEnd = createUTCDate(year, monthIndex, 10, 23, 59, 59, 999); // 10th day at 23:59:59 UTC
+        commitmentStart = createNewMexicoDate(year, monthIndex, 1, 0, 0, 0, 0); // 1st day at 12:00 AM New Mexico time
+        commitmentEnd = createNewMexicoDate(year, monthIndex, 10, 23, 59, 59, 999); // 10th day at 11:59 PM New Mexico time
       }
       
       table.push({
         month,
         year,
-        deadline: formatDateUTC(deadline),
-        timeframeStart: formatDateUTC(timeframeStart),
-        timeframeEnd: formatDateUTC(timeframeEnd),
-        commitmentStart: formatDateUTC(commitmentStart),
-        commitmentEnd: formatDateUTC(commitmentEnd)
+        deadline: formatDate(deadline),
+        timeframeStart: formatDate(timeframeStart),
+        timeframeEnd: formatDate(timeframeEnd),
+        commitmentStart: formatDate(commitmentStart),
+        commitmentEnd: formatDate(commitmentEnd)
       });
     });
   }
@@ -933,13 +938,15 @@ function generateDealMonthsTable() {
 const DEAL_MONTHS_TABLE = generateDealMonthsTable();
 
 function getAvailableDealMonths() {
-  const now = new Date();
+  // Get current date in New Mexico timezone
+  const newMexicoTime = new Date().toLocaleString("en-US", {timeZone: "America/Denver"});
+  const now = new Date(newMexicoTime);
+  
   return DEAL_MONTHS_TABLE.filter(row => {
-    // Only show months that are this month or in the future
-    // Create UTC date for comparison to avoid timezone issues
-    const monthDate = new Date(Date.UTC(row.year, getMonthIndex(row.month), 1));
-    const lastDayOfMonth = new Date(Date.UTC(row.year, getMonthIndex(row.month) + 1, 0)).getUTCDate();
-    const monthEnd = new Date(Date.UTC(row.year, getMonthIndex(row.month), lastDayOfMonth, 23, 59, 59, 999));
+    // Only show months that are this month or in the future in New Mexico time
+    const monthDate = new Date(row.year, getMonthIndex(row.month), 1);
+    const lastDayOfMonth = new Date(row.year, getMonthIndex(row.month) + 1, 0).getDate();
+    const monthEnd = new Date(row.year, getMonthIndex(row.month), lastDayOfMonth, 23, 59, 59, 999);
     return isAfter(monthEnd, now) || isSameMonth(monthDate, now);
   });
 }
@@ -951,6 +958,18 @@ function getMonthIndex(monthName) {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   return months.indexOf(monthName);
+}
+
+// Helper function to get the next month name for display (delivery month)
+function getNextMonthName(monthName, year) {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const currentIndex = months.indexOf(monthName);
+  const nextIndex = (currentIndex + 1) % 12;
+  const nextYear = currentIndex === 11 ? year + 1 : year; // If December, next year
+  return { month: months[nextIndex], year: nextYear };
 }
 
 const CreateDeal = ({ initialData, onClose, onSubmit }) => {
@@ -1000,18 +1019,20 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
     'SPECIALTIES', 'TEQUILA', 'UNKNOWN', 'VODKA','WINE'
   ];
 
-  // Function to get current month timeframe
+  // Function to get current month timeframe in New Mexico time
   const getCurrentMonthTimeframe = () => {
-    const now = new Date();
-    const currentYear = now.getUTCFullYear();
-    const currentMonth = now.getUTCMonth();
+    // Get current date in New Mexico timezone
+    const newMexicoTime = new Date().toLocaleString("en-US", {timeZone: "America/Denver"});
+    const now = new Date(newMexicoTime);
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
     
-    // Start of current month at 00:00:00 UTC
-    const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0, 0));
+    // Start of current month at 12:00 AM New Mexico time
+    const startOfMonth = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
     
-    // End of current month at 23:59:59 UTC
-    const lastDayOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0)).getUTCDate();
-    const endOfMonth = new Date(Date.UTC(currentYear, currentMonth, lastDayOfMonth, 23, 59, 59, 999));
+    // End of current month at 11:59 PM New Mexico time
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const endOfMonth = new Date(currentYear, currentMonth, lastDayOfMonth, 23, 59, 59, 999);
     
     return {
       start: startOfMonth.toISOString().slice(0, 16),
@@ -1135,36 +1156,38 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
       return;
     }
     
-    // Set deal timeframe based on selected month
+    // Set deal timeframe based on selected month (New Mexico time)
     if (selectedMonthRow) {
-      // Convert UTC dates to ISO strings for backend
-      const dealStartUTC = new Date(Date.UTC(
+      // Create dates in New Mexico timezone
+      const dealStartNM = new Date(
         parseInt(selectedMonthRow.timeframeStart.split('-')[0]),
         parseInt(selectedMonthRow.timeframeStart.split('-')[1]) - 1,
-        parseInt(selectedMonthRow.timeframeStart.split('-')[2])
-      ));
-      const dealEndUTC = new Date(Date.UTC(
+        parseInt(selectedMonthRow.timeframeStart.split('-')[2]),
+        0, 0, 0, 0 // 12:00 AM New Mexico time
+      );
+      const dealEndNM = new Date(
         parseInt(selectedMonthRow.timeframeEnd.split('-')[0]),
         parseInt(selectedMonthRow.timeframeEnd.split('-')[1]) - 1,
         parseInt(selectedMonthRow.timeframeEnd.split('-')[2]),
-        23, 59, 59, 999
-      ));
-      const commitmentStartUTC = new Date(Date.UTC(
+        23, 59, 59, 999 // 11:59 PM New Mexico time
+      );
+      const commitmentStartNM = new Date(
         parseInt(selectedMonthRow.commitmentStart.split('-')[0]),
         parseInt(selectedMonthRow.commitmentStart.split('-')[1]) - 1,
-        parseInt(selectedMonthRow.commitmentStart.split('-')[2])
-      ));
-      const commitmentEndUTC = new Date(Date.UTC(
+        parseInt(selectedMonthRow.commitmentStart.split('-')[2]),
+        0, 0, 0, 0 // 12:00 AM New Mexico time
+      );
+      const commitmentEndNM = new Date(
         parseInt(selectedMonthRow.commitmentEnd.split('-')[0]),
         parseInt(selectedMonthRow.commitmentEnd.split('-')[1]) - 1,
         parseInt(selectedMonthRow.commitmentEnd.split('-')[2]),
-        23, 59, 59, 999
-      ));
+        23, 59, 59, 999 // 11:59 PM New Mexico time
+      );
       
-      formData.dealStartAt = dealStartUTC.toISOString();
-      formData.dealEndsAt = dealEndUTC.toISOString();
-      formData.commitmentStartAt = commitmentStartUTC.toISOString();
-      formData.commitmentEndsAt = commitmentEndUTC.toISOString();
+      formData.dealStartAt = dealStartNM.toISOString();
+      formData.dealEndsAt = dealEndNM.toISOString();
+      formData.commitmentStartAt = commitmentStartNM.toISOString();
+      formData.commitmentEndsAt = commitmentEndNM.toISOString();
     }
     
     try {
@@ -1578,37 +1601,44 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                       }}
                       displayEmpty
                     >
-                      {availableDealMonths.map(row => (
-                        <MenuItem key={`${row.month} ${row.year}`} value={`${row.month} ${row.year}`}>{`${row.month} ${row.year}`}</MenuItem>
-                      ))}
+                      {availableDealMonths.map(row => {
+                        const deliveryMonth = getNextMonthName(row.month, row.year);
+                        return (
+                          <MenuItem key={`${row.month} ${row.year}`} value={`${row.month} ${row.year}`}>
+                            {`${deliveryMonth.month} ${deliveryMonth.year}`}
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                     <FormHelperText>
                       Choose the month for which this deal will be active. Dates below will update accordingly.
                     </FormHelperText>
                   </FormControl>
-                  {selectedMonthRow && (
-                    <Alert severity="info" sx={{ ml: 2, borderRadius: 2 ,width: '100%'}}>
-                      <strong>Deadline to post deals:</strong> {(() => {
-                        const [year, month, day] = selectedMonthRow.deadline.split('-');
-                        return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                      })()}<br />
-                      <strong>Deal Time Frame:</strong> {(() => {
-                        const [startYear, startMonth, startDay] = selectedMonthRow.timeframeStart.split('-');
-                        const [endYear, endMonth, endDay] = selectedMonthRow.timeframeEnd.split('-');
-                        const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                        const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                        return `${startDate} - ${endDate}`;
-                      })()}<br />
-                      <strong>Commitment Time Frame:</strong> {(() => {
-                        const [startYear, startMonth, startDay] = selectedMonthRow.commitmentStart.split('-');
-                        const [endYear, endMonth, endDay] = selectedMonthRow.commitmentEnd.split('-');
-                        const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                        const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                        return `${startDate} - ${endDate}`;
-                      })()}<br />
-                      <span style={{ color: '#888', fontSize: 13 }}>You can still create deals for this month after the deadline, but this is the recommended posting window.</span>
-                    </Alert>
-                  )}
+                  {selectedMonthRow && (() => {
+                    const deliveryMonth = getNextMonthName(selectedMonthRow.month, selectedMonthRow.year);
+                    return (
+                      <Alert severity="info" sx={{ ml: 2, borderRadius: 2 ,width: '100%'}}>
+                        <strong>Deadline to post deals:</strong> {(() => {
+                          const [year, month, day] = selectedMonthRow.deadline.split('-');
+                          return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        })()}<br />
+                        <strong>Deal Time Frame:</strong> {(() => {
+                          const [startYear, startMonth, startDay] = selectedMonthRow.timeframeStart.split('-');
+                          const [endYear, endMonth, endDay] = selectedMonthRow.timeframeEnd.split('-');
+                          const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                          const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                          return `${startDate} - ${endDate}`;
+                        })()}<br />
+                        <strong>Commitment Time Frame:</strong> {(() => {
+                          const [startYear, startMonth, startDay] = selectedMonthRow.commitmentStart.split('-');
+                          const [endYear, endMonth, endDay] = selectedMonthRow.commitmentEnd.split('-');
+                          const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                          const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                          return `${startDate} - ${endDate}`;
+                        })()}<br />
+                      </Alert>
+                    );
+                  })()}
                 </Box>
                 <SectionHeading>
                   <SectionTitle variant="h6">
