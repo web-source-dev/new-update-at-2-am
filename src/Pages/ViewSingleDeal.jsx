@@ -1025,16 +1025,6 @@ const ViewSingleDeal = () => {
                     }}
                   />
                 )}
-                 <Chip 
-                  icon={<Schedule sx={{ color: '#000000' }} />}
-                  label={`Ends ${new Date(deal?.dealEndsAt).toLocaleDateString()}`} 
-                  color="warning" 
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 1,
-                    '& .MuiChip-label': { px: 1 }
-                  }}
-                />
                 <Chip
                   label={`Min Qty: ${deal?.minQtyForDiscount}`}
                   color="info" 
@@ -1468,19 +1458,6 @@ const ViewSingleDeal = () => {
                       </Typography>
                       <Typography variant="body1" fontWeight="500">
                         {deal?.minQtyForDiscount} units
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Schedule sx={{ color: '#000000' }} fontSize="small" />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Deal Ends
-                      </Typography>
-                      <Typography variant="body1" fontWeight="500">
-                        {new Date(deal?.dealEndsAt).toLocaleDateString()}
                       </Typography>
                     </Box>
                   </Box>

@@ -98,7 +98,7 @@ const DisplaySplashContent = ({ content = [], preview = false, onClose}) => {
   const [contentIndex, setContentIndex] = useState(0);
   const [currentContent, setCurrentContent] = useState({});
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false); // Start with false, will be set based on localStorage check
   const theme = useTheme();
 
   const [selectedMedia, setSelectedMedia] = useState(null);
@@ -109,8 +109,17 @@ const DisplaySplashContent = ({ content = [], preview = false, onClose}) => {
       console.log('Content length received:', content.length);
       setContentArray(content);
       setCurrentContent(content[contentIndex] || {});
+      
+      // Check if splash content was previously closed by user (only for non-preview mode)
+      if (!preview) {
+        const splashClosedKey = `splash_closed_${JSON.stringify(content.map(c => c._id || c.id).sort())}`;
+        const wasClosed = localStorage.getItem(splashClosedKey);
+        setOpen(!wasClosed); // Only open if it wasn't previously closed
+      } else {
+        setOpen(true); // Always show in preview mode
+      }
     }
-  }, [content]); // Only depend on content prop changes, not contentIndex
+  }, [content, preview]); // Only depend on content prop changes and preview mode
   
 const EnlargedMedia = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -148,27 +157,18 @@ const handleCloseMedia = () => {
     }
   }, [contentArray, contentIndex]);
 
-  useEffect(() => {
-    if (!preview && currentContent && currentContent.isActive) {
-      const sessionId = localStorage.getItem('token');
-      const viewedSplashKey = `splash_viewed_${currentContent._id}_${sessionId}`;
-      const hasViewed = localStorage.getItem(viewedSplashKey);
-
-      if (hasViewed) {
-        setOpen(false);
-      } else {
-        localStorage.setItem(viewedSplashKey, 'true');
-        if (currentContent.scheduling.showOnlyOnce) {
-          localStorage.setItem(`splash_last_viewed_${currentContent._id}`, new Date().toISOString());
-        }
-      }
-    }
-  }, [currentContent, preview]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
+    
+    // Save to localStorage that this splash content was closed (only for non-preview mode)
+    if (!preview && contentArray && contentArray.length > 0) {
+      const splashClosedKey = `splash_closed_${JSON.stringify(contentArray.map(c => c._id || c.id).sort())}`;
+      localStorage.setItem(splashClosedKey, 'true');
+    }
+    
     if (onClose) onClose();
-  }, [onClose]);
+  }, [onClose, preview, contentArray]);
 
   const handleNext = () => {
     setCurrentCardIndex((prevIndex) => (prevIndex === currentContent.cards.length - 1 ? 0 : prevIndex + 1));
@@ -178,13 +178,27 @@ const handleCloseMedia = () => {
     setCurrentCardIndex((prevIndex) => (prevIndex === 0 ? currentContent.cards.length - 1 : prevIndex - 1));
   };
 
-  const handleNextSplash = () => {
+  const handleNextSplash = (event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     if (contentArray && contentArray.length > 1) {
       const nextIndex = contentIndex === contentArray.length - 1 ? 0 : contentIndex + 1;
       setContentIndex(nextIndex);
       setCurrentCardIndex(0); // Reset card index when moving to next splash
       // Force update current content to ensure immediate UI update
       setCurrentContent(contentArray[nextIndex]);
+    }
+  };
+
+  const handlePreviousSplash = (event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (contentArray && contentArray.length > 1) {
+      const prevIndex = contentIndex === 0 ? contentArray.length - 1 : contentIndex - 1;
+      setContentIndex(prevIndex);
+      setCurrentCardIndex(0); // Reset card index when moving to previous splash
+      // Force update current content to ensure immediate UI update
+      setCurrentContent(contentArray[prevIndex]);
     }
   };
 
@@ -198,7 +212,6 @@ const handleCloseMedia = () => {
   <Box sx={{ position: 'relative' }}>
     <StyledDialog
       open={open}
-      onClose={handleClose}
       fullWidth
       maxWidth="md"
     >
@@ -283,7 +296,7 @@ const handleCloseMedia = () => {
                     flexWrap: 'wrap',
                     justifyContent: 'flex-start'
                   }}>
-                    {currentCard.ctaButtons?.map((button, index) => (
+                    {currentCard.ctaButtons?.filter(button => button.text && button.text.trim() !== '').map((button, index) => (
                       <StyledButton
                         key={index}
                         variant="contained"
@@ -304,7 +317,7 @@ const handleCloseMedia = () => {
               gap: 2,
               mt: 4 
             }}>
-              {currentContent.cards.length > 0 && (
+              {currentContent.cards.length > 1 && (
                 <>
                   <Tooltip title="Previous card" arrow placement="top">
                     <span> {/* Wrapper needed for disabled buttons */}
@@ -375,13 +388,19 @@ const handleCloseMedia = () => {
           bottom: 32,
           right: 32,
           zIndex: (theme) => theme.zIndex.modal + 1,
-          display: open ? 'block' : 'none'
+          display: open ? 'flex' : 'none',
+          flexDirection: 'column',
+          gap: 1
         }}
       >
         <Tooltip title={`View splash ${contentIndex === contentArray.length - 1 ? 1 : contentIndex + 2} of ${contentArray.length}`} arrow placement="left">
           <NextSplashButton
             variant="contained"
-            onClick={handleNextSplash}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              handleNextSplash(event);
+            }}
             startIcon={<NavigateNextIcon />}
             sx={{
               minWidth: '180px',
@@ -392,6 +411,25 @@ const handleCloseMedia = () => {
           >
             Next ({contentIndex + 1}/{contentArray.length})
           </NextSplashButton>
+        </Tooltip>
+        <Tooltip title={`View splash ${contentIndex === 0 ? contentArray.length : contentIndex} of ${contentArray.length}`} arrow placement="left">
+          <PreviousSplashButton
+            variant="contained"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              handlePreviousSplash(event);
+            }}
+            startIcon={<NavigateBeforeIcon />}
+            sx={{
+              minWidth: '180px',
+              height: '48px',
+              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(156, 39, 176, 0.9)'
+            }}
+          >
+            Previous ({contentIndex + 1}/{contentArray.length})
+          </PreviousSplashButton>
         </Tooltip>
       </Box>
     )}
@@ -451,5 +489,41 @@ const NextSplashButton = styled(StyledButton)(({ theme }) => ({
   '&:active': {
     transform: 'translateY(2px)',
     boxShadow: '0 3px 6px rgba(33, 203, 243, 0.3)',
+  },
+}));
+
+const PreviousSplashButton = styled(StyledButton)(({ theme }) => ({
+  background: `linear-gradient(135deg, #9c27b0 25%, #ba68c8 100%)`,
+  color: theme.palette.primary.contrastText,
+  padding: '12px 24px',
+  fontSize: '1rem',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
+  borderRadius: '8px',
+  boxShadow: '0 4px 8px rgba(156, 39, 176, 0.3)',
+  transition: 'all 0.4s ease-in-out',
+  position: 'relative',
+  overflow: 'hidden',
+  '&:before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'rgba(255, 255, 255, 0.2)',
+    transition: 'left 0.4s ease-in-out',
+  },
+  '&:hover': {
+    background: `linear-gradient(135deg, #7b1fa2 30%, #9c27b0 100%)`,
+    boxShadow: '0 8px 15px rgba(156, 39, 176, 0.5)',
+    transform: 'translateY(-4px) scale(1.05)',
+    '&:before': {
+      left: '100%',
+    },
+  },
+  '&:active': {
+    transform: 'translateY(2px)',
+    boxShadow: '0 3px 6px rgba(156, 39, 176, 0.3)',
   },
 }));

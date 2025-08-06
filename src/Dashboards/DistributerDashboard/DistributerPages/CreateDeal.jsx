@@ -1622,13 +1622,6 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                           const [year, month, day] = selectedMonthRow.deadline.split('-');
                           return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                         })()}<br />
-                        <strong>Deal Time Frame:</strong> {(() => {
-                          const [startYear, startMonth, startDay] = selectedMonthRow.timeframeStart.split('-');
-                          const [endYear, endMonth, endDay] = selectedMonthRow.timeframeEnd.split('-');
-                          const startDate = new Date(startYear, startMonth - 1, startDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                          const endDate = new Date(endYear, endMonth - 1, endDay).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                          return `${startDate} - ${endDate}`;
-                        })()}<br />
                         <strong>Commitment Time Frame:</strong> {(() => {
                           const [startYear, startMonth, startDay] = selectedMonthRow.commitmentStart.split('-');
                           const [endYear, endMonth, endDay] = selectedMonthRow.commitmentEnd.split('-');

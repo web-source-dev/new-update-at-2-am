@@ -1052,21 +1052,13 @@ const DisplayDeals = () => {
                   )}
                 </Box>
 
-                {isCommitted ? (
+                {isCommitted && (
                   <Chip
                     size="small"
                     label="Committed"
                     color="primary"
                     sx={{ borderRadius: 1 }}
                   />
-                ) : (
-                  <Typography
-                    variant="body2"
-                    color={theme.palette.text.secondary}
-                    sx={{ fontSize: '0.75rem' }}
-                  >
-                    Ends: {new Date(deal.dealEndsAt).toLocaleDateString()}
-                  </Typography>
                 )}
               </Box>
 

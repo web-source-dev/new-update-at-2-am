@@ -251,9 +251,7 @@ const ViewDeal = () => {
                 </Table>
               </TableContainer>
 
-              <Typography variant="body2" color="error" fontWeight="bold">
-                Deal Ends At: {new Date(deal.dealEndsAt).toLocaleDateString()}
-              </Typography>
+           
               <Box sx={{ display: 'flex', gap: 2, marginTop: 3 }}>
                 <Button 
                   variant="contained" 

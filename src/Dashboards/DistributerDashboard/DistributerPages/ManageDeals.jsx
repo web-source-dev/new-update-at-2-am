@@ -1302,33 +1302,6 @@ The new deal will be created with the following settings:
                         </Box>
                       </Box>
 
-                      {/* Deal Timeline */}
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary" 
-                        sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'space-between',
-                          bgcolor: 'rgba(0,0,0,0.02)',
-                          py: 0.5,
-                          px: 1,
-                          borderRadius: '4px',
-                          mb: 1
-                        }}
-                      >
-                        <span style={{ fontWeight: 'bold' }}>{deal.bulkAction ? "Expired" : "Ends:"}</span>
-                        <span style={{ fontWeight: 500 }}>
-                          {deal.bulkAction ? 
-                            "Completed" : 
-                            new Date(deal.dealEndsAt).toLocaleDateString(undefined, { 
-                              month: 'short', 
-                              day: 'numeric', 
-                              year: 'numeric' 
-                            })
-                          }
-                        </span>
-                      </Typography>
                     </CardContent>
 
                     {/* Action Buttons */}
@@ -1617,9 +1590,6 @@ The new deal will be created with the following settings:
                               />
                             )}
                           </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                            {deal.bulkAction ? "Expired" : `Ends: ${new Date(deal.dealEndsAt).toLocaleString()}`}
-                          </Typography>
                         </Grid>
                       </Grid>
                     </Box>
@@ -1689,7 +1659,6 @@ The new deal will be created with the following settings:
                     <TableCell>Price</TableCell>
                     <TableCell>Min Qty for Deal</TableCell>
                     <TableCell>Deal Progress</TableCell>
-                    <TableCell>Ends</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -1790,10 +1759,6 @@ The new deal will be created with the following settings:
                             />
                           )}
                         </Box>
-                      </TableCell>
-
-                      <TableCell>
-                        {deal.bulkAction ? "Expired" : new Date(deal.dealEndsAt).toLocaleDateString()}
                       </TableCell>
 
                       <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>

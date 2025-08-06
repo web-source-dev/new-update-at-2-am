@@ -772,11 +772,6 @@ const DealsManagment = () => {
                       />
                     )}
                   </Box>
-
-                  {/* Deal Expiry */}
-                  <Typography variant="body2" color="error.main" fontWeight="bold">
-                    Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
-                  </Typography>
                 </CardContent>
 
                 {/* Action Buttons */}
@@ -932,9 +927,6 @@ const DealsManagment = () => {
                     )}
                   </Typography>
                 </Box>
-                <Typography variant="body2" color="text.error">
-                  Ends at: {new Date(deal.dealEndsAt).toLocaleString()}
-                </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
@@ -982,7 +974,6 @@ const DealsManagment = () => {
                 <TableCell sx={{ color: 'primary.contrastText' }}><strong>Sizes</strong></TableCell>
                 <TableCell sx={{ color: 'primary.contrastText' }}><strong>Price</strong></TableCell>
                 <TableCell sx={{ color: 'primary.contrastText' }}><strong>Deal Progress</strong></TableCell>
-                <TableCell sx={{ color: 'primary.contrastText' }}><strong>Ends At</strong></TableCell>
                 <TableCell sx={{ color: 'primary.contrastText' }}><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
@@ -1079,7 +1070,6 @@ const DealsManagment = () => {
                       </Typography>
                     )}
                   </TableCell>
-                  <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>{new Date(deal.dealEndsAt).toLocaleString()}</TableCell>
                   <TableCell sx={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                     <IconButton onClick={(e) => handleMenuOpen(e, deal._id)}>
                       <MoreVert color="primary.contrastText" />
