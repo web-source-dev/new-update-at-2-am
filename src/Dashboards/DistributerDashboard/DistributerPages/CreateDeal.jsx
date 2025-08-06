@@ -1322,7 +1322,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
                   
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth required>
-                      <InputLabel id="category-select-label">Category</InputLabel>
+                      <InputLabel id="category-select-label">Category </InputLabel>
                       <Select
                         labelId="category-select-label"
                         id="category-select"
