@@ -389,11 +389,43 @@ const handleCloseMedia = () => {
           right: 32,
           zIndex: (theme) => theme.zIndex.modal + 1,
           display: open ? 'flex' : 'none',
-          flexDirection: 'column',
-          gap: 1
+          flexDirection: 'row',
+          gap: '5px'
         }}
       >
-        <Tooltip title={`View splash ${contentIndex === contentArray.length - 1 ? 1 : contentIndex + 2} of ${contentArray.length}`} arrow placement="left">
+        <Tooltip title={`View splash ${contentIndex === 0 ? contentArray.length : contentIndex} of ${contentArray.length}`} arrow placement="top">
+          <Button
+            variant="contained"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              handlePreviousSplash(event);
+            }}
+            startIcon={<NavigateBeforeIcon color='primary.contrastText'/>}
+            sx={{
+              minWidth: '180px',
+              height: '48px',
+              backgroundColor: 'white',
+              color: 'black',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              borderRadius: '8px',
+              boxShadow: '0 4px 8px rgba(33, 203, 243, 0.3)',
+              transition: 'all 0.4s ease-in-out',
+              position: 'relative',
+              border: '1px solid black',
+              '&:hover': {
+                backgroundColor: 'white',
+                color: 'black',
+                border: '1px solid black'
+              }
+            }}
+          >
+            Previous
+          </Button>
+        </Tooltip>
+        <Tooltip title={`View splash ${contentIndex === contentArray.length - 1 ? 1 : contentIndex + 2} of ${contentArray.length}`} arrow placement="top">
           <NextSplashButton
             variant="contained"
             onClick={(event) => {
@@ -401,35 +433,22 @@ const handleCloseMedia = () => {
               event.stopPropagation();
               handleNextSplash(event);
             }}
-            startIcon={<NavigateNextIcon />}
+            endIcon={<NavigateNextIcon color='primary.contrastText'/>}
             sx={{
               minWidth: '180px',
               height: '48px',
-              backdropFilter: 'blur(8px)',
-              backgroundColor: 'rgba(33, 150, 243, 0.9)'
+              backgroundColor: 'white',
+              color: 'black',
+              border: '1px solid black',
+              '&:hover': {
+                backgroundColor: 'white',
+                color: 'black',
+                border: '1px solid black'
+              }
             }}
           >
-            Next ({contentIndex + 1}/{contentArray.length})
+            Next
           </NextSplashButton>
-        </Tooltip>
-        <Tooltip title={`View splash ${contentIndex === 0 ? contentArray.length : contentIndex} of ${contentArray.length}`} arrow placement="left">
-          <PreviousSplashButton
-            variant="contained"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              handlePreviousSplash(event);
-            }}
-            startIcon={<NavigateBeforeIcon />}
-            sx={{
-              minWidth: '180px',
-              height: '48px',
-              backdropFilter: 'blur(8px)',
-              backgroundColor: 'rgba(156, 39, 176, 0.9)'
-            }}
-          >
-            Previous ({contentIndex + 1}/{contentArray.length})
-          </PreviousSplashButton>
         </Tooltip>
       </Box>
     )}
@@ -492,38 +511,3 @@ const NextSplashButton = styled(StyledButton)(({ theme }) => ({
   },
 }));
 
-const PreviousSplashButton = styled(StyledButton)(({ theme }) => ({
-  background: `linear-gradient(135deg, #9c27b0 25%, #ba68c8 100%)`,
-  color: theme.palette.primary.contrastText,
-  padding: '12px 24px',
-  fontSize: '1rem',
-  fontWeight: 'bold',
-  textTransform: 'uppercase',
-  borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(156, 39, 176, 0.3)',
-  transition: 'all 0.4s ease-in-out',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    transition: 'left 0.4s ease-in-out',
-  },
-  '&:hover': {
-    background: `linear-gradient(135deg, #7b1fa2 30%, #9c27b0 100%)`,
-    boxShadow: '0 8px 15px rgba(156, 39, 176, 0.5)',
-    transform: 'translateY(-4px) scale(1.05)',
-    '&:before': {
-      left: '100%',
-    },
-  },
-  '&:active': {
-    transform: 'translateY(2px)',
-    boxShadow: '0 3px 6px rgba(156, 39, 176, 0.3)',
-  },
-}));
