@@ -1014,7 +1014,7 @@ const CreateDeal = ({ initialData, onClose, onSubmit }) => {
 
   // Define categories
   const categories = [
-    'AMERICAN WHISKEY', 'BEER', 'BOURBAN', 'BRANDY COGNAC', 'CANADIAN', 'GIN', 'IRISH', 
+    'AMERICAN WHISKEY', 'BEER', 'BOURBON', 'BRANDY COGNAC', 'CANADIAN', 'GIN', 'IRISH', 
     'LIQUEURS', 'MIXERS', 'NON-ALCOHOLIC', 'RTD', 'RUM', 'SCOTCH', 'SPARKLING WINE',
     'SPECIALTIES', 'TEQUILA', 'UNKNOWN', 'VODKA','WINE'
   ];
